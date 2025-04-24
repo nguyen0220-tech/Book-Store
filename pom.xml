@@ -93,16 +93,12 @@
             <version>3.1.1</version>
         </dependency>
 
-<<<<<<< HEAD
         <!-- thư viện mail -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-
-=======
->>>>>>> 7b5a3ea9576dda0e2ba2152a997e3960ebd1e7c8
     </dependencies>
 
     <build>
