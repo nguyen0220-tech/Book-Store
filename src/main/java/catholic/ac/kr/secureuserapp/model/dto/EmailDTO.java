@@ -1,7 +1,6 @@
 package catholic.ac.kr.secureuserapp.model.dto;
 
 import lombok.Data;
-import lombok.Value;
 
 @Data
 public class EmailDTO {
