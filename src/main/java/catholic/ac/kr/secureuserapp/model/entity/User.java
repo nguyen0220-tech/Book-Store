@@ -25,4 +25,7 @@ public class User {
  //   @Builder.Default // nếu không truyền thì mặc định là USER
     @Column(name = "role")
     private String role;
+
+    @Column(nullable = false)
+    private boolean enabled=false; // mặc định false, chỉ khi xác thực email mới true
 }

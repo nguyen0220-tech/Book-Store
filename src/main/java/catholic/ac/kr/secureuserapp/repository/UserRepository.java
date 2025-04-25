@@ -1,6 +1,5 @@
 package catholic.ac.kr.secureuserapp.repository;
 
-import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
