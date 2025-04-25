@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.EmailDTO;
+import catholic.ac.kr.secureuserapp.model.dto.HtmlEmailDTO;
 import catholic.ac.kr.secureuserapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,14 @@ public class EmailController {
     @GetMapping("send")
     public ResponseEntity<String> sendEmail(@RequestBody EmailDTO request) {
         emailService.sendSimpleMail(request.getTo(), request.getSubject(), request.getBody());
+
+        return ResponseEntity.ok("Email đã được gửi thành công!");
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("send-html")
+    public ResponseEntity<String> sendHtmlEmail(@RequestBody HtmlEmailDTO request) {
+        emailService.sendHtmlMail(request.getTo(),request.getSubject(),request.getBodyHtml());
 
         return ResponseEntity.ok("Email đã được gửi thành công!");
     }
