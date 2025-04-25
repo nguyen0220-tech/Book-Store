@@ -3,8 +3,8 @@ package catholic.ac.kr.secureuserapp.model.dto;
 import lombok.Data;
 
 @Data
-public class HtmlEmailDTO {
+public class EmailRequest {
     private String to;
     private String subject;
-    private String bodyHtml;
+    private String body;
 }
