@@ -1,4 +1,4 @@
-package catholic.ac.kr.secureuserapp.config;
+package catholic.ac.kr.secureuserapp.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -1,6 +1,5 @@
 package catholic.ac.kr.secureuserapp.security;
 
-import catholic.ac.kr.secureuserapp.config.JwtUtil;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import jakarta.servlet.FilterChain;

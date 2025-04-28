@@ -57,12 +57,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        User user1=User.builder()
-                .username(user.getUsername())
-                .password(passwordEncoder.encode(user.getPassword()))
-                .role(user.getRole())
-                .build();
-        return userService.saveUser(user1);
+        return userService.saveUser(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -71,10 +66,14 @@ public class UserController {
         userService.deleteUser(id);
     }
 
-    //controller xử lý chức năng đăng ký người dùng (signup)
     @PostMapping("signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
         return userService.signUp(request);
+    }
+
+    @GetMapping("verify")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        return userService.verifyEmail(token);
     }
 
     @PostMapping("login")

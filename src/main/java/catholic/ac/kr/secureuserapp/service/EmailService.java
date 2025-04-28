@@ -55,7 +55,7 @@ public class EmailService {
 
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(body);
+            helper.setText(body,true);
 
             helper.addAttachment(filePath.getOriginalFilename(),new ByteArrayResource(filePath.getBytes()));
             mailSender.send(message);

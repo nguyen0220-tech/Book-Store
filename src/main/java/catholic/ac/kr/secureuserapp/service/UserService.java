@@ -1,10 +1,12 @@
 package catholic.ac.kr.secureuserapp.service;
 
-import catholic.ac.kr.secureuserapp.config.JwtUtil;
+import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
+import catholic.ac.kr.secureuserapp.security.JwtUtil;
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
 import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
+import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.Builder;
 import org.modelmapper.ModelMapper;
@@ -16,16 +18,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Builder
 public class UserService {
     private final UserRepository userRepository;
+    private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final ModelMapper modelMapper;
+    private final EmailService emailService;
 
     public User converrToUser(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
@@ -57,10 +63,13 @@ public class UserService {
         return ResponseEntity.ok(userDTOS);
     }
 
-
-
     public User saveUser(User user) {
-        return userRepository.save(user);
+        User newUser = User.builder()
+                .username(user.getUsername())
+                .password(passwordEncoder.encode(user.getPassword()))
+                .role(user.getRole())
+                .build();
+        return userRepository.save(newUser);
     }
 
     public ResponseEntity<?> updateUser(Long id, User user) {
@@ -95,7 +104,39 @@ public class UserService {
                 .role(request.getRole())  // mặc định gán quyền USER,có thể sửa giá trị
                 .build();           //build() là phương thức cuối cùng trong chuỗi builder. Nó dùng để "xây dựng" ra object thật sự từ các giá trị đã truyền.
         userRepository.save(user);
-        return ResponseEntity.ok("Người dùng đã đăng ký thành công");
+
+        // Tạo token xác thực
+        String token= UUID.randomUUID().toString();
+        VerificationToken verificationToken=new VerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(user);
+        verificationToken.setExpiryTime(LocalDateTime.now().plusDays(1)); //hạn xác thực 1 1day
+
+        verificationTokenRepository.save(verificationToken);
+
+        String verifyLink="http://localhost:8080/api/verify?token="+token;
+
+        emailService.sendSimpleMail(
+                user.getUsername(),
+                "Xác nhận tài khoản",
+                "Click vào link để xác thực: " + verifyLink
+        );
+
+        return ResponseEntity.ok("Đã gửi email xác nhận");
+    }
+
+    public ResponseEntity<?> verifyEmail(String token) {
+        VerificationToken verificationToken=verificationTokenRepository.findByToken(token).orElse(null);
+        if (verificationToken == null ||verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Token không hợp lệ hoặc đã hết hạn");
+        }
+         User user=verificationToken.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(verificationToken);//sau khi xac thuc token thi xoa
+
+        return ResponseEntity.ok("Tài khoản đã được xác thực thành công!");
     }
 
     public ResponseEntity<?> login(LoginRequest request) {

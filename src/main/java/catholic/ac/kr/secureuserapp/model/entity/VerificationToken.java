@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "verification_token")
 @Getter @Setter
 public class VerificationToken {
     @Id
@@ -17,6 +18,7 @@ public class VerificationToken {
 
     private LocalDateTime expiryTime;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
+    @JoinColumn(name = "user_id",referencedColumnName = "id")
     private User user;
 }
