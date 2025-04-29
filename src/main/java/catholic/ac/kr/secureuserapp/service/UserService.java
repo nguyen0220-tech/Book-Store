@@ -8,13 +8,20 @@ import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +32,7 @@ import java.util.UUID;
 
 @Service
 @Builder
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
@@ -32,6 +40,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final ModelMapper modelMapper;
     private final EmailService emailService;
+    private final AuthenticationManager authenticationManager;
 
     public User converrToUser(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
@@ -142,14 +151,39 @@ public class UserService {
     public ResponseEntity<?> login(LoginRequest request) {
         System.out.println("Encoded Password: " + passwordEncoder.encode(request.getPassword()));
         // Tìm người dùng theo username
-        User user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        //User user = userRepository.findByUsername(request.getUsername()).orElse(null);
 
-        // Nếu không tìm thấy user hoặc mật khẩu sai
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {           //hàm dùng để so sánh mật khẩu người dùng nhập vào (raw password)
-            return ResponseEntity.badRequest().body("Tài khoản hoặc mật khẩu không đúng");              //với mật khẩu đã được mã hóa lưu trong database (encoded password)
-        }                                                                                               //đến từ interface PasswordEncoder trong Spring Security.
-        // Nếu đăng nhập thành công → tạo JWT
-        String token = jwtUtil.generateToken(user.getUsername());
-        return ResponseEntity.ok(token);
+//        // Nếu không tìm thấy user hoặc mật khẩu sai
+//        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {           //hàm dùng để so sánh mật khẩu người dùng nhập vào (raw password)
+//            return ResponseEntity.badRequest().body("Tài khoản hoặc mật khẩu không đúng");              //với mật khẩu đã được mã hóa lưu trong database (encoded password)
+//        }                                                                                               //đến từ interface PasswordEncoder trong Spring Security.
+//        // Nếu đăng nhập thành công → tạo JWT
+//        String token = jwtUtil.generateToken(user.getUsername());
+//        return ResponseEntity.ok(token);
+        try {
+            Authentication authentication=authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+
+            MyUserDetails userDetails=(MyUserDetails) authentication.getPrincipal();
+            String token=jwtUtil.generateToken(userDetails.getUsername());
+            return ResponseEntity.ok(token);
+         }catch (DisabledException e){
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Tài khoản chưa được xác thực qua email.");
+        }catch (BadCredentialsException e){
+            return  ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Tài khoản hoặc mật khẩu không đúng");
+        }
+        catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Có lỗi xảy ra khi đăng nhập.");
+        }
     }
 }

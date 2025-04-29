@@ -39,7 +39,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    @GetMapping("search-role")
+    @GetMapping("filter-role")
     public ResponseEntity<Page<UserDTO>> getAllUsersByRole(
             @RequestParam (defaultValue = "0") int page,
             @RequestParam (defaultValue = "5") int size,

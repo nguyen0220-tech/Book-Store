@@ -26,7 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final UserDetailsService userDetailsService; // Spring dùng để tìm user theo username
     private final UserRepository userRepository;
 
     //1. Bean mã hóa mật khẩu dùng cho toàn app
@@ -36,10 +35,22 @@ public class SecurityConfig {
     }
 
     @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"+username));
+            if(!user.isEnabled()) {
+                throw new DisabledException("Tài khoản chưa được xác thực qua email");
+            }
+            return new MyUserDetails(user);
+        };
+    }
+
+    @Bean
 //  2. Provider dùng để xác thực user bằng username + password
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);// tìm user trong DB
+        provider.setUserDetailsService(userDetailsService());// tìm user trong DB
         provider.setPasswordEncoder(passwordEncoder()); // mã hóa/match password
         return provider;
     }
@@ -70,21 +81,4 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)  // Thêm filter kiểm tra JWT trước khi đến filter mặc định
                 .build();
     }
-
-
-    public AuthenticationProvider configure() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(username -> {
-            User user=userRepository.findByUsername(username)
-                    .orElseThrow( ()-> new UsernameNotFoundException("Không tìm thấy tài khoản"));
-            if(!user.isEnabled()){
-                throw new DisabledException("Tài khoản chưa được xác thực qua email");
-            }
-            return new MyUserDetails(user);
-        });
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-
-    }
-
 }
