@@ -1,5 +1,7 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.model.entity.Role;
+import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
 import catholic.ac.kr.secureuserapp.security.JwtUtil;
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
@@ -9,7 +11,6 @@ import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -28,10 +29,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
-@Builder
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
@@ -41,6 +42,7 @@ public class UserService {
     private final ModelMapper modelMapper;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
+    private final RoleRepository roleRepository;
 
     public User converrToUser(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
@@ -76,7 +78,7 @@ public class UserService {
         User newUser = User.builder()
                 .username(user.getUsername())
                 .password(passwordEncoder.encode(user.getPassword()))
-                .role(user.getRole())
+                .roles(user.getRoles()) // Gán trực tiếp tập quyền đã chọn
                 .build();
         return userRepository.save(newUser);
     }
@@ -88,7 +90,7 @@ public class UserService {
         }
         User existingUser = userOptional.get();
         existingUser.setUsername(user.getUsername());
-        existingUser.setRole(user.getRole());
+        existingUser.setRoles(user.getRoles());
 
         User updatedUser = userRepository.save(existingUser);
         return ResponseEntity.ok(updatedUser);
@@ -106,12 +108,17 @@ public class UserService {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Tên người dùng đã được lấy");
         }
+
+        // Tìm role USER từ DB
+        Role defaultRole=roleRepository.findByName("ROLE_USER")
+                .orElseThrow(()->new RuntimeException("Không tìm thấy ROLE_USER trong DB"));
+
         // Tạo user mới với password đã mã hóa
-        User user = User.builder()        //builder() là phương thức được tạo tự động bởi Lombok khi dùng annotation @Builder trong class User
-                .username(request.getUsername())        //Thay vì viết: User user = new User("john", "123", "ROLE_USER");
+        User user = User.builder()
+                .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())  // mặc định gán quyền USER,có thể sửa giá trị
-                .build();           //build() là phương thức cuối cùng trong chuỗi builder. Nó dùng để "xây dựng" ra object thật sự từ các giá trị đã truyền.
+                .roles(Set.of(defaultRole))
+                .build();
         userRepository.save(user);
 
         // Tạo token xác thực

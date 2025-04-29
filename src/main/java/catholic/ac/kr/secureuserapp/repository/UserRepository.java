@@ -16,7 +16,8 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("SELECT u FROM User u WHERE u.username LIKE %:keyword%")
     Page<User> searchByName(@Param("keyword") String keyword, Pageable pageable);
 
-    Page<User> findByRole(String role, Pageable pageable);
+    @Query("SELECT u FROM User u JOIN  u.roles r WHERE r.name= :role")
+    Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
     Optional<User> findByUsername(@NotBlank(message = "Tên không được để trống") String username);
 

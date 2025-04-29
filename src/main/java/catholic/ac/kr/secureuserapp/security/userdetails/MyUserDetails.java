@@ -19,7 +19,9 @@ public class MyUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Mỗi quyền (role) sẽ được wrap thành SimpleGrantedAuthority
-        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+        return user.getRoles().stream()
+                .map(role->new SimpleGrantedAuthority(role.getName()))
+                .toList();
     }
 
     // Lấy password để Spring Security so sánh

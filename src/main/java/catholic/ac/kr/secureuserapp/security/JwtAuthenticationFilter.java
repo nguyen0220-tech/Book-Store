@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.security;
 
+import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -58,7 +59,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
                 UserDetails userDetails = org.springframework.security.core.userdetails.User
                         .withUsername(user.getUsername())
                         .password(user.getPassword()) //Dù không cần mật khẩu ở đây (vì đã login rồi), vẫn phải truyền vào password
-                        .authorities(user.getRole())
+                        .authorities(
+                                user.getRoles().stream()  //trả về Set<Role>
+                                        .map(Role::getName) // Lấy tên từng role: "ROLE_USER", "ROLE_ADMIN"
+                                        .toArray(String[]::new)) //chuyển sang mảng String[] đúng format mà cần
                         .build();
 //                Đây là đối tượng xác thực cho Spring Security hiểu rằng: "Người này đã đăng nhập"
                 UsernamePasswordAuthenticationToken authToken =
