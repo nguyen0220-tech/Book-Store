@@ -171,19 +171,20 @@ public class UserService {
             MyUserDetails userDetails=(MyUserDetails) authentication.getPrincipal();
             String token=jwtUtil.generateToken(userDetails.getUsername());
             return ResponseEntity.ok(token);
-         }catch (DisabledException e){
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Tài khoản chưa được xác thực qua email.");
-        }catch (BadCredentialsException e){
-            return  ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Tài khoản hoặc mật khẩu không đúng");
-        }
-        catch (Exception e){
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Có lỗi xảy ra khi đăng nhập.");
+         }catch (Exception e) {
+            if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body("Tài khoản chưa được xác thực qua email.");
+            } else if (e instanceof BadCredentialsException || (e.getCause() instanceof BadCredentialsException)) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body("Tài khoản hoặc mật khẩu không đúng");
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Có lỗi xảy ra khi đăng nhập.");
+            }
         }
     }
 }
