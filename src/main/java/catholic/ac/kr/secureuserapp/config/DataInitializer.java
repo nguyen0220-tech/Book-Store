@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
-    private RoleRepository roleRepository;
+
+    private final RoleRepository roleRepository;
 
     @Bean
     CommandLineRunner initRoles(){
