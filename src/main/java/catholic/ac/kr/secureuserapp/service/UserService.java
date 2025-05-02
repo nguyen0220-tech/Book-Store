@@ -44,7 +44,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
-    public User converrToUser(UserDTO userDTO) {
+    public User convertToUser(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 
@@ -157,16 +157,6 @@ public class UserService {
 
     public ResponseEntity<?> login(LoginRequest request) {
         System.out.println("Encoded Password: " + passwordEncoder.encode(request.getPassword()));
-        // Tìm người dùng theo username
-        //User user = userRepository.findByUsername(request.getUsername()).orElse(null);
-
-//        // Nếu không tìm thấy user hoặc mật khẩu sai
-//        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {           //hàm dùng để so sánh mật khẩu người dùng nhập vào (raw password)
-//            return ResponseEntity.badRequest().body("Tài khoản hoặc mật khẩu không đúng");              //với mật khẩu đã được mã hóa lưu trong database (encoded password)
-//        }                                                                                               //đến từ interface PasswordEncoder trong Spring Security.
-//        // Nếu đăng nhập thành công → tạo JWT
-//        String token = jwtUtil.generateToken(user.getUsername());
-//        return ResponseEntity.ok(token);
         try {
             Authentication authentication=authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

@@ -13,6 +13,8 @@ import lombok.Setter;
 public class SignupRequest {
     @NotBlank(message = "Tên không được để trống")
     private String username;
+
+    @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
-    private String role;
+
 }
