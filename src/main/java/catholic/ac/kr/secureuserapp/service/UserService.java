@@ -23,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -100,6 +101,19 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+//    gán quyền (role) cho một người dùng
+    public void addRoleToUser(String username, String roleName) {
+        User user=userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(" User not found "+username));
+
+        Role role=roleRepository.findByName(roleName)
+                .orElseThrow(() -> new RuntimeException(" Role not found "+roleName));
+
+        user.getRoles().add(role);
+
+        userRepository.save(user);
+    }
+
     public ResponseEntity<?> signUp(SignupRequest request) {
         System.out.println("Username: " + request.getUsername()); //in ra console username
         System.out.println("Password: " + request.getPassword()); //in ra console PW
@@ -156,7 +170,6 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(LoginRequest request) {
-        System.out.println("Encoded Password: " + passwordEncoder.encode(request.getPassword()));
         try {
             Authentication authentication=authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
+import catholic.ac.kr.secureuserapp.model.dto.RoleToUserRequest;
 import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
@@ -62,6 +63,13 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("add-role")
+    public ResponseEntity<String> addRoleToUser(@RequestBody RoleToUserRequest request) {
+        userService.addRoleToUser(request.getUsername(), request.getRoleName());
+        return ResponseEntity.ok("Role added to user successfully");
     }
 
     @PostMapping("signup")
