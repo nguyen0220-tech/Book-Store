@@ -23,7 +23,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,12 +44,8 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
-    public User convertToUser(UserDTO userDTO) {
-        return modelMapper.map(userDTO, User.class);
-    }
-
     public UserDTO convertToUserDTO(User user) {
-        return modelMapper.map(user,UserDTO.class);
+        return modelMapper.map(user, UserDTO.class);
     }
 
     public ResponseEntity<List<UserDTO>> findAllUsers() {
@@ -62,16 +57,16 @@ public class UserService {
     }
 
     public ResponseEntity<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
-        Pageable pageable = PageRequest.of(page,size);
-        Page<User> users = userRepository.searchByName(keyword,pageable);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> users = userRepository.searchByName(keyword, pageable);
         Page<UserDTO> result = users.map(this::convertToUserDTO);
         return ResponseEntity.ok(result);
     }
 
-    public ResponseEntity<Page<UserDTO>>  findAllUsersByRole(int page, int size, String role) {
-        Pageable pageable = PageRequest.of(page,size);
-        Page<User> users=userRepository.findByRole(role,pageable);
-        Page<UserDTO> userDTOS=users.map(this::convertToUserDTO);
+    public ResponseEntity<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> users = userRepository.findByRole(role, pageable);
+        Page<UserDTO> userDTOS = users.map(this::convertToUserDTO);
         return ResponseEntity.ok(userDTOS);
     }
 
@@ -101,13 +96,33 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-//    gán quyền (role) cho một người dùng
-    public void addRoleToUser(String username, String roleName) {
-        User user=userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException(" User not found "+username));
+    //    CRUD quyền (role) cho một người dùng
+    public ResponseEntity<?> getRoleOfUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found"));
+        return ResponseEntity.ok(user.getRoles());
 
-        Role role=roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException(" Role not found "+roleName));
+    }
+
+    public void removeRoleFromUser(Long userId, Long roleId) {
+        User user=userRepository.findById(userId).
+                orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        user.getRoles().remove(role);
+
+        userRepository.save(user);
+    }
+
+    public void addRoleToUser(String username, String roleName) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(" User not found " + username));
+
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new RuntimeException(" Role not found " + roleName));
 
         user.getRoles().add(role);
 
@@ -124,8 +139,8 @@ public class UserService {
         }
 
         // Tìm role USER từ DB
-        Role defaultRole=roleRepository.findByName("ROLE_USER")
-                .orElseThrow(()->new RuntimeException("Không tìm thấy ROLE_USER trong DB"));
+        Role defaultRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ROLE_USER trong DB"));
 
         // Tạo user mới với password đã mã hóa
         User user = User.builder()
@@ -136,15 +151,15 @@ public class UserService {
         userRepository.save(user);
 
         // Tạo token xác thực
-        String token= UUID.randomUUID().toString();
-        VerificationToken verificationToken=new VerificationToken();
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
         verificationToken.setExpiryTime(LocalDateTime.now().plusDays(1)); //hạn xác thực 1 1day
 
         verificationTokenRepository.save(verificationToken);
 
-        String verifyLink="http://localhost:8080/api/verify?token="+token;
+        String verifyLink = "http://localhost:8080/api/verify?token=" + token;
 
         emailService.sendSimpleMail(
                 user.getUsername(),
@@ -156,11 +171,11 @@ public class UserService {
     }
 
     public ResponseEntity<?> verifyEmail(String token) {
-        VerificationToken verificationToken=verificationTokenRepository.findByToken(token).orElse(null);
-        if (verificationToken == null ||verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
+        if (verificationToken == null || verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("Token không hợp lệ hoặc đã hết hạn");
         }
-         User user=verificationToken.getUser();
+        User user = verificationToken.getUser();
         user.setEnabled(true);
         userRepository.save(user);
 
@@ -171,17 +186,17 @@ public class UserService {
 
     public ResponseEntity<?> login(LoginRequest request) {
         try {
-            Authentication authentication=authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsername(),
                             request.getPassword()
                     )
             );
 
-            MyUserDetails userDetails=(MyUserDetails) authentication.getPrincipal();
-            String token=jwtUtil.generateToken(userDetails.getUsername());
+            MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userDetails.getUsername());
             return ResponseEntity.ok(token);
-         }catch (Exception e) {
+        } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
