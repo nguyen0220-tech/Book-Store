@@ -13,13 +13,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class RoleService {
-    private final  RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
     public ResponseEntity<List<Role>> findAllRoles() {
         List<Role> roles = roleRepository.findAll();
 
         return ResponseEntity.ok(roles);
-
     }
 
     public Role saveRole(Role role) {
@@ -31,12 +30,12 @@ public class RoleService {
     }
 
     public ResponseEntity<?> updateRole(Long id, Role role) {
-        Optional<Role> roleOptional=roleRepository.findById(id);
-        if(roleOptional.isEmpty()){
+        Optional<Role> roleOptional = roleRepository.findById(id);
+        if (roleOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found");
         }
 
-        Role existingRole=roleOptional.get();
+        Role existingRole = roleOptional.get();
         existingRole.setName(role.getName());
 
         Role updatedRole = roleRepository.save(existingRole);
@@ -46,6 +45,4 @@ public class RoleService {
     public void deleteRole(Long id) {
         roleRepository.deleteById(id);
     }
-
-
 }

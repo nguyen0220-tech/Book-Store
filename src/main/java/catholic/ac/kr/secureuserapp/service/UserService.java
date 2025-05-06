@@ -96,39 +96,6 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    //    CRUD quyền (role) cho một người dùng
-    public ResponseEntity<?> getRoleOfUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new RuntimeException("User not found"));
-        return ResponseEntity.ok(user.getRoles());
-
-    }
-
-    public void removeRoleFromUser(Long userId, Long roleId) {
-        User user=userRepository.findById(userId).
-                orElseThrow(() -> new RuntimeException("User not found"));
-
-
-        Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-
-        user.getRoles().remove(role);
-
-        userRepository.save(user);
-    }
-
-    public void addRoleToUser(String username, String roleName) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException(" User not found " + username));
-
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException(" Role not found " + roleName));
-
-        user.getRoles().add(role);
-
-        userRepository.save(user);
-    }
-
     public ResponseEntity<?> signUp(SignupRequest request) {
         System.out.println("Username: " + request.getUsername()); //in ra console username
         System.out.println("Password: " + request.getPassword()); //in ra console PW

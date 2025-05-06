@@ -65,13 +65,6 @@ public class UserController {
         userService.deleteUser(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("add-role")
-    public ResponseEntity<String> addRoleToUser(@RequestBody RoleToUserRequest request) {
-        userService.addRoleToUser(request.getUsername(), request.getRoleName());
-        return ResponseEntity.ok("Role added to user successfully");
-    }
-
     @PostMapping("signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
         return userService.signUp(request);
