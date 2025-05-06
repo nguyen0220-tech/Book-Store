@@ -1,7 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
-import catholic.ac.kr.secureuserapp.model.dto.RoleToUserRequest;
 import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
