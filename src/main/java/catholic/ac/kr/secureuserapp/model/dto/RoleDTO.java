@@ -1,15 +1,10 @@
 package catholic.ac.kr.secureuserapp.model.dto;
 
-import catholic.ac.kr.secureuserapp.model.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.util.Set;
-
 @Data
-public class UserDTO {
+public class RoleDTO {
     @NotBlank(message = "Tên không được để trống")
-    private String username;
-
-    private Set<RoleDTO> roles;
+    private String name;
 }

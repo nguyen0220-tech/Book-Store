@@ -1,13 +1,14 @@
 package catholic.ac.kr.secureuserapp.controller;
 
+import catholic.ac.kr.secureuserapp.model.dto.AttachmentEmailRequest;
 import catholic.ac.kr.secureuserapp.model.dto.EmailRequest;
 import catholic.ac.kr.secureuserapp.model.dto.HtmlEmailRequest;
 import catholic.ac.kr.secureuserapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,14 +33,9 @@ public class EmailController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("send-attachment")
-    public ResponseEntity<String> sendAttachmentEmail(
-            @RequestParam String to,
-            @RequestParam String subject,
-            @RequestParam String body,
-            @RequestParam("file") MultipartFile file
-            ){
-        emailService.sendAttachmentsMail(to,subject,body,file);
+    @PostMapping(value = "send-attachment",consumes = MediaType.MULTIPART_FORM_DATA_VALUE) //consumes :Muốn giới hạn loại dữ liệu đầu vào
+    public ResponseEntity<String> sendAttachmentEmail(@ModelAttribute AttachmentEmailRequest request) {
+        emailService.sendAttachmentsMail(request.getTo(), request.getSubject(), request.getBody(), request.getFilePath());
         return ResponseEntity.ok("Email có file đính kèm đã được gửi!");
     }
 }

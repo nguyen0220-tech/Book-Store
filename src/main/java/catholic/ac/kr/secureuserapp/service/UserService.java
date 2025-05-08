@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
@@ -12,7 +13,6 @@ import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,34 +39,28 @@ public class UserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final ModelMapper modelMapper;
+    private final UserMapper userMapper;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
-    public UserDTO convertToUserDTO(User user) {
-        return modelMapper.map(user, UserDTO.class);
-    }
-
     public ResponseEntity<List<UserDTO>> findAllUsers() {
         List<User> users = userRepository.findAll();
-        List<UserDTO> userDTOs = users.stream()
-                .map(this::convertToUserDTO)
-                .toList();
+        List<UserDTO> userDTOs = userMapper.toDTO(users); // dùng MapStruct
         return ResponseEntity.ok(userDTOs);
     }
 
     public ResponseEntity<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.searchByName(keyword, pageable);
-        Page<UserDTO> result = users.map(this::convertToUserDTO);
+        Page<UserDTO> result = userMapper.toDTO(users); // dùng MapStruct
         return ResponseEntity.ok(result);
     }
 
     public ResponseEntity<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.findByRole(role, pageable);
-        Page<UserDTO> userDTOS = users.map(this::convertToUserDTO);
+        Page<UserDTO> userDTOS = userMapper.toDTO(users); // dùng MapStruct
         return ResponseEntity.ok(userDTOS);
     }
 
