@@ -6,6 +6,7 @@ import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -16,6 +17,7 @@ public class RoleToUserService {
     public final RoleRepository roleRepository;
     public final UserRepository userRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Set<Role> getRoleOfUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException(" User not found: " + username));
@@ -23,6 +25,7 @@ public class RoleToUserService {
         return user.getRoles();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void removeRoleFromUser(String username, String roleName) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
@@ -34,6 +37,7 @@ public class RoleToUserService {
         userRepository.save(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void addRoleToUser(String username, String roleName) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));

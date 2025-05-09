@@ -3,7 +3,6 @@ package catholic.ac.kr.secureuserapp.mapper;
 import catholic.ac.kr.secureuserapp.model.dto.RoleDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 import java.util.Set;
 

@@ -3,7 +3,6 @@ package catholic.ac.kr.secureuserapp.mapper;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -21,7 +20,7 @@ public interface UserMapper {
     //    List
     List<UserDTO> toDTO(List<User> users);
 
-    List<User> toUsers(List<UserDTO> userDTOs);
+    List<User> toUser(List<UserDTO> userDTOs);
 
     //   Custom method xử lý Page
     default Page<UserDTO> toDTO(Page<User> users) {

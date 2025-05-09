@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,14 +14,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileController {
     private final FileService fileService;
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping("upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file")MultipartFile file) {
         String fileName = fileService.storeFile(file);
         return ResponseEntity.ok("Upload thành công: "+fileName);
     }
 
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("download/{filename}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
         Resource resource = fileService.loadFile(filename);

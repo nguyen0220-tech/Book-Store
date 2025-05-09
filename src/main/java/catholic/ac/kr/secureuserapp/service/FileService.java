@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.service;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ public class FileService {
     // Đường dẫn thư mục lưu file (nếu chưa có sẽ tạo mới)
     private final Path rootLocation= Paths.get("uploads");
 
+
     public FileService(){
         try {
             Files.createDirectories(rootLocation);
@@ -26,6 +28,7 @@ public class FileService {
         }
     }
     // Lưu file được upload vào thư mục
+    @PreAuthorize("hasRole('USER')")
     public String storeFile(MultipartFile file){
         try {
             if(file.isEmpty()){
@@ -42,6 +45,7 @@ public class FileService {
         }
     }
     // Tải file từ thư mục để trả về client
+    @PreAuthorize("hasRole('USER')")
     public Resource loadFile(String fileName){
         try {
             Path filePath = rootLocation.resolve(fileName).normalize();

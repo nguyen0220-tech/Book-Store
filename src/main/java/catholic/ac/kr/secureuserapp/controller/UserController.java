@@ -9,7 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +19,11 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("users")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return userService.findAllUsers();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("search-name")
     public ResponseEntity<Page<UserDTO>> getAllUsersByName(
             @RequestParam(defaultValue = "0") int page,
@@ -36,7 +33,6 @@ public class UserController {
         return userService.findAllUsersByNamePaging(page, size, keyword);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("filter-role")
     public ResponseEntity<Page<UserDTO>> getAllUsersByRole(
             @RequestParam(defaultValue = "0") int page,
@@ -46,20 +42,17 @@ public class UserController {
         return userService.findAllUsersByRole(page, size, role);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("{id}")
     public ResponseEntity<?> updateUser(@PathVariable long id, @RequestBody @Valid User user) {
         return userService.updateUser(id, user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         return userService.saveUser(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }

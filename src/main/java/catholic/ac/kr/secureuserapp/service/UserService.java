@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -44,12 +45,14 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<List<UserDTO>> findAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserDTO> userDTOs = userMapper.toDTO(users); // dùng MapStruct
         return ResponseEntity.ok(userDTOs);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.searchByName(keyword, pageable);
@@ -57,6 +60,7 @@ public class UserService {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ResponseEntity<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.findByRole(role, pageable);
@@ -64,6 +68,7 @@ public class UserService {
         return ResponseEntity.ok(userDTOS);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public User saveUser(User user) {
         User newUser = User.builder()
                 .username(user.getUsername())
@@ -73,6 +78,7 @@ public class UserService {
         return userRepository.save(newUser);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(Long id, User user) {
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isEmpty()) {
@@ -86,6 +92,7 @@ public class UserService {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
