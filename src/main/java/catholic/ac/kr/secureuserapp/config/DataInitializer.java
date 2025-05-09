@@ -18,10 +18,10 @@ public class DataInitializer {
     CommandLineRunner initRoles(){
         return args -> {
             if(roleRepository.findByName("ROLE_USER").isEmpty()){
-                roleRepository.save(new Role(null,"ROLE_USER"));
+                roleRepository.save(Role.builder().name("ROLE_USER").build());
             }
             if (roleRepository.findByName("ROLE_ADMIN").isEmpty()){
-                roleRepository.save(new Role(null,"ROLE_ADMIN"));
+                roleRepository.save(Role.builder().name("ROLE_ADMIN").build());
             }
         };
     }
