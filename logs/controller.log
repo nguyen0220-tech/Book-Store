@@ -1,0 +1,2 @@
+2025-05-20 01:13:05 INFO  [http-nio-8080-exec-9] c.a.k.s.controller.UserController - getAllUsers
+2025-05-20 01:13:05 ERROR [http-nio-8080-exec-9] c.a.k.s.controller.UserController - getAllUsers error
