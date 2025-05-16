@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.service;
 
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
@@ -28,10 +29,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -49,55 +52,120 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<List<UserDTO>> findAllUsers() {
+    public ResponseEntity<ApiResponse<List<UserDTO>>> findAllUsers() {
         List<User> users = userRepository.findAll();
+
         List<UserDTO> userDTOs = userMapper.toDTO(users); // dùng MapStruct
-        return ResponseEntity.ok(userDTOs);
+
+        ApiResponse<List<UserDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+
+        apiResponse.setMessage("Lấy danh sách người dùng thành công");
+        apiResponse.setData(userDTOs);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
+    public ResponseEntity<ApiResponse<Page<UserDTO>>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.searchByName(keyword, pageable);
         Page<UserDTO> result = userMapper.toDTO(users); // dùng MapStruct
-        return ResponseEntity.ok(result);
+
+        ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Kết quả tìm kiếm người dùng theo tên");
+        apiResponse.setData(result);
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
+    public ResponseEntity<ApiResponse<Page<UserDTO>>> findAllUsersByRole(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.findByRole(role, pageable);
         Page<UserDTO> userDTOS = userMapper.toDTO(users); // dùng MapStruct
-        return ResponseEntity.ok(userDTOS);
+
+        ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Kết quả lọc người dùng theo giới tính");
+        apiResponse.setData(userDTOS);
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public User saveUser(User user) {
+    public ResponseEntity<ApiResponse<User>> saveUser(User user) {
+        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
+        if (existingUser.isPresent()) {
+            ApiResponse<User> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Người dùng đã tồn tại");
+
+            return ResponseEntity.ok(apiResponse);
+        }
+
         User newUser = User.builder()
                 .username(user.getUsername())
                 .password(passwordEncoder.encode(user.getPassword()))
-                .roles(user.getRoles()) // Gán trực tiếp tập quyền đã chọn
+                .enabled(true) //do admin có quyền thêm vào nên khi thêm tài khoản sẽ được kích hoạt luôn
                 .build();
-        return userRepository.save(newUser);
+
+        User savedUser = userRepository.save(newUser); //lưu lại vào DB
+
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Đã thêm người dùng thành công");
+        apiResponse.setData(savedUser);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateUser(Long id, User user) {
-        Optional<User> userOptional = userRepository.findById(id);
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(Long id, UserDTO userDTO) {
+        Optional<User> userOptional = userRepository.findById(id); // Tìm user theo id trong DB
+
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-        User existingUser = userOptional.get();
-        existingUser.setUsername(user.getUsername());
-        existingUser.setRoles(user.getRoles());
+            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("User not found");
 
-        User updatedUser = userRepository.save(existingUser);
-        return ResponseEntity.ok(updatedUser);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
+        }
+
+        User existingUser = userOptional.get();
+        existingUser.setUsername(userDTO.getUsername());
+
+//        xu li Set<RoleDTO>
+        Set<Role> roles = userDTO.getRoles().stream() // Lấy danh sách RoleDTO từ UserDTO → biến nó thành Stream
+                .map(roleDTO -> roleRepository.findByName(roleDTO.getName()) //Dùng để biến đổi mỗi phần tử RoleDTO thành Role thật sự từ database
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleDTO.getName())))
+                .collect(Collectors.toSet()); //hu thập tất cả các Role từ stream và gom lại thành một Set<Role>
+
+        existingUser.setRoles(roles);
+
+        User updatedUser = userRepository.save(existingUser); // Lưu user đã cập nhật vào database
+
+        UserDTO updatedUserDTO = userMapper.toDTO(updatedUser); // Chuyển đổi entity sang DTO để trả về client
+
+        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Cập nhật user thành công");
+        apiResponse.setData(updatedUserDTO);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
+    @Transactional
+    //là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public ResponseEntity<ApiResponse<User>> deleteUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        userRepository.deleteById(user.getId());
+
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Đã xóa người dùng thành công ");
+        apiResponse.setData(user);
+        return ResponseEntity.ok(apiResponse);
     }
 
     public ResponseEntity<?> signUp(SignupRequest request) {
@@ -184,7 +252,7 @@ public class UserService {
                 }
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
-                        .body("Tài khoản hoặc mật khẩu không đúng ("+count+"/5)");
+                        .body("Tài khoản hoặc mật khẩu không đúng (" + count + "/5)");
             } else {
                 return ResponseEntity
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)

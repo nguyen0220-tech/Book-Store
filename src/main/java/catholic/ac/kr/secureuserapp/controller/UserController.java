@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
 import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
@@ -22,12 +23,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("users")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
         return userService.findAllUsers();
     }
 
     @GetMapping("search-name")
-    public ResponseEntity<Page<UserDTO>> getAllUsersByName(
+    public ResponseEntity<ApiResponse<Page<UserDTO>>> getAllUsersByName(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String keyword
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("filter-role")
-    public ResponseEntity<Page<UserDTO>> getAllUsersByRole(
+    public ResponseEntity<ApiResponse<Page<UserDTO>>> getAllUsersByRole(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String role
@@ -45,18 +46,18 @@ public class UserController {
     }
 
     @PostMapping("{id}")
-    public ResponseEntity<?> updateUser(@PathVariable long id, @RequestBody @Valid User user) {
-        return userService.updateUser(id, user);
+    public ResponseEntity<ApiResponse<UserDTO>> updateUser(@PathVariable long id, @RequestBody @Valid UserDTO userDTO) {
+        return userService.updateUser(id, userDTO);
     }
 
-    @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    @PostMapping("add")
+    public ResponseEntity<ApiResponse<User>> addUser(@Valid @RequestBody User user) {
         return userService.saveUser(user);
     }
 
     @DeleteMapping("{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<ApiResponse<User>> deleteUser(@PathVariable Long id) {
+        return userService.deleteUser(id);
     }
 
     @PostMapping("signup")
