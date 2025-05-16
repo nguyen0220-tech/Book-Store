@@ -11,8 +11,10 @@ import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import catholic.ac.kr.secureuserapp.security.token.TokenService;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,20 +30,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final Map<String, Integer> loginFailCounts = new ConcurrentHashMap<>();
+
+    private final TokenService tokenService;
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final UserMapper userMapper;
-    private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
@@ -118,22 +121,7 @@ public class UserService {
                 .build();
         userRepository.save(user);
 
-        // Tạo token xác thực
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiryTime(LocalDateTime.now().plusDays(1)); //hạn xác thực 1 1day
-
-        verificationTokenRepository.save(verificationToken);
-
-        String verifyLink = "http://localhost:8080/api/verify?token=" + token;
-
-        emailService.sendSimpleMail(
-                user.getUsername(),
-                "Xác nhận tài khoản",
-                "Click vào link để xác thực: " + verifyLink
-        );
+        tokenService.sendUnlockEmail(user);
 
         return ResponseEntity.ok("Đã gửi email xác nhận");
     }
@@ -153,6 +141,11 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(LoginRequest request) {
+        String username = request.getUsername();
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không tồn tại");
+        }
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -163,6 +156,9 @@ public class UserService {
 
             MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            log.info("{}: Đăng nhập thành công.", request.getUsername());
+            loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
             return ResponseEntity.ok(token);
         } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
@@ -170,6 +166,22 @@ public class UserService {
                         .status(HttpStatus.UNAUTHORIZED)
                         .body("Tài khoản chưa được xác thực qua email.");
             } else if (e instanceof BadCredentialsException || (e.getCause() instanceof BadCredentialsException)) {
+                int count = loginFailCounts.getOrDefault(username, 0) + 1;
+                loginFailCounts.put(username, count);
+                log.info("{} Nhập sai mật khẩu lần {}", username, count);
+
+                if (count >= 5) {
+                    log.warn("Tài khoản {} đã nhập sai mật khẩu quá 5 lần. Khóa tạm thời!", username); //log ra file log
+
+                    user.setEnabled(false);
+                    userRepository.save(user);
+
+                    tokenService.sendUnlockEmail(user);
+
+                    return ResponseEntity.status(HttpStatus.LOCKED)
+                            .body("Bạn đã nhập sai mật khẩu quá 5 lần. Tài khoản tạm bị khóa,vui lòng xãc thực qua email."); //hiển thị với người dùng
+
+                }
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
                         .body("Tài khoản hoặc mật khẩu không đúng");

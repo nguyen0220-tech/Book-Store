@@ -15,8 +15,7 @@ public class JwtUtil {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     // Thời gian hết hạn của token là 1 giờ (tính bằng mili-giây)
     private final long EXPIRATION_TIME = 1000 * 60 * 60;
-
-    //  Hàm này dùng để tạo token JWT từ username
+    //  Hàm này dùng để tạo token JWT từ username khi khi đăng nhập thành công
     public String generateToken(String username) {
         return Jwts.builder() //Bắt đầu tạo JWT
                 .setSubject(username) // Đặt thông tin chính là username
