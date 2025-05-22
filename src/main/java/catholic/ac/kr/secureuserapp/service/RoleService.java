@@ -1,5 +1,8 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.mapper.RoleMapper;
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.RoleDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,21 +18,35 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RoleService {
     private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Role>> findAllRoles() {
+    public ResponseEntity<ApiResponse<List<RoleDTO>>> findAllRoles() {
         List<Role> roles = roleRepository.findAll();
+        List<RoleDTO>  roleDTOS = roleMapper.toRole(roles);
 
-        return ResponseEntity.ok(roles);
+        ApiResponse<List<RoleDTO>> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Lấy danh sách role thành công.");
+        apiResponse.setData(roleDTOS);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Role saveRole(Role role) {
+    public ResponseEntity<ApiResponse<Role>> saveRole(Role role) {
         Role newRole = Role.builder()
                 .name(role.getName())
                 .build();
 
-        return roleRepository.save(newRole);
+        roleRepository.save(newRole);
+
+        ApiResponse<Role> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Thêm role thành công");
+        apiResponse.setData(newRole);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -47,7 +64,15 @@ public class RoleService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteRole(Long id) {
-        roleRepository.deleteById(id);
+    public ResponseEntity<ApiResponse<Role>> deleteRole(Long id) {
+        Role role = roleRepository.findById(id).orElseThrow(
+                ()-> new RuntimeException("Role not found"));
+        roleRepository.deleteById(role.getId());
+
+        ApiResponse<Role> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Xóa role thành công");
+
+        return ResponseEntity.ok(apiResponse);
     }
 }

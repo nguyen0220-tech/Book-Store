@@ -1,5 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.RoleDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.service.RoleService;
 import jakarta.validation.Valid;
@@ -16,7 +18,7 @@ public class RoleController {
     public final RoleService roleService;
 
     @GetMapping("roles")
-    public ResponseEntity<List<Role>> getAllRoles() {
+    public ResponseEntity<ApiResponse<List<RoleDTO>>> getAllRoles() {
         return roleService.findAllRoles();
     }
 
@@ -25,16 +27,16 @@ public class RoleController {
         return roleService.updateRole(id, role);
     }
 
-    @PostMapping
-    public Role addRole(@Valid @RequestBody Role role) {
+    @PostMapping("add")
+    public ResponseEntity<ApiResponse<Role>> addRole(@Valid @RequestBody Role role) {
         return roleService.saveRole(role);
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteRole(@PathVariable("id") Long id) {
-        roleService.deleteRole(id);
+    public ResponseEntity<ApiResponse<Role>> deleteRole(@PathVariable("id") Long id) {
+       return roleService.deleteRole(id);
 
-        return ResponseEntity.ok("Role deleted");
+
     }
 
 

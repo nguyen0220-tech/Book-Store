@@ -168,16 +168,20 @@ public class UserService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    public ResponseEntity<?> signUp(SignupRequest request) {
-        System.out.println("Username: " + request.getUsername()); //in ra console username
-        System.out.println("Password: " + request.getPassword()); //in ra console PW
-        System.out.println("Encoded Password: " + passwordEncoder.encode(request.getPassword())); //in ra PW đã mã hóa
+    public ResponseEntity<ApiResponse<UserDTO>> signUp(SignupRequest request) {
+        log.info("Username: {} ", request.getUsername());
+        log.info("Encoded Password: {}", passwordEncoder.encode(request.getPassword()));
 
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Tên người dùng đã được lấy");
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
+        if (userOptional.isPresent()) {
+            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Tên người dùng đã được lấy");
+
+            return ResponseEntity.badRequest().body(apiResponse);
         }
 
-        // Tìm role USER từ DB
+        // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)
         Role defaultRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ROLE_USER trong DB"));
 
@@ -187,17 +191,26 @@ public class UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Set.of(defaultRole))
                 .build();
-        userRepository.save(user);
 
+        userRepository.save(user); //phải lưu vào DB trước rồi mới có thể tạo token gán vào
         tokenService.sendUnlockEmail(user);
 
-        return ResponseEntity.ok("Đã gửi email xác nhận");
+        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Đã gửi email xác nhận");
+        apiResponse.setData(userMapper.toDTO(user));
+
+        return ResponseEntity.ok(apiResponse);
     }
 
-    public ResponseEntity<?> verifyEmail(String token) {
+    public ResponseEntity<ApiResponse<UserDTO>> verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
         if (verificationToken == null || verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("Token không hợp lệ hoặc đã hết hạn");
+            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Token không hợp lệ hoặc đã hết hạn");
+
+            return ResponseEntity.badRequest().body(apiResponse);
         }
         User user = verificationToken.getUser();
         user.setEnabled(true);
@@ -205,7 +218,11 @@ public class UserService {
 
         verificationTokenRepository.delete(verificationToken);//sau khi xac thuc token thi xoa
 
-        return ResponseEntity.ok("Tài khoản đã được xác thực thành công!");
+        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Tài khoản đã được xác thực thành công!");
+        apiResponse.setData(userMapper.toDTO(user));
+        return ResponseEntity.ok(apiResponse);
     }
 
     public ResponseEntity<?> login(LoginRequest request) {
@@ -225,7 +242,6 @@ public class UserService {
             MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails.getUsername());
 
-            log.info("{}: Đăng nhập thành công.", request.getUsername());
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
             return ResponseEntity.ok(token);
         } catch (Exception e) {
