@@ -27,7 +27,7 @@ public class RoleService {
 
         ApiResponse<List<RoleDTO>> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Lấy danh sách role thành công.");
+        apiResponse.setMessage("Roles found");
         apiResponse.setData(roleDTOS);
 
         return ResponseEntity.ok(apiResponse);
@@ -35,6 +35,15 @@ public class RoleService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Role>> saveRole(Role role) {
+        Optional<Role> roleOptional = roleRepository.findByName(role.getName());
+        if (roleOptional.isPresent()) {
+            ApiResponse<Role> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Role already exist.");
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
+        }
+
         Role newRole = Role.builder()
                 .name(role.getName())
                 .build();
@@ -43,35 +52,51 @@ public class RoleService {
 
         ApiResponse<Role> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Thêm role thành công");
+        apiResponse.setMessage("Role created");
         apiResponse.setData(newRole);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<RoleDTO>> updateRole(Long id, RoleDTO roleDTO) {
+        Optional<Role> roleOptional = roleRepository.findById(id); //tìm theo id
+        if (roleOptional.isEmpty()) {
+            ApiResponse<RoleDTO> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Role not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
+        }
+
+        Role existingRole = roleOptional.get(); //lấy Role từ Optional
+        existingRole.setName(roleDTO.getName()); //gán role mới
+        Role updatedRole = roleRepository.save(existingRole); //lưu lại vào DB
+
+        ApiResponse<RoleDTO> apiResponse = new ApiResponse<>();
+        apiResponse.setSuccess(true);
+        apiResponse.setMessage("Role updated");
+        apiResponse.setData(roleMapper.toDTO(updatedRole)); //map user sang dto
 
         return ResponseEntity.ok(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateRole(Long id, Role role) {
-        Optional<Role> roleOptional = roleRepository.findById(id);
-        if (roleOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role not found");
+    public ResponseEntity<ApiResponse<Role>> deleteRole(Long id) {
+        Role role = roleRepository.findById(id).orElse(null);
+        if (role == null) {
+            ApiResponse<Role> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("Role not found");
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
+
         }
 
-        Role existingRole = roleOptional.get();
-        existingRole.setName(role.getName());
-
-        Role updatedRole = roleRepository.save(existingRole);
-        return ResponseEntity.ok(updatedRole);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Role>> deleteRole(Long id) {
-        Role role = roleRepository.findById(id).orElseThrow(
-                ()-> new RuntimeException("Role not found"));
         roleRepository.deleteById(role.getId());
 
         ApiResponse<Role> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Xóa role thành công");
+        apiResponse.setMessage("Delete Role success");
 
         return ResponseEntity.ok(apiResponse);
     }

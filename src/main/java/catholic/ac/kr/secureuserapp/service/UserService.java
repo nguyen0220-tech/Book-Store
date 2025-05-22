@@ -60,7 +60,7 @@ public class UserService {
         ApiResponse<List<UserDTO>> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
 
-        apiResponse.setMessage("Lấy danh sách người dùng thành công");
+        apiResponse.setMessage("Users found");
         apiResponse.setData(userDTOs);
 
         return ResponseEntity.ok(apiResponse);
@@ -74,7 +74,7 @@ public class UserService {
 
         ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Kết quả tìm kiếm người dùng theo tên");
+        apiResponse.setMessage("Users found with name: " + keyword);
         apiResponse.setData(result);
         return ResponseEntity.ok(apiResponse);
     }
@@ -87,7 +87,7 @@ public class UserService {
 
         ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Kết quả lọc người dùng theo giới tính");
+        apiResponse.setMessage("Users found with role " + role);
         apiResponse.setData(userDTOS);
         return ResponseEntity.ok(apiResponse);
     }
@@ -98,9 +98,9 @@ public class UserService {
         if (existingUser.isPresent()) {
             ApiResponse<User> apiResponse = new ApiResponse<>();
             apiResponse.setSuccess(false);
-            apiResponse.setMessage("Người dùng đã tồn tại");
+            apiResponse.setMessage(user.getUsername()+" already exists");
 
-            return ResponseEntity.ok(apiResponse);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
         }
 
         User newUser = User.builder()
@@ -113,10 +113,10 @@ public class UserService {
 
         ApiResponse<User> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Đã thêm người dùng thành công");
+        apiResponse.setMessage(user.getUsername()+" created successfully");
         apiResponse.setData(savedUser);
 
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -126,7 +126,7 @@ public class UserService {
         if (userOptional.isEmpty()) {
             ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
             apiResponse.setSuccess(false);
-            apiResponse.setMessage("User not found");
+            apiResponse.setMessage(userDTO.getUsername()+" not found");
 
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
         }
@@ -148,7 +148,7 @@ public class UserService {
 
         ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Cập nhật user thành công");
+        apiResponse.setMessage(userDTO.getUsername()+" updated");
         apiResponse.setData(updatedUserDTO);
 
         return ResponseEntity.ok(apiResponse);
@@ -158,12 +158,20 @@ public class UserService {
     //là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<User>> deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            ApiResponse<User> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage("User not found with id: " + id);
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
+        }
+
         userRepository.deleteById(user.getId());
 
         ApiResponse<User> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Đã xóa người dùng thành công ");
+        apiResponse.setMessage("User deleted with id: " + id);
         apiResponse.setData(user);
         return ResponseEntity.ok(apiResponse);
     }
@@ -176,9 +184,9 @@ public class UserService {
         if (userOptional.isPresent()) {
             ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
             apiResponse.setSuccess(false);
-            apiResponse.setMessage("Tên người dùng đã được lấy");
+            apiResponse.setMessage(request.getUsername()+" already exists");
 
-            return ResponseEntity.badRequest().body(apiResponse);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
         }
 
         // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)
@@ -197,7 +205,7 @@ public class UserService {
 
         ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Đã gửi email xác nhận");
+        apiResponse.setMessage("Sent to " +request.getUsername()+"  successfully");
         apiResponse.setData(userMapper.toDTO(user));
 
         return ResponseEntity.ok(apiResponse);
@@ -220,7 +228,7 @@ public class UserService {
 
         ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
         apiResponse.setSuccess(true);
-        apiResponse.setMessage("Tài khoản đã được xác thực thành công!");
+        apiResponse.setMessage(user.getUsername()+" verified successfully");
         apiResponse.setData(userMapper.toDTO(user));
         return ResponseEntity.ok(apiResponse);
     }
@@ -229,7 +237,10 @@ public class UserService {
         String username = request.getUsername();
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không tồn tại");
+            ApiResponse<LoginRequest> apiResponse = new ApiResponse<>();
+            apiResponse.setSuccess(false);
+            apiResponse.setMessage(request.getUsername()+" not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
         }
         try {
             Authentication authentication = authenticationManager.authenticate(

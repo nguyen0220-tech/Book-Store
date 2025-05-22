@@ -22,9 +22,9 @@ public class RoleController {
         return roleService.findAllRoles();
     }
 
-    @PostMapping("{id}")
-    public ResponseEntity<?> updateRole(@PathVariable("id") Long id, @Valid @RequestBody Role role) {
-        return roleService.updateRole(id, role);
+    @PostMapping("update/{id}")
+    public ResponseEntity<ApiResponse<RoleDTO>> updateRole(@PathVariable("id") Long id, @Valid @RequestBody RoleDTO roleDTO) {
+        return roleService.updateRole(id, roleDTO);
     }
 
     @PostMapping("add")
