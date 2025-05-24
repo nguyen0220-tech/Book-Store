@@ -251,7 +251,13 @@ public class UserService {
             );
 
             MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+
+            // Tạo claims bổ sung (userId,username, roles, ...)
+            Map<String,Object> claims = new HashMap<>();
+            claims.put("id", user.getId());
+            claims.put("username",user.getUsername());
+            claims.put("roles",user.getRoles());
+            String token = jwtUtil.generateToken(userDetails.getUsername(),claims);
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
             return ResponseEntity.ok(token);
