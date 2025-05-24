@@ -1,11 +1,11 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -18,15 +18,15 @@ public class RoleToUserService {
     public final UserRepository userRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Set<Role> getRoleOfUser(String username) {
+    public ApiResponse<Set<Role>> getRoleOfUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException(" User not found: " + username));
 
-        return user.getRoles();
+        return ApiResponse.success("Get role of user successfully", user.getRoles());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void removeRoleFromUser(String username, String roleName) {
+    public ApiResponse<?> removeRoleFromUser(String username, String roleName) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
@@ -35,10 +35,11 @@ public class RoleToUserService {
 
         user.getRoles().remove(role);
         userRepository.save(user);
+        return ApiResponse.success("Role removed successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public void addRoleToUser(String username, String roleName) {
+    public ApiResponse<?> addRoleToUser(String username, String roleName) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
@@ -47,5 +48,7 @@ public class RoleToUserService {
 
         user.getRoles().add(role);
         userRepository.save(user);
+
+        return ApiResponse.success("Role added successfully");
     }
 }

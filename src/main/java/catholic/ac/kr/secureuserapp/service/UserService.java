@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
@@ -19,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -52,55 +51,41 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<ApiResponse<List<UserDTO>>> findAllUsers() {
+    public ApiResponse<List<UserDTO>> findAllUsers() {
         List<User> users = userRepository.findAll();
 
         List<UserDTO> userDTOs = userMapper.toDTO(users); // dùng MapStruct
 
-        ApiResponse<List<UserDTO>> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-
-        apiResponse.setMessage("Users found");
-        apiResponse.setData(userDTOs);
-
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("Users found",userDTOs);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<ApiResponse<Page<UserDTO>>> findAllUsersByNamePaging(int page, int size, String keyword) {
+    public ApiResponse<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.searchByName(keyword, pageable);
         Page<UserDTO> result = userMapper.toDTO(users); // dùng MapStruct
 
-        ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Users found with name: " + keyword);
-        apiResponse.setData(result);
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("Users found with name: " + keyword,result);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ResponseEntity<ApiResponse<Page<UserDTO>>> findAllUsersByRole(int page, int size, String role) {
+    public ApiResponse<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.findByRole(role, pageable);
         Page<UserDTO> userDTOS = userMapper.toDTO(users); // dùng MapStruct
 
-        ApiResponse<Page<UserDTO>> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Users found with role " + role);
-        apiResponse.setData(userDTOS);
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("Users found with role " + role,userDTOS);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<User>> saveUser(User user) {
+    public ApiResponse<Object> saveUser(User user) {
         Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser.isPresent()) {
-            ApiResponse<User> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage(user.getUsername()+" already exists");
+//        if (existingUser.isPresent()) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(" already exists"));
+//        }
 
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
+        if (existingUser.isPresent()) {
+            return ApiResponse.error(" already exists");
         }
 
         User newUser = User.builder()
@@ -111,82 +96,51 @@ public class UserService {
 
         User savedUser = userRepository.save(newUser); //lưu lại vào DB
 
-        ApiResponse<User> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage(user.getUsername()+" created successfully");
-        apiResponse.setData(savedUser);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+        return ApiResponse.success("User created successfully",savedUser);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserDTO>> updateUser(Long id, UserDTO userDTO) {
-        Optional<User> userOptional = userRepository.findById(id); // Tìm user theo id trong DB
+    public ApiResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(()-> new  ResourceNotFoundException("User not found")); // Tìm user theo id trong DB
 
-        if (userOptional.isEmpty()) {
-            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage(userDTO.getUsername()+" not found");
 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
-        }
-
-        User existingUser = userOptional.get();
-        existingUser.setUsername(userDTO.getUsername());
+        user.setUsername(userDTO.getUsername());
 
 //        xu li Set<RoleDTO>
         Set<Role> roles = userDTO.getRoles().stream() // Lấy danh sách RoleDTO từ UserDTO → biến nó thành Stream
                 .map(roleDTO -> roleRepository.findByName(roleDTO.getName()) //Dùng để biến đổi mỗi phần tử RoleDTO thành Role thật sự từ database
-                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleDTO.getName())))
+                        .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleDTO.getName())))
                 .collect(Collectors.toSet()); //hu thập tất cả các Role từ stream và gom lại thành một Set<Role>
 
-        existingUser.setRoles(roles);
+        user.setRoles(roles);
 
-        User updatedUser = userRepository.save(existingUser); // Lưu user đã cập nhật vào database
+        User updatedUser = userRepository.save(user); // Lưu user đã cập nhật vào database
 
         UserDTO updatedUserDTO = userMapper.toDTO(updatedUser); // Chuyển đổi entity sang DTO để trả về client
 
-        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage(userDTO.getUsername()+" updated");
-        apiResponse.setData(updatedUserDTO);
-
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("User updated successfully",updatedUserDTO);
     }
 
+    //@Transactional là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @Transactional
-    //là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<User>> deleteUser(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            ApiResponse<User> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage("User not found with id: " + id);
-
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
-        }
+    public ApiResponse<User> deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(()-> new  ResourceNotFoundException("User not found"));
 
         userRepository.deleteById(user.getId());
 
-        ApiResponse<User> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("User deleted with id: " + id);
-        apiResponse.setData(user);
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("User deleted successfully",user);
     }
 
-    public ResponseEntity<ApiResponse<UserDTO>> signUp(SignupRequest request) {
+    public ApiResponse<UserDTO> signUp(SignupRequest request) {
         log.info("Username: {} ", request.getUsername());
         log.info("Encoded Password: {}", passwordEncoder.encode(request.getPassword()));
 
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
-            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage(request.getUsername()+" already exists");
-
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
+            return ApiResponse.error(request.getUsername()+" already exists");
         }
 
         // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)
@@ -203,45 +157,29 @@ public class UserService {
         userRepository.save(user); //phải lưu vào DB trước rồi mới có thể tạo token gán vào
         tokenService.sendUnlockEmail(user);
 
-        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage("Sent to " +request.getUsername()+"  successfully");
-        apiResponse.setData(userMapper.toDTO(user));
-
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success("Sent email to "+user.getUsername()+" successfully");
     }
 
-    public ResponseEntity<ApiResponse<UserDTO>> verifyEmail(String token) {
+    public ApiResponse<UserDTO> verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
         if (verificationToken == null || verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage("Token không hợp lệ hoặc đã hết hạn");
-
-            return ResponseEntity.badRequest().body(apiResponse);
+            return ApiResponse.error("Token already expired/Token không hợp lệ hoặc đã hết hạn");
         }
+
         User user = verificationToken.getUser();
         user.setEnabled(true);
         userRepository.save(user);
 
         verificationTokenRepository.delete(verificationToken);//sau khi xac thuc token thi xoa
 
-        ApiResponse<UserDTO> apiResponse = new ApiResponse<>();
-        apiResponse.setSuccess(true);
-        apiResponse.setMessage(user.getUsername()+" verified successfully");
-        apiResponse.setData(userMapper.toDTO(user));
-        return ResponseEntity.ok(apiResponse);
+        return ApiResponse.success(user.getUsername()+" verified successfully");
     }
 
-    public ResponseEntity<?> login(LoginRequest request) {
+    public ApiResponse<Object> login(LoginRequest request) {
         String username = request.getUsername();
-        User user = userRepository.findByUsername(username).orElse(null);
-        if (user == null) {
-            ApiResponse<LoginRequest> apiResponse = new ApiResponse<>();
-            apiResponse.setSuccess(false);
-            apiResponse.setMessage(request.getUsername()+" not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
-        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -260,12 +198,11 @@ public class UserService {
             String token = jwtUtil.generateToken(userDetails.getUsername(),claims);
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
-            return ResponseEntity.ok(token);
+            return ApiResponse.success("Login successful",Map.of("token",token));
         } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
-                return ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .body("Tài khoản chưa được xác thực qua email.");
+                return ApiResponse.error("Tài khoản chưa được xác thực qua email.");
+
             } else if (e instanceof BadCredentialsException || (e.getCause() instanceof BadCredentialsException)) {
                 int count = loginFailCounts.getOrDefault(username, 0) + 1;
                 loginFailCounts.put(username, count);
@@ -279,17 +216,12 @@ public class UserService {
 
                     tokenService.sendUnlockEmail(user);
 
-                    return ResponseEntity.status(HttpStatus.LOCKED)
-                            .body("Bạn đã nhập sai mật khẩu quá 5 lần. Tài khoản tạm bị khóa,vui lòng xãc thực qua email."); //hiển thị với người dùng
+                    return ApiResponse.error("Bạn đã nhập sai mật khẩu quá 5 lần. Tài khoản tạm bị khóa,vui lòng xãc thực qua email."); //hiển thị với người dùng
 
                 }
-                return ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .body("Tài khoản hoặc mật khẩu không đúng (" + count + "/5)");
+                return ApiResponse.error("Tài khoản hoặc mật khẩu không đúng (" + count + "/5)");
             } else {
-                return ResponseEntity
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Có lỗi xảy ra khi đăng nhập.");
+                return ApiResponse.error("Có lỗi xảy ra khi đăng nhập");
             }
         }
     }

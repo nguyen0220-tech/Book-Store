@@ -19,22 +19,22 @@ public class RoleController {
 
     @GetMapping("roles")
     public ResponseEntity<ApiResponse<List<RoleDTO>>> getAllRoles() {
-        return roleService.findAllRoles();
+        return ResponseEntity.ok(roleService.findAllRoles());
     }
 
     @PostMapping("update/{id}")
     public ResponseEntity<ApiResponse<RoleDTO>> updateRole(@PathVariable("id") Long id, @Valid @RequestBody RoleDTO roleDTO) {
-        return roleService.updateRole(id, roleDTO);
+        return ResponseEntity.ok(roleService.updateRole(id, roleDTO));
     }
 
     @PostMapping("add")
     public ResponseEntity<ApiResponse<Role>> addRole(@Valid @RequestBody Role role) {
-        return roleService.saveRole(role);
+        return ResponseEntity.ok(roleService.saveRole(role));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<Role>> deleteRole(@PathVariable("id") Long id) {
-       return roleService.deleteRole(id);
+       return ResponseEntity.ok(roleService.deleteRole(id));
 
 
     }

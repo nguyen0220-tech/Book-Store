@@ -24,7 +24,7 @@ public class UserController {
 
     @GetMapping("users")
     public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
-        return userService.findAllUsers();
+        return ResponseEntity.ok(userService.findAllUsers());
     }
 
     @GetMapping("search-name")
@@ -33,7 +33,7 @@ public class UserController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String keyword
     ) {
-        return userService.findAllUsersByNamePaging(page, size, keyword);
+        return ResponseEntity.ok(userService.findAllUsersByNamePaging(page, size, keyword));
     }
 
     @GetMapping("filter-role")
@@ -42,37 +42,37 @@ public class UserController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String role
     ) {
-        return userService.findAllUsersByRole(page, size, role);
+        return ResponseEntity.ok(userService.findAllUsersByRole(page, size, role));
     }
 
     @PostMapping("{id}")
     public ResponseEntity<ApiResponse<UserDTO>> updateUser(@PathVariable long id, @RequestBody @Valid UserDTO userDTO) {
-        return userService.updateUser(id, userDTO);
+        return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
     @PostMapping("add")
-    public ResponseEntity<ApiResponse<User>> addUser(@Valid @RequestBody User user) {
-        return userService.saveUser(user);
+    public ResponseEntity<ApiResponse<Object>> addUser(@Valid @RequestBody User user) {
+        return ResponseEntity.ok(userService.saveUser(user));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<User>> deleteUser(@PathVariable Long id) {
-        return userService.deleteUser(id);
+        return ResponseEntity.ok(userService.deleteUser(id));
     }
 
     @PostMapping("signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
-        return userService.signUp(request);
+    public ResponseEntity<ApiResponse<?>> signup(@Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.ok(userService.signUp(request));
     }
 
     @GetMapping("verify")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        return userService.verifyEmail(token);
+    public ResponseEntity<ApiResponse<?>> verifyEmail(@RequestParam String token) {
+        return ResponseEntity.ok(userService.verifyEmail(token));
     }
 
     @PostMapping("login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        return userService.login(request);
+    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 
 
