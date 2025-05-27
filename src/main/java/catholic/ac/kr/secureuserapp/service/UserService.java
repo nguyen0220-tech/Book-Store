@@ -57,7 +57,7 @@ public class UserService {
 
         List<UserDTO> userDTOs = userMapper.toDTO(users); // dùng MapStruct
 
-        return ApiResponse.success("Users found",userDTOs);
+        return ApiResponse.success("Users found", userDTOs);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -66,7 +66,7 @@ public class UserService {
         Page<User> users = userRepository.searchByName(keyword, pageable);
         Page<UserDTO> result = userMapper.toDTO(users); // dùng MapStruct
 
-        return ApiResponse.success("Users found with name: " + keyword,result);
+        return ApiResponse.success("Users found with name: " + keyword, result);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -75,14 +75,14 @@ public class UserService {
         Page<User> users = userRepository.findByRole(role, pageable);
         Page<UserDTO> userDTOS = userMapper.toDTO(users); // dùng MapStruct
 
-        return ApiResponse.success("Users found with role " + role,userDTOS);
+        return ApiResponse.success("Users found with role " + role, userDTOS);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> saveUser(User user) {
-       if( userRepository.findByUsername(user.getUsername()).isPresent()) {
-                throw  new AlreadyExistsException("User already exists");
-       }
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new AlreadyExistsException("User already exists");
+        }
 
         User newUser = User.builder()
                 .username(user.getUsername())
@@ -95,13 +95,13 @@ public class UserService {
 
         UserDTO userDTO = userMapper.toDTO(savedUser);
 
-        return ApiResponse.success("User created successfully",userDTO);
+        return ApiResponse.success("User created successfully", userDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)
-                .orElseThrow(()-> new  ResourceNotFoundException("User not found")); // Tìm user theo id trong DB
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")); // Tìm user theo id trong DB
 
 
         user.setUsername(userDTO.getUsername());
@@ -118,7 +118,7 @@ public class UserService {
 
         UserDTO updatedUserDTO = userMapper.toDTO(updatedUser); // Chuyển đổi entity sang DTO để trả về client
 
-        return ApiResponse.success("User updated successfully",updatedUserDTO);
+        return ApiResponse.success("User updated successfully", updatedUserDTO);
     }
 
     //@Transactional là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
@@ -126,13 +126,13 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> deleteUser(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(()-> new  ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         userRepository.deleteById(user.getId());
 
         UserDTO userDTO = userMapper.toDTO(user);
 
-        return ApiResponse.success("User deleted successfully",userDTO);
+        return ApiResponse.success("User deleted successfully", userDTO);
     }
 
     public ApiResponse<UserDTO> signUp(SignupRequest request) {
@@ -141,7 +141,7 @@ public class UserService {
 
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
-            throw  new AlreadyExistsException("User already exists");
+            throw new AlreadyExistsException("User already exists");
         }
 
         // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)
@@ -158,7 +158,7 @@ public class UserService {
         userRepository.save(user); //phải lưu vào DB trước rồi mới có thể tạo token gán vào
         tokenService.sendUnlockEmail(user);
 
-        return ApiResponse.success("Sent email to "+user.getUsername()+" successfully");
+        return ApiResponse.success("Sent email to " + user.getUsername() + " successfully");
     }
 
     public ApiResponse<UserDTO> verifyEmail(String token) {
@@ -173,13 +173,13 @@ public class UserService {
 
         verificationTokenRepository.delete(verificationToken);//sau khi xac thuc token thi xoa
 
-        return ApiResponse.success(user.getUsername()+" verified successfully");
+        return ApiResponse.success(user.getUsername() + " verified successfully");
     }
 
-    public ApiResponse<Object> login(LoginRequest request) {
+    public ApiResponse<Map<String,String>> login(LoginRequest request) {
         String username = request.getUsername();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -192,14 +192,14 @@ public class UserService {
             MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
 
             // Tạo claims bổ sung (userId,username, roles, ...)
-            Map<String,Object> claims = new HashMap<>();
+            Map<String, Object> claims = new HashMap<>();
             claims.put("id", user.getId());
-            claims.put("username",user.getUsername());
-            claims.put("roles",user.getRoles());
-            String token = jwtUtil.generateToken(userDetails.getUsername(),claims);
+            claims.put("username", user.getUsername());
+            claims.put("roles", user.getRoles());
+            String token = jwtUtil.generateToken(userDetails.getUsername(), claims);
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
-            return ApiResponse.success("Login successful",Map.of("token",token));
+            return ApiResponse.success("Login successful", Map.of("token", token));
         } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
                 return ApiResponse.error("Tài khoản chưa được xác thực qua email.");
