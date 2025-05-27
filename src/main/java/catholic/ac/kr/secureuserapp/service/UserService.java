@@ -75,34 +75,30 @@ public class UserService {
         Page<User> users = userRepository.findByRole(role, pageable);
         Page<UserDTO> userDTOS = userMapper.toDTO(users); // dùng MapStruct
 
-        return ApiResponse.success("Users found with role " + role, userDTOS);
+        return ApiResponse.success("Users found with role: " + role, userDTOS);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> saveUser(User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new AlreadyExistsException("User already exists");
+            throw new AlreadyExistsException(user.getUsername() + " already exists");
         }
 
         User newUser = User.builder()
                 .username(user.getUsername())
                 .password(passwordEncoder.encode(user.getPassword()))
-                .roles(user.getRoles())
                 .enabled(true) //do admin có quyền thêm vào nên khi thêm tài khoản sẽ được kích hoạt luôn
                 .build();
 
-        User savedUser = userRepository.save(newUser); //lưu lại vào DB
+        userRepository.save(newUser); //lưu lại vào DB
 
-        UserDTO userDTO = userMapper.toDTO(savedUser);
-
-        return ApiResponse.success("User created successfully", userDTO);
+        return ApiResponse.success("User created successfully");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> updateUser(Long id, UserDTO userDTO) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found")); // Tìm user theo id trong DB
-
 
         user.setUsername(userDTO.getUsername());
 
@@ -130,9 +126,7 @@ public class UserService {
 
         userRepository.deleteById(user.getId());
 
-        UserDTO userDTO = userMapper.toDTO(user);
-
-        return ApiResponse.success("User deleted successfully", userDTO);
+        return ApiResponse.success("User deleted successfully");
     }
 
     public ApiResponse<UserDTO> signUp(SignupRequest request) {
@@ -176,7 +170,7 @@ public class UserService {
         return ApiResponse.success(user.getUsername() + " verified successfully");
     }
 
-    public ApiResponse<Map<String,String>> login(LoginRequest request) {
+    public ApiResponse<Map<String, String>> login(LoginRequest request) {
         String username = request.getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

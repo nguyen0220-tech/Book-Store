@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.RoleMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
@@ -31,7 +32,7 @@ public class RoleService {
     public ApiResponse<Role> saveRole(Role role) {
         Optional<Role> roleOptional = roleRepository.findByName(role.getName());
         if (roleOptional.isPresent()) {
-            return ApiResponse.error("Role already exits");
+            throw new AlreadyExistsException(role.getName()+" already exists");
         }
 
         Role newRole = Role.builder()
@@ -40,7 +41,7 @@ public class RoleService {
 
         roleRepository.save(newRole);
 
-        return ApiResponse.success("Role created",newRole);
+        return ApiResponse.success("Role created");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -50,8 +51,9 @@ public class RoleService {
 
         role.setName(roleDTO.getName());
         Role updatedRole = roleRepository.save(role);
+        RoleDTO updatedRoleDTO=roleMapper.toDTO(updatedRole);
 
-        return ApiResponse.success("Role updated", roleMapper.toDTO(updatedRole));
+        return ApiResponse.success("Role updated", updatedRoleDTO);
     }
 
 
@@ -60,9 +62,8 @@ public class RoleService {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-
         roleRepository.deleteById(role.getId());
 
-        return ApiResponse.success("Role deleted",role);
+        return ApiResponse.success("Role deleted");
     }
 }
