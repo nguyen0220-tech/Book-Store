@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
@@ -78,25 +79,23 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<Object> saveUser(User user) {
-        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
-//        if (existingUser.isPresent()) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(" already exists"));
-//        }
-
-        if (existingUser.isPresent()) {
-            return ApiResponse.error(" already exists");
-        }
+    public ApiResponse<UserDTO> saveUser(User user) {
+       if( userRepository.findByUsername(user.getUsername()).isPresent()) {
+                throw  new AlreadyExistsException("User already exists");
+       }
 
         User newUser = User.builder()
                 .username(user.getUsername())
                 .password(passwordEncoder.encode(user.getPassword()))
+                .roles(user.getRoles())
                 .enabled(true) //do admin có quyền thêm vào nên khi thêm tài khoản sẽ được kích hoạt luôn
                 .build();
 
         User savedUser = userRepository.save(newUser); //lưu lại vào DB
 
-        return ApiResponse.success("User created successfully",savedUser);
+        UserDTO userDTO = userMapper.toDTO(savedUser);
+
+        return ApiResponse.success("User created successfully",userDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -125,13 +124,15 @@ public class UserService {
     //@Transactional là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<User> deleteUser(Long id) {
+    public ApiResponse<UserDTO> deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(()-> new  ResourceNotFoundException("User not found"));
 
         userRepository.deleteById(user.getId());
 
-        return ApiResponse.success("User deleted successfully",user);
+        UserDTO userDTO = userMapper.toDTO(user);
+
+        return ApiResponse.success("User deleted successfully",userDTO);
     }
 
     public ApiResponse<UserDTO> signUp(SignupRequest request) {
@@ -140,7 +141,7 @@ public class UserService {
 
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
         if (userOptional.isPresent()) {
-            return ApiResponse.error(request.getUsername()+" already exists");
+            throw  new AlreadyExistsException("User already exists");
         }
 
         // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)

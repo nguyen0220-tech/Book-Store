@@ -51,12 +51,12 @@ public class UserController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<ApiResponse<Object>> addUser(@Valid @RequestBody User user) {
+    public ResponseEntity<ApiResponse<?>> addUser(@Valid @RequestBody User user) {
         return ResponseEntity.ok(userService.saveUser(user));
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<ApiResponse<User>> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserDTO>> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUser(id));
     }
 

@@ -2021,3 +2021,231 @@ Caused by: org.hibernate.TransientObjectException: persistent instance reference
 2025-05-24 14:48:41 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2025-05-24 14:48:41 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2025-05-24 14:48:41 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-05-27 13:18:05 INFO  [background-preinit] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2025-05-27 13:18:05 INFO  [main] c.a.kr.secureuserapp.UserApplication - Starting UserApplication using Java 22.0.2 with PID 15876 (C:\Users\nvtuy\IdeaProjects\user\target\classes started by nvtuy in C:\Users\nvtuy\IdeaProjects\user)
+2025-05-27 13:18:05 INFO  [main] c.a.kr.secureuserapp.UserApplication - No active profile set, falling back to 1 default profile: "default"
+2025-05-27 13:18:06 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-27 13:18:06 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 93 ms. Found 3 JPA repository interfaces.
+2025-05-27 13:18:07 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-05-27 13:18:07 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:18:07 INFO  [main] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-05-27 13:18:07 INFO  [main] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-05-27 13:18:08 INFO  [main] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-05-27 13:18:08 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2407 ms
+2025-05-27 13:18:08 INFO  [main] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-27 13:18:08 INFO  [main] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-05-27 13:18:08 INFO  [main] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-05-27 13:18:09 INFO  [main] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-27 13:18:09 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-05-27 13:18:10 INFO  [main] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 810763c7-fe2d-464d-be36-54c8a68b09b8
+2025-05-27 13:18:10 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-05-27 13:18:10 INFO  [main] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-05-27 13:18:12 INFO  [main] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-27 13:18:13 INFO  [main] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:18:14 INFO  [main] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-27 13:18:15 INFO  [main] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-05-27 13:18:15 WARN  [main] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2025-05-27 13:18:15 WARN  [main] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-27 13:18:16 INFO  [main] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-05-27 13:18:17 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:18:17 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-05-27 13:18:17 INFO  [main] c.a.kr.secureuserapp.UserApplication - Started UserApplication in 12.422 seconds (process running for 14.254)
+2025-05-27 13:18:19 INFO  [http-nio-8080-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-27 13:18:19 INFO  [http-nio-8080-exec-4] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-05-27 13:18:19 INFO  [http-nio-8080-exec-4] o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-05-27 13:18:20 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.login(catholic.ac.kr.secureuserapp.model.dto.LoginRequest)
+2025-05-27 13:18:20 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.login(catholic.ac.kr.secureuserapp.model.dto.LoginRequest)
+2025-05-27 13:18:21 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.login(catholic.ac.kr.secureuserapp.model.dto.LoginRequest) | Thời gian: 991ms
+2025-05-27 13:18:21 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.login(catholic.ac.kr.secureuserapp.model.dto.LoginRequest) | Thời gian: 994ms
+2025-05-27 13:18:46 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.updateUser(long,catholic.ac.kr.secureuserapp.model.dto.UserDTO)
+2025-05-27 13:18:46 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.updateUser(java.lang.Long,catholic.ac.kr.secureuserapp.model.dto.UserDTO)
+2025-05-27 13:18:46 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.updateUser(java.lang.Long,catholic.ac.kr.secureuserapp.model.dto.UserDTO) | Thời gian: 105ms
+2025-05-27 13:18:46 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.updateUser(long,catholic.ac.kr.secureuserapp.model.dto.UserDTO) | Thời gian: 152ms
+2025-05-27 13:20:00 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:20:00 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:20:00 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 220ms
+2025-05-27 13:20:00 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 222ms
+2025-05-27 13:20:05 INFO  [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-05-27 13:20:05 INFO  [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-05-27 13:20:05 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:20:05 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-05-27 13:20:05 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-05-27 13:22:38 INFO  [background-preinit] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2025-05-27 13:22:38 INFO  [main] c.a.kr.secureuserapp.UserApplication - Starting UserApplication using Java 22.0.2 with PID 18120 (C:\Users\nvtuy\IdeaProjects\user\target\classes started by nvtuy in C:\Users\nvtuy\IdeaProjects\user)
+2025-05-27 13:22:38 INFO  [main] c.a.kr.secureuserapp.UserApplication - No active profile set, falling back to 1 default profile: "default"
+2025-05-27 13:22:39 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-27 13:22:40 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 106 ms. Found 3 JPA repository interfaces.
+2025-05-27 13:22:41 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-05-27 13:22:41 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:22:41 INFO  [main] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-05-27 13:22:41 INFO  [main] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-05-27 13:22:41 INFO  [main] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-05-27 13:22:41 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2113 ms
+2025-05-27 13:22:41 INFO  [main] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-27 13:22:41 INFO  [main] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-05-27 13:22:41 INFO  [main] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-05-27 13:22:41 INFO  [main] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-27 13:22:41 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-05-27 13:22:42 INFO  [main] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 4c7d625c-3347-4820-8db2-f91f1ec1d562
+2025-05-27 13:22:42 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-05-27 13:22:42 INFO  [main] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-05-27 13:22:43 INFO  [main] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-27 13:22:44 INFO  [main] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:22:44 INFO  [main] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-27 13:22:45 INFO  [main] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-05-27 13:22:45 WARN  [main] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2025-05-27 13:22:46 WARN  [main] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-27 13:22:46 INFO  [main] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-05-27 13:22:47 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:22:47 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-05-27 13:22:47 INFO  [main] c.a.kr.secureuserapp.UserApplication - Started UserApplication in 8.993 seconds (process running for 10.813)
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 179ms
+2025-05-27 13:23:00 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 215ms
+2025-05-27 13:23:31 INFO  [http-nio-8080-exec-3] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:23:31 INFO  [http-nio-8080-exec-3] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:23:31 INFO  [http-nio-8080-exec-3] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 157ms
+2025-05-27 13:23:31 INFO  [http-nio-8080-exec-3] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 158ms
+2025-05-27 13:24:26 INFO  [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-05-27 13:24:26 INFO  [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-05-27 13:24:26 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:24:26 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-05-27 13:24:26 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-05-27 13:24:32 INFO  [background-preinit] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2025-05-27 13:24:32 INFO  [main] c.a.kr.secureuserapp.UserApplication - Starting UserApplication using Java 22.0.2 with PID 17856 (C:\Users\nvtuy\IdeaProjects\user\target\classes started by nvtuy in C:\Users\nvtuy\IdeaProjects\user)
+2025-05-27 13:24:32 INFO  [main] c.a.kr.secureuserapp.UserApplication - No active profile set, falling back to 1 default profile: "default"
+2025-05-27 13:24:33 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-27 13:24:33 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 107 ms. Found 3 JPA repository interfaces.
+2025-05-27 13:24:34 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-05-27 13:24:34 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:24:34 INFO  [main] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-05-27 13:24:34 INFO  [main] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-05-27 13:24:34 INFO  [main] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-05-27 13:24:34 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2067 ms
+2025-05-27 13:24:34 INFO  [main] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-27 13:24:34 INFO  [main] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-05-27 13:24:34 INFO  [main] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-05-27 13:24:35 INFO  [main] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-27 13:24:35 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-05-27 13:24:35 INFO  [main] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 51e44843-9779-400f-9d27-10f4cc62bbe5
+2025-05-27 13:24:35 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-05-27 13:24:35 INFO  [main] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-05-27 13:24:36 INFO  [main] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-27 13:24:38 INFO  [main] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:24:38 INFO  [main] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-27 13:24:39 INFO  [main] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-05-27 13:24:39 WARN  [main] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2025-05-27 13:24:40 WARN  [main] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-27 13:24:40 INFO  [main] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-05-27 13:24:41 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:24:41 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-05-27 13:24:41 INFO  [main] c.a.kr.secureuserapp.UserApplication - Started UserApplication in 9.88 seconds (process running for 10.643)
+2025-05-27 13:24:54 INFO  [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-27 13:24:54 INFO  [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-05-27 13:24:54 INFO  [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2025-05-27 13:24:55 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:24:55 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:25:09 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:25:09 INFO  [http-nio-8080-exec-7] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:26:15 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:26:15 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User)
+2025-05-27 13:26:15 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.saveUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 225ms
+2025-05-27 13:26:15 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.addUser(catholic.ac.kr.secureuserapp.model.entity.User) | Thời gian: 227ms
+2025-05-27 13:29:12 INFO  [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-05-27 13:29:12 INFO  [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-05-27 13:29:12 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:29:12 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-05-27 13:29:12 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-05-27 13:34:47 INFO  [background-preinit] o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2025-05-27 13:34:47 INFO  [main] c.a.kr.secureuserapp.UserApplication - Starting UserApplication using Java 22.0.2 with PID 19216 (C:\Users\nvtuy\IdeaProjects\user\target\classes started by nvtuy in C:\Users\nvtuy\IdeaProjects\user)
+2025-05-27 13:34:47 INFO  [main] c.a.kr.secureuserapp.UserApplication - No active profile set, falling back to 1 default profile: "default"
+2025-05-27 13:34:48 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-27 13:34:48 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 93 ms. Found 3 JPA repository interfaces.
+2025-05-27 13:34:49 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-05-27 13:34:49 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:34:49 INFO  [main] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-05-27 13:34:49 INFO  [main] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-05-27 13:34:49 INFO  [main] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-05-27 13:34:49 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1970 ms
+2025-05-27 13:34:50 INFO  [main] o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-27 13:34:50 INFO  [main] org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-05-27 13:34:50 INFO  [main] o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-05-27 13:34:50 INFO  [main] o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-27 13:34:50 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-05-27 13:34:50 INFO  [main] com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 19da5832-5418-4f32-9386-4fe7e9dd122b
+2025-05-27 13:34:50 INFO  [main] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-05-27 13:34:51 INFO  [main] o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-05-27 13:34:52 INFO  [main] o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-27 13:34:53 INFO  [main] o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:34:53 INFO  [main] o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-27 13:34:54 INFO  [main] o.s.s.c.a.a.c.InitializeAuthenticationProviderBeanManagerConfigurer$InitializeAuthenticationProviderManagerConfigurer - Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-05-27 13:34:54 WARN  [main] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2025-05-27 13:34:54 WARN  [main] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-27 13:34:55 INFO  [main] o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2025-05-27 13:34:56 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-05-27 13:34:56 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-05-27 13:34:56 INFO  [main] c.a.kr.secureuserapp.UserApplication - Started UserApplication in 8.926 seconds (process running for 9.633)
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.signup(catholic.ac.kr.secureuserapp.model.dto.SignupRequest)
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - ==> SignupRequest: loverain208@gmail.com
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.signUp(catholic.ac.kr.secureuserapp.model.dto.SignupRequest)
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - ==> SignupRequest: loverain208@gmail.com
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.service.UserService - Username: loverain208@gmail.com 
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.service.UserService - Encoded Password: $2a$10$8bfzVhAx768NGGiVP2g4pexEIh26jXCqvqU644KRiJZTw4Ctm72cS
+2025-05-27 13:35:11 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public void catholic.ac.kr.secureuserapp.service.EmailService.sendSimpleMail(java.lang.String,java.lang.String,java.lang.String)
+2025-05-27 13:35:16 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public void catholic.ac.kr.secureuserapp.service.EmailService.sendSimpleMail(java.lang.String,java.lang.String,java.lang.String) | Thời gian: 5087ms
+2025-05-27 13:35:16 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.signUp(catholic.ac.kr.secureuserapp.model.dto.SignupRequest) | Thời gian: 5480ms
+2025-05-27 13:35:17 INFO  [http-nio-8080-exec-1] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.signup(catholic.ac.kr.secureuserapp.model.dto.SignupRequest) | Thời gian: 5484ms
+2025-05-27 13:35:26 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.signup(catholic.ac.kr.secureuserapp.model.dto.SignupRequest)
+2025-05-27 13:35:26 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> SignupRequest: loverain208@gmail.com
+2025-05-27 13:35:26 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.signUp(catholic.ac.kr.secureuserapp.model.dto.SignupRequest)
+2025-05-27 13:35:26 INFO  [http-nio-8080-exec-4] c.a.k.s.Aspect.LoggingAspect - ==> SignupRequest: loverain208@gmail.com
+2025-05-27 13:35:26 INFO  [http-nio-8080-exec-4] c.a.k.s.service.UserService - Username: loverain208@gmail.com 
+2025-05-27 13:35:27 INFO  [http-nio-8080-exec-4] c.a.k.s.service.UserService - Encoded Password: $2a$10$ZKtDPU69xDkgyF8/8UxyyOGAyJnuKKTPY0nca0BhbWbjI0H/XrUzC
+2025-05-27 13:35:57 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.verifyEmail(java.lang.String)
+2025-05-27 13:35:57 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.verifyEmail(java.lang.String)
+2025-05-27 13:35:57 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.verifyEmail(java.lang.String) | Thời gian: 126ms
+2025-05-27 13:35:57 INFO  [http-nio-8080-exec-2] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.verifyEmail(java.lang.String) | Thời gian: 126ms
+2025-05-27 13:36:22 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.deleteUser(java.lang.Long)
+2025-05-27 13:36:22 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - ==> Bắt đầu gọi: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.deleteUser(java.lang.Long)
+2025-05-27 13:36:22 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public catholic.ac.kr.secureuserapp.model.dto.ApiResponse catholic.ac.kr.secureuserapp.service.UserService.deleteUser(java.lang.Long) | Thời gian: 9ms
+2025-05-27 13:36:22 INFO  [http-nio-8080-exec-6] c.a.k.s.Aspect.LoggingAspect - <== Kết thúc: public org.springframework.http.ResponseEntity catholic.ac.kr.secureuserapp.controller.UserController.deleteUser(java.lang.Long) | Thời gian: 71ms
+2025-05-27 13:36:48 INFO  [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-05-27 13:36:48 INFO  [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-05-27 13:36:48 INFO  [SpringApplicationShutdownHook] o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-27 13:36:48 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-05-27 13:36:48 INFO  [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
