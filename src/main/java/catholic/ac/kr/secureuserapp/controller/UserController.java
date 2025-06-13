@@ -22,6 +22,11 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
+    @GetMapping("user")
+    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@RequestParam("id") Long id) {
+        return ResponseEntity.ok(userService.findUserById(id));
+    }
+
     @GetMapping("users")
     public ResponseEntity<ApiResponse<List<UserDTO>>> getAllUsers() {
         return ResponseEntity.ok(userService.findAllUsers());

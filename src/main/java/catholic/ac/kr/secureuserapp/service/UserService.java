@@ -18,6 +18,8 @@ import catholic.ac.kr.secureuserapp.security.token.TokenService;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +52,16 @@ public class UserService {
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
+
+    @Cacheable(value = "userCache",key = "#userId")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ApiResponse<UserDTO>  findUserById(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow( ()->
+                new ResourceNotFoundException("User with id " + userId + " not found"));
+        UserDTO userDTO = userMapper.toDTO(user);
+
+        return ApiResponse.success("User found with id " + user.getId(),userDTO);
+    }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ApiResponse<List<UserDTO>> findAllUsers() {
@@ -119,6 +131,7 @@ public class UserService {
 
     //@Transactional là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @Transactional
+    @CacheEvict(value = "userCache",key = "#id") //Xoá cache khi xoá hoặc cập nhật
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> deleteUser(Long id) {
         User user = userRepository.findById(id)
