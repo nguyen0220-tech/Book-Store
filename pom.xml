@@ -10,9 +10,9 @@
     </parent>
     <groupId>catholic.ac.kr</groupId>
     <artifactId>secure-user-app</artifactId>
-    <version>1.3</version>
-    <name>user</name>
-    <description>user</description>
+    <version>2.0</version>
+    <name>Book-Store</name>
+    <description>Book-Store</description>
     <url/>
     <licenses>
         <license/>
