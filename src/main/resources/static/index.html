@@ -1,81 +1,65 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Test Đăng ký / Đăng nhập</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>BookStore Login</title>
 </head>
 <body>
-<h2>Đăng ký</h2>
-<form id="registerForm">
-    <input type="text" id="regUsername" placeholder="Username" required><br>
-    <input type="password" id="regPassword" placeholder="Password" required><br>
-    <button type="submit">Đăng ký</button>
-</form>
-
-<h2>Đăng nhập</h2>
+<h2>Login</h2>
 <form id="loginForm">
-    <input type="text" id="loginUsername" placeholder="Username" required><br>
-    <input type="password" id="loginPassword" placeholder="Password" required><br>
-    <button type="submit">Đăng nhập</button>
+    <label for="username">Username:</label><br />
+    <input type="text" id="username" name="username" required /><br /><br />
+
+    <label for="password">Password:</label><br />
+    <input type="password" id="password" name="password" required /><br /><br />
+
+    <button type="submit">Login</button>
 </form>
 
-<p id="response"></p>
+<p id="responseMessage" style="color: red;"></p>
 
 <script>
-    // Xử lý đăng ký
-    document.getElementById('registerForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
 
-        const data = {
-            username: document.getElementById('regUsername').value,
-            password: document.getElementById('regPassword').value
-        };
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-        fetch('/api/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.json())
-            .then(result => {
-                document.getElementById('response').innerText = 'Kết quả đăng kí: ' + JSON.stringify(result);
-                console.log('Signup response:', result);
-            })
-            .catch(err => {
-                console.error('Lỗi đăng ký:', err);
-                document.getElementById('response').innerText = 'Lỗi đăng ký: ' + err.message;
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
             });
-    });
 
-    // Xử lý đăng nhập
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+            const contentType = response.headers.get("content-type");
 
-        const data = {
-            username: document.getElementById('loginUsername').value,
-            password: document.getElementById('loginPassword').value
-        };
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Expected JSON but received HTML or other content.");
+            }
 
-        fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.json())
-            .then(result => {
-                console.log('Login response:', result);
-                if (result.token) {
-                    localStorage.setItem('jwt', result.token);
-                    document.getElementById('response').innerText = 'Đăng nhập thành công! Token: ' + result.token;
-                } else {
-                    document.getElementById('response').innerText = 'Đăng nhập thất bại: ' + JSON.stringify(result);
-                }
-            })
-            .catch(err => {
-                console.error('Lỗi đăng nhập:', err);
-                document.getElementById('response').innerText = 'Lỗi đăng nhập: ' + err.message;
-            });
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // ✅ Lưu token nếu cần
+                localStorage.setItem("token", result.data.token);
+
+                // ✅ Chuyển đến home
+                window.location.href = "/home.html";
+            } else {
+                document.getElementById("responseMessage").textContent =
+                    result.message || "Login failed";
+            }
+        } catch (error) {
+            document.getElementById("responseMessage").textContent =
+                "Server error: " + error.message;
+        }
     });
 </script>
+
 </body>
 </html>
