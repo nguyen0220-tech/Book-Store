@@ -79,6 +79,4 @@ public class UserController {
     public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }
-
-
 }
