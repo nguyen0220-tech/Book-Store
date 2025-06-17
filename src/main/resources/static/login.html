@@ -2,23 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <title>BookStore Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login | BookStore</title>
 </head>
 <body>
 <h2>Login</h2>
 <form id="loginForm">
-    <label for="username">Username:</label><br />
-    <input type="text" id="username" name="username" required /><br /><br />
-
-    <label for="password">Password:</label><br />
-    <input type="password" id="password" name="password" required /><br /><br />
-
+    <label>Username:</label>
+    <input type="text" id="username" required /><br/>
+    <label>Password:</label>
+    <input type="password" id="password" required /><br/>
     <button type="submit">Login</button>
 </form>
-
-<p id="responseMessage" style="color: red;"></p>
+<p id="responseMessage" style="color:red;"></p>
 
 <script>
     document.getElementById("loginForm").addEventListener("submit", async function (event) {
@@ -28,7 +24,7 @@
         const password = document.getElementById("password").value;
 
         try {
-            const response = await fetch("/api/login", {
+            const response = await fetch("http://localhost:8080/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -36,23 +32,23 @@
                 body: JSON.stringify({ username, password })
             });
 
+
             const contentType = response.headers.get("content-type");
 
             if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("Expected JSON but received HTML or other content.");
+                throw new Error("Expected JSON but received: " + contentType);
             }
 
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // ✅ Lưu token nếu cần
+                // ✅ Save token if needed
                 localStorage.setItem("token", result.data.token);
 
-                // ✅ Chuyển đến home
+                // ✅ Redirect to home
                 window.location.href = "/home.html";
             } else {
-                document.getElementById("responseMessage").textContent =
-                    result.message || "Login failed";
+                document.getElementById("responseMessage").textContent = result.message || "Login failed";
             }
         } catch (error) {
             document.getElementById("responseMessage").textContent =
@@ -60,6 +56,5 @@
         }
     });
 </script>
-
 </body>
 </html>
