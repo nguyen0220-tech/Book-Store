@@ -1,8 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
-import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.service.UserService;
@@ -17,12 +15,12 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("api")
+@RequestMapping("user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("user")
+    @GetMapping("userid")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(@RequestParam("id") Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
     }
@@ -65,18 +63,4 @@ public class UserController {
         return ResponseEntity.ok(userService.deleteUser(id));
     }
 
-    @PostMapping("signup")
-    public ResponseEntity<ApiResponse<?>> signup(@Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.ok(userService.signUp(request));
-    }
-
-    @GetMapping("verify")
-    public ResponseEntity<ApiResponse<?>> verifyEmail(@RequestParam String token) {
-        return ResponseEntity.ok(userService.verifyEmail(token));
-    }
-
-    @PostMapping("login")
-    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(userService.login(request));
-    }
 }

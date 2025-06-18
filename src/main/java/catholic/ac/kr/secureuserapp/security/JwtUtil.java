@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
@@ -20,16 +21,18 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); //Tạo đối tượng Key từ chuỗi bí mật -> Biến chuỗi thành mảng byte
     }
 
+    public String generateAccessToken (String username, Map<String, Object> claims) {
+        return generateToken(username,claims,Duration.ofMinutes(15));
+    }
 
     //  Hàm này dùng để tạo token JWT từ username khi khi đăng nhập thành công
-    public String generateToken(String username, Map<String, Object> claims) {
+    public String generateToken(String username, Map<String, Object> claims,Duration expiration) {
         // Thời gian hết hạn của token là 1 giờ (tính bằng mili-giây)
-        long EXPIRATION_TIME = 1000 * 60 * 60;
         return Jwts.builder() //Bắt đầu tạo JWT
                 .setClaims(claims) //Thêm claims tùy chọn
                 .setSubject(username) // Đặt thông tin chính là username
                 .setIssuedAt(new Date()) // Ngày phát hành
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration.toMillis()))
                 .signWith(getSigningKey())  // Ký token bằng khóa bí mật
                 .compact(); //Kết thúc và trả về chuỗi JWT
     }
@@ -43,6 +46,7 @@ public class JwtUtil {
                 .getBody()
                 .getSubject(); // Lấy subject (username)
     }
+
 
 
     //  Kiểm tra token có hợp lệ hay không

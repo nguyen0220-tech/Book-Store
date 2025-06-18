@@ -32,7 +32,7 @@ public class TokenService {
     public void sendUnlockEmail(User user) {
         String token = createVerificationToken(user);
 
-        String verifyLink = "http://localhost:8080/api/verify?token=" + token;
+        String verifyLink = "http://localhost:8080/auth/verify?token=" + token;
 
         emailService.sendSimpleMail(
                 user.getUsername(),
