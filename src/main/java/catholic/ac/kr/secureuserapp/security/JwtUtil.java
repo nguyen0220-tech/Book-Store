@@ -47,8 +47,6 @@ public class JwtUtil {
                 .getSubject(); // Lấy subject (username)
     }
 
-
-
     //  Kiểm tra token có hợp lệ hay không
     public boolean isTokenValid(String token) {
         try {

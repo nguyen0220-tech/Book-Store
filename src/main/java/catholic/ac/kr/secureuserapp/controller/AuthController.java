@@ -2,11 +2,12 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
+import catholic.ac.kr.secureuserapp.model.dto.LogoutRequest;
 import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
 import catholic.ac.kr.secureuserapp.model.entity.RefreshToken;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.security.JwtUtil;
-import catholic.ac.kr.secureuserapp.service.AuthService;
+import catholic.ac.kr.secureuserapp.service.auth.AuthService;
 import catholic.ac.kr.secureuserapp.service.RefreshTokenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,11 @@ public class AuthController {
     @PostMapping("login")
     public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("logout")
+    public ResponseEntity<ApiResponse<String>> logout(@RequestBody LogoutRequest request) {
+        return ResponseEntity.ok(authService.logout(request));
     }
 
     @PostMapping("refresh")

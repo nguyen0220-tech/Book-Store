@@ -15,15 +15,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class RefreshToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     private String token;
 
     private LocalDateTime expiryDate;
-
-
 }
+
+
+

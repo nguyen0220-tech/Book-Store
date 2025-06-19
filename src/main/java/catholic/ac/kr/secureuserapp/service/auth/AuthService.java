@@ -1,4 +1,4 @@
-package catholic.ac.kr.secureuserapp.service;
+package catholic.ac.kr.secureuserapp.service.auth;
 
 import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
@@ -14,6 +14,7 @@ import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
 import catholic.ac.kr.secureuserapp.security.JwtUtil;
 import catholic.ac.kr.secureuserapp.security.token.TokenService;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import catholic.ac.kr.secureuserapp.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,8 +24,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthService {
 
     private final Map<String, Integer> loginFailCounts = new ConcurrentHashMap<>();
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final TokenService tokenService;
     private final UserRepository userRepository;
@@ -88,7 +89,7 @@ public class AuthService {
         return ApiResponse.success(user.getUsername() + " verified successfully");
     }
 
-    public ApiResponse<Map<String, String>> login(LoginRequest request) {
+    public ApiResponse<TokenResponse> login(LoginRequest request) {
         String username = request.getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -115,11 +116,9 @@ public class AuthService {
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
 
-            // Trả về cả 2 token
-            Map<String,String> tokens = new HashMap<>();
-            tokens.put("access_token", accessToken);
-            tokens.put("refresh_token",refreshToken.getToken());
-            return ApiResponse.success("Login successful", tokens);
+            TokenResponse tokenResponse = new TokenResponse(accessToken,refreshToken.getToken());
+
+            return ApiResponse.success("Successfully logged in",tokenResponse);
         } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
                 return ApiResponse.error("Tài khoản chưa được xác thực qua email.");
@@ -142,6 +141,7 @@ public class AuthService {
                 }
                 return ApiResponse.error("Tài khoản hoặc mật khẩu không đúng (" + count + "/5)");
             } else {
+                e.printStackTrace();
                 return ApiResponse.error("Có lỗi xảy ra khi đăng nhập");
             }
         }
@@ -156,10 +156,25 @@ public class AuthService {
         }
 
         User user = refreshToken.getUser();
-        Map<String,Object> claims = Map.of("username",user.getUsername(),"roles",user.getRoles());
+        Map<String,Object> claims = Map.of(
+                "id",user.getId(),
+                "username",user.getUsername(),
+                "roles",user.getRoles());
 
         String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
 
-        return ApiResponse.success(newAccessToken);
+        TokenResponse response = new TokenResponse(newAccessToken,refreshToken.getToken());
+
+        return ApiResponse.success("Refreshed token",response);
+    }
+
+    @Transactional
+    public ApiResponse<String> logout(LogoutRequest request) {
+        int deleted = refreshTokenRepository.deleteByToken(request.getRefreshToken());
+
+        if (deleted>0) {
+            return ApiResponse.success("Logout success");
+        }else
+            return ApiResponse.error("Logout failed");
     }
 }
