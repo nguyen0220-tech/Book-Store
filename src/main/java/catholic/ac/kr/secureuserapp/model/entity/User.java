@@ -5,7 +5,8 @@ import lombok.*;
 
 import java.util.Set;
 
-@Setter @Getter
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,10 +18,10 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false,name = "username")
+    @Column(nullable = false, name = "username")
     private String username;
 
-    @Column(nullable = false,name = "password")
+    @Column(nullable = false, name = "password")
     private String password;
 
     // Mỗi user có thể có nhiều role
@@ -33,5 +34,5 @@ public class User {
     private Set<Role> roles;
 
     @Column(nullable = false)
-    private boolean enabled=false; // mặc định false, chỉ khi xác thực email mới true
+    private boolean enabled = false; // mặc định false, chỉ khi xác thực email mới true
 }

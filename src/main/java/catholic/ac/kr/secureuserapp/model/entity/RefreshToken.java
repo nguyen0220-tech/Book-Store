@@ -25,6 +25,11 @@ public class RefreshToken {
     private String token;
 
     private LocalDateTime expiryDate;
+
+    @Column(nullable = false)
+    private boolean revoked = false; // token đã bị thu hồi chưa
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
 
 

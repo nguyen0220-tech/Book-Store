@@ -32,11 +32,18 @@ public class RefreshTokenService {
     }
 
     public boolean isValid(RefreshToken token) {
-        return token.getExpiryDate().isAfter(LocalDateTime.now());
+        return token!= null && !token.isRevoked() && token.getExpiryDate().isAfter(LocalDateTime.now());
     }
 
     public Optional<RefreshToken> findRefreshToken(String token) {
         return  refreshTokenRepository.findByToken(token);
+    }
+
+    // Revoke token (thu hồi) khi đã sử dụng xong
+    @Transactional
+    public void revokeToken(RefreshToken token) {
+        token.setRevoked(true);
+        refreshTokenRepository.save(token);
     }
 
     @Transactional

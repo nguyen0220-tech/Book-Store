@@ -157,7 +157,7 @@ public class AuthService {
             return ApiResponse.error("Logout failed");
     }
 
-    public ApiResponse<String> refresh(String refreshTokenStr) {
+    public ApiResponse<TokenResponse> refresh(String refreshTokenStr) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenStr)
                 .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
 
@@ -165,6 +165,10 @@ public class AuthService {
             throw new RuntimeException("Invalid refresh token");
         }
 
+        // Thu hồi token cũ
+        refreshTokenService.revokeToken(refreshToken);
+
+        // Tạo access và refresh token mới
         User user = refreshToken.getUser();
         Map<String, Object> claims = Map.of(
                 "id", user.getId(),
@@ -172,8 +176,10 @@ public class AuthService {
                 "roles", user.getRoles());
 
         String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user).getData();
 
+        TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken.getToken());
 
-        return ApiResponse.success("Refreshed token", newAccessToken);
+        return ApiResponse.success("Refreshed token", tokenResponse);
     }
 }

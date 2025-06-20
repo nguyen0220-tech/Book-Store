@@ -1,9 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.LoginRequest;
-import catholic.ac.kr.secureuserapp.model.dto.LogoutRequest;
-import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
+import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("refresh")
-    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshAccessToken(@RequestBody Map<String, String> request) {
         String refreshTokenStr = request.get("refresh_token");
         if (refreshTokenStr == null) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Missing refresh token"));
