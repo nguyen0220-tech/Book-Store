@@ -116,9 +116,9 @@ public class AuthService {
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
 
-            TokenResponse tokenResponse = new TokenResponse(accessToken,refreshToken.getToken());
+            TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken.getToken());
 
-            return ApiResponse.success("Successfully logged in",tokenResponse);
+            return ApiResponse.success("Successfully logged in", tokenResponse);
         } catch (Exception e) {
             if (e instanceof DisabledException || (e.getCause() instanceof DisabledException)) {
                 return ApiResponse.error("Tài khoản chưa được xác thực qua email.");
@@ -141,40 +141,39 @@ public class AuthService {
                 }
                 return ApiResponse.error("Tài khoản hoặc mật khẩu không đúng (" + count + "/5)");
             } else {
-                e.printStackTrace();
+//                e.printStackTrace();
                 return ApiResponse.error("Có lỗi xảy ra khi đăng nhập");
             }
         }
-    }
-
-    public ApiResponse<TokenResponse> refreshToken(String refreshTokenStr) {
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenStr)
-                .orElseThrow( ()-> new ResourceNotFoundException("Refresh token not found"));
-
-        if (!refreshTokenService.isValid(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
-        }
-
-        User user = refreshToken.getUser();
-        Map<String,Object> claims = Map.of(
-                "id",user.getId(),
-                "username",user.getUsername(),
-                "roles",user.getRoles());
-
-        String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
-
-        TokenResponse response = new TokenResponse(newAccessToken,refreshToken.getToken());
-
-        return ApiResponse.success("Refreshed token",response);
     }
 
     @Transactional
     public ApiResponse<String> logout(LogoutRequest request) {
         int deleted = refreshTokenRepository.deleteByToken(request.getRefreshToken());
 
-        if (deleted>0) {
+        if (deleted > 0) {
             return ApiResponse.success("Logout success");
-        }else
+        } else
             return ApiResponse.error("Logout failed");
+    }
+
+    public ApiResponse<String> refresh(String refreshTokenStr) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenStr)
+                .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
+
+        if (!refreshTokenService.isValid(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        User user = refreshToken.getUser();
+        Map<String, Object> claims = Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "roles", user.getRoles());
+
+        String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
+
+
+        return ApiResponse.success("Refreshed token", newAccessToken);
     }
 }
