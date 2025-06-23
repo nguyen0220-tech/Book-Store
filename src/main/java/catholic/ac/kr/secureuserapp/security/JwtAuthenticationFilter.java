@@ -1,8 +1,8 @@
 package catholic.ac.kr.secureuserapp.security;
 
-import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,12 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
-        throws ServletException, IOException{
+            throws ServletException, IOException {
 
 //      1. Lấy giá trị từ header "Authorization"
         String authHeader = request.getHeader("Authorization");
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request,response);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return; //Không có header Authorization Hoặc không bắt đầu bằng "Bearer "→ Bỏ qua filter này, để tiếp tục xử lý bởi các filter khác
         }
 
@@ -41,29 +41,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
         String token = authHeader.substring(7);
 
 //      3. Kiểm tra token có hợp lệ không
-        if(!jwtUtil.isTokenValid(token)){
-            filterChain.doFilter(request,response);
+        if (!jwtUtil.isTokenValid(token)) {
+            filterChain.doFilter(request, response);
             return; //Nếu không hợp lệ (hết hạn, sai chữ ký, v.v.), thì bỏ qua request
         }
 //      4. Lấy username từ token
-        String username=jwtUtil.extractUsername(token);
+        String username = jwtUtil.extractUsername(token);
 
 //      5. Kiểm tra nếu user chưa được xác thực
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 //             Dùng UserRepository để lấy user từ database dựa trên username trong JWT
-            User user=userRepository.findByUsername(username).orElse(null);
+            User user = userRepository.findByUsername(username).orElse(null);
 
-            if(user != null){
+            if (user != null) {
 //              6. Tạo Authentication object với username và quyền (roles)
 //                UserDetails: là interface bắt buộc cho Spring Security để xử lý xác thực
-                UserDetails userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(user.getUsername())
-                        .password(user.getPassword()) //Dù không cần mật khẩu ở đây (vì đã login rồi), vẫn phải truyền vào password
-                        .authorities(
-                                user.getRoles().stream()  //trả về Set<Role>
-                                        .map(Role::getName) // Lấy tên từng role: "ROLE_USER", "ROLE_ADMIN"
-                                        .toArray(String[]::new)) //chuyển sang mảng String[] đúng format mà cần
-                        .build();
+//                UserDetails userDetails = org.springframework.security.core.userdetails.User
+//                        .withUsername(user.getUsername())
+//                        .password(user.getPassword()) //Dù không cần mật khẩu ở đây (vì đã login rồi), vẫn phải truyền vào password
+//                        .authorities(
+//                                user.getRoles().stream()  //trả về Set<Role>
+//                                        .map(Role::getName) // Lấy tên từng role: "ROLE_USER", "ROLE_ADMIN"
+//                                        .toArray(String[]::new)) //chuyển sang mảng String[] đúng format mà cần
+//                        .build();
+
+//                6.1 set MyUserDetails vào SecurityContext
+                UserDetails userDetails = new MyUserDetails(user);
+
 //                Đây là đối tượng xác thực cho Spring Security hiểu rằng: "Người này đã đăng nhập"
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -78,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
             }
         }
 //      8. Tiếp tục chạy các filter tiếp theo
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }
 

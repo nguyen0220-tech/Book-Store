@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login | BookStore</title>
+    <link rel="stylesheet" href="style.css"/>
+
+</head>
+<body>
+
+<h2 id="formTitle">Login</h2>
+
+<!-- LOGIN FORM -->
+<form id="loginForm" class="active">
+    <input type="text" id="loginUsername" placeholder="Username or Email" required>
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <button type="submit">Login</button>
+    <p class="error" id="loginMessage"></p>
+</form>
+
+<!-- SIGNUP FORM -->
+<form id="signupForm">
+    <input type="text" id="signupEmail" placeholder="Email (or Username)" required>
+    <input type="password" id="signupPassword" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+    <p class="error" id="signupMessage"></p>
+</form>
+
+<p class="toggle" id="toggleForm">Don't have an account? Sign Up</p>
+
+<script>
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const toggleBtn = document.getElementById("toggleForm");
+    const formTitle = document.getElementById("formTitle");
+
+    // Toggle between login/signup
+    toggleBtn.addEventListener("click", () => {
+        const isLogin = loginForm.classList.contains("active");
+        loginForm.classList.toggle("active");
+        signupForm.classList.toggle("active");
+        formTitle.textContent = isLogin ? "Sign Up" : "Login";
+        toggleBtn.textContent = isLogin
+            ? "Already have an account? Login"
+            : "Don't have an account? Sign Up";
+    });
+
+    // LOGIN
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        try {
+            const res = await fetch("http://localhost:8080/auth/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username, password})
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                localStorage.setItem("accessToken", result.data.accessToken);
+                localStorage.setItem("refreshToken", result.data.refreshToken);
+
+                window.location.href = "/home.html";
+            } else {
+                document.getElementById("loginMessage").textContent = result.message || "Login failed";
+            }
+        } catch (err) {
+            document.getElementById("loginMessage").textContent = "Server error: " + err.message;
+        }
+    });
+
+    // SIGNUP
+    signupForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("signupEmail").value;
+        const password = document.getElementById("signupPassword").value;
+
+        try {
+            const res = await fetch("http://localhost:8080/auth/signup", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username, password})
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                alert("Signup successful! Please verify in email: " + username);
+                toggleBtn.click(); // switch to log in
+            } else {
+                document.getElementById("signupMessage").textContent = result.message || "Signup failed";
+            }
+        } catch (err) {
+            document.getElementById("signupMessage").textContent = "Server error: " + err.message;
+        }
+    });
+</script>
+</body>
+</html>

@@ -15,6 +15,7 @@ import catholic.ac.kr.secureuserapp.security.JwtUtil;
 import catholic.ac.kr.secureuserapp.security.token.TokenService;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.RefreshTokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -89,7 +90,20 @@ public class AuthService {
         return ApiResponse.success(user.getUsername() + " verified successfully");
     }
 
-    public ApiResponse<TokenResponse> login(LoginRequest request) {
+    public ApiResponse<TokenResponse> login(LoginRequest request, HttpServletRequest httpRequest) {
+        //  Tự động lấy thông tin thiết bị
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String ipAddress = httpRequest.getRemoteAddr();
+
+        //  Gán vào DTO (nếu muốn tiếp tục dùng DTO hiện tại)
+        request.setUserAgent(userAgent);
+        request.setIpAddress(ipAddress);
+
+        //  Tạo ngẫu nhiên deviceId nếu không truyền từ client (VD: mobile app)
+        if (request.getDeviceId() == null || request.getDeviceId().isBlank()) {
+            request.setDeviceId(UUID.randomUUID().toString());
+        }
+
         String username = request.getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -112,7 +126,9 @@ public class AuthService {
 
             String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername(), claims);
 
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user).getData();
+            RefreshToken refreshToken = refreshTokenService
+                    .createRefreshToken(user, request.getDeviceId(), request.getUserAgent(), request.getIpAddress())
+                    .getData();
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
 
@@ -165,7 +181,7 @@ public class AuthService {
             throw new RuntimeException("Invalid refresh token");
         }
 
-        // Thu hồi token cũ
+//      Revoke current token
         refreshTokenService.revokeToken(refreshToken);
 
         // Tạo access và refresh token mới
@@ -176,7 +192,12 @@ public class AuthService {
                 "roles", user.getRoles());
 
         String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
-        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user).getData();
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(
+                        user,
+                        refreshToken.getDeviceId(),
+                        refreshToken.getUserAgent(),
+                        refreshToken.getIpAddress())
+                .getData();
 
         TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken.getToken());
 

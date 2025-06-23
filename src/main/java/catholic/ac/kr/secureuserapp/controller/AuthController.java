@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.service.auth.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,8 +28,8 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
+        return ResponseEntity.ok(authService.login(request, httpServletRequest));
     }
 
     @PostMapping("logout")

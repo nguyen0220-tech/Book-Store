@@ -10,4 +10,8 @@ public class LoginRequest {
     private String username;
     @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
+
+    private String deviceId;
+    private String userAgent;
+    private String ipAddress;
 }

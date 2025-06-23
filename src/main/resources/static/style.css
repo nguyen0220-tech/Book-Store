@@ -1,0 +1,102 @@
+/* style.css */
+
+body {
+    font-family: Arial;
+    text-align: center;
+    margin-top: 40px;
+}
+
+form {
+    display: none;
+    margin: 20px auto;
+    width: 300px;
+}
+
+form.active {
+    display: block;
+}
+
+input {
+    display: block;
+    margin: 10px auto;
+    padding: 8px;
+    width: 90%;
+}
+
+button {
+    padding: 8px 16px;
+    margin-top: 10px;
+}
+
+.toggle {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}
+body {
+    background: linear-gradient(to right, #e6f0ec, #f0f7f4);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Nút với hiệu ứng đẹp */
+button {
+    padding: 12px 24px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4CAF50, #2E8B57);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease, background 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.2), transparent, rgba(255, 255, 255, 0.2));
+    transition: all 0.6s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #45a049, #256d46);
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 10px #4CAF50;
+}
+
+
+/* Animation chuyển đổi form */
+form {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+form.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
