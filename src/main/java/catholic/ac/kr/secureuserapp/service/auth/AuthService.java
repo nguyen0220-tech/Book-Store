@@ -112,7 +112,9 @@ public class AuthService {
 
             String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername(), claims);
 
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user).getData();
+            RefreshToken refreshToken = refreshTokenService
+                    .createRefreshToken(user, request.getDeviceId(), request.getUserAgent(), request.getIpAddress())
+                    .getData();
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
 
@@ -165,7 +167,7 @@ public class AuthService {
             throw new RuntimeException("Invalid refresh token");
         }
 
-        // Thu hồi token cũ
+//      Revoke current token
         refreshTokenService.revokeToken(refreshToken);
 
         // Tạo access và refresh token mới
@@ -176,7 +178,12 @@ public class AuthService {
                 "roles", user.getRoles());
 
         String newAccessToken = jwtUtil.generateAccessToken(user.getUsername(), claims);
-        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user).getData();
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(
+                        user,
+                        refreshToken.getDeviceId(),
+                        refreshToken.getUserAgent(),
+                        refreshToken.getIpAddress())
+                .getData();
 
         TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken.getToken());
 

@@ -18,18 +18,26 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    // Một user có thể có nhiều refresh token
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false,unique = true)
     private String token;
 
+    @Column(nullable = false)
     private LocalDateTime expiryDate;
 
     @Column(nullable = false)
     private boolean revoked = false; // token đã bị thu hồi chưa
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+//    device info
+    private String deviceId;
+    private String userAgent;
+    private String ipAddress;
 }
 
 

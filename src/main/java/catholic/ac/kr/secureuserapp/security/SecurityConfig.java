@@ -38,8 +38,8 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"+username));
-            if(!user.isEnabled()) {
+                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản" + username));
+            if (!user.isEnabled()) {
                 throw new DisabledException("Tài khoản chưa được xác thực qua email");
             }
             return new MyUserDetails(user);
@@ -74,9 +74,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))             // Không dùng session (vì dùng JWT)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/auth/signup", "/auth/login","/auth/logout","/auth/verify","/auth/refresh","/login.html","/home.html")
-                        .permitAll()         // cho phép không login/signup/verify
-                        .anyRequest().authenticated()                                        // các request còn lại cần token JWT hợp lệ
+                        .requestMatchers("/", "/auth/signup", "/auth/login", "/auth/logout", "/auth/verify", "/auth/refresh", "/devices", "devices/{deviceId}", "/login.html", "/home.html")
+                        .permitAll()         // cho phép không login/signup/verify...
+                        .anyRequest().authenticated()  // các request còn lại cần token JWT hợp lệ
                 )
                 .authenticationProvider(authenticationProvider())                            // cung cấp cách xác thực người dùng
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)  // Thêm filter kiểm tra JWT trước khi đến filter mặc định

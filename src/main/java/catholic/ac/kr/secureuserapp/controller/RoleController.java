@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api-role")
+@RequestMapping("roles")
 @RequiredArgsConstructor
 public class RoleController {
     public final RoleService roleService;
 
-    @GetMapping("roles")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<RoleDTO>>> getAllRoles() {
         return ResponseEntity.ok(roleService.findAllRoles());
     }
