@@ -1,4 +1,0 @@
-2025-06-22 04:44:41 ERROR [http-nio-8080-exec-3] o.h.e.jdbc.spi.SqlExceptionHelper - Violation of UNIQUE KEY constraint 'UKf95ixxe7pa48ryn1awmh2evt7'. Cannot insert duplicate key in object 'dbo.refresh_token'. The duplicate key value is (1).
-2025-06-22 04:45:37 ERROR [http-nio-8080-exec-10] o.h.e.jdbc.spi.SqlExceptionHelper - Violation of UNIQUE KEY constraint 'UKf95ixxe7pa48ryn1awmh2evt7'. Cannot insert duplicate key in object 'dbo.refresh_token'. The duplicate key value is (1).
-2025-06-22 04:47:20 ERROR [http-nio-8080-exec-2] o.h.e.jdbc.spi.SqlExceptionHelper - Violation of UNIQUE KEY constraint 'UKf95ixxe7pa48ryn1awmh2evt7'. Cannot insert duplicate key in object 'dbo.refresh_token'. The duplicate key value is (1).
-2025-06-22 04:54:23 ERROR [http-nio-8080-exec-7] o.h.e.jdbc.spi.SqlExceptionHelper - Violation of UNIQUE KEY constraint 'UKf95ixxe7pa48ryn1awmh2evt7'. Cannot insert duplicate key in object 'dbo.refresh_token'. The duplicate key value is (1).
