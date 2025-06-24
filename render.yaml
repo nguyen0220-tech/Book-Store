@@ -1,6 +1,19 @@
 services:
   - type: web
     name: book-store
-    buildCommand: mvn clean package
-    startCommand: java -jar target/secure-user-app-2.0.jar
+    runtime: docker
     plan: free
+    envVars:
+      - key: JDBC_URL
+        value: jdbc:postgresql://dpg-d1cvenh5pdvs73c77hu0-a.oregon-postgres.render.com/bookstore_db_7l1z
+      - key: DB_USERNAME
+        value: bookstore_db_7l1z_user
+      - key: DB_PASSWORD
+        value: E58Q5WYuDGC2miSyIopECkr982Q0LcH1
+      - key: EMAIL_USERNAME
+        value: teemee202@gmail.com
+      - key: EMAIL_PASSWORD
+        value: kkld klfs vleo wbcu
+      - key: JWT_SECRET
+        value: your-very-secure-secret-key-at-least-256-bits-long-123456
+
