@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: book-store
+    env: java
+    buildCommand: mvn clean package
+    startCommand: java -jar target/secure-user-app-2.0.jar
+    plan: free
