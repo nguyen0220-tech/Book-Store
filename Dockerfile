@@ -1,5 +1,5 @@
-# Stage 1: Build with Maven and JDK 22
-FROM maven:3.9.4-eclipse-temurin-22-jammy AS build
+# Stage 1: Build với Maven + JDK 21
+FROM maven:3.9.10-eclipse-temurin-21 AS build
 
 WORKDIR /app
 COPY pom.xml .
@@ -7,10 +7,10 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run with JDK 22 slim
-FROM eclipse-temurin:22-jre-jammy
+# Stage 2: Chạy app với JDK 21 nhẹ
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 COPY --from=build /app/target/secure-user-app-2.0.jar app.jar
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

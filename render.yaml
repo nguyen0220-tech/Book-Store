@@ -6,7 +6,7 @@ services:
     dockerfilePath: Dockerfile
     envVars:
       - key: JDBC_URL
-        value: jdbc:postgresql://dpg-d1cvenh5pdvs73c77hu0-a.oregon-postgres.render.com/bookstore_db_7l1z
+        value: jdbc:postgresql://dpg-d1cvenh5pdvs73c77hu0-a:5432/bookstore_db_7l1z
       - key: DB_USERNAME
         value: bookstore_db_7l1z_user
       - key: DB_PASSWORD
