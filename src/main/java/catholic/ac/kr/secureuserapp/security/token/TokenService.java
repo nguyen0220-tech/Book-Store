@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
 import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
 import catholic.ac.kr.secureuserapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,9 @@ public class TokenService {
 
     private final EmailService emailService;
     private final VerificationTokenRepository verificationTokenRepository;
+
+    @Value("${app.verification.base-url}")
+    private String baseUrl;
 
     // Tạo token xác thực qua email
     public String createVerificationToken(User user) {
@@ -32,12 +36,12 @@ public class TokenService {
     public void sendUnlockEmail(User user) {
         String token = createVerificationToken(user);
 
-        String verifyLink = "http://localhost:8080/auth/verify?token=" + token;
+        String verifyLink = baseUrl + "/auth/verify?token=" + token;
 
         emailService.sendSimpleMail(
                 user.getUsername(),
                 "XÁC THỰC EMAIL",
-                "Click để kích hoạt tài khoản: "+verifyLink
+                "Click để kích hoạt tài khoản: " + verifyLink
         );
     }
 }

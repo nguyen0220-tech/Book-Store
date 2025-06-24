@@ -46,6 +46,8 @@
             : "Don't have an account? Sign Up";
     });
 
+    const API_BASE = window.location.origin;
+
     // LOGIN
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -53,7 +55,7 @@
         const password = document.getElementById("loginPassword").value;
 
         try {
-            const res = await fetch("http://localhost:8080/auth/login", {
+            const res = await fetch(`${API_BASE}/auth/login`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({username, password})
@@ -62,7 +64,6 @@
             if (res.ok && result.success) {
                 localStorage.setItem("accessToken", result.data.accessToken);
                 localStorage.setItem("refreshToken", result.data.refreshToken);
-
                 window.location.href = "/home.html";
             } else {
                 document.getElementById("loginMessage").textContent = result.message || "Login failed";
@@ -79,7 +80,7 @@
         const password = document.getElementById("signupPassword").value;
 
         try {
-            const res = await fetch("http://localhost:8080/auth/signup", {
+            const res = await fetch(`${API_BASE}/auth/signup`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({username, password})
@@ -87,7 +88,7 @@
             const result = await res.json();
             if (res.ok && result.success) {
                 alert("Signup successful! Please verify in email: " + username);
-                toggleBtn.click(); // switch to log in
+                toggleBtn.click();
             } else {
                 document.getElementById("signupMessage").textContent = result.message || "Signup failed";
             }
