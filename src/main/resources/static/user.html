@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css" />
+    <title>User Manager</title>
+
+    <style>
+        nav {
+            margin-bottom: 1rem;
+        }
+        nav a {
+            margin-right: 1rem;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: red;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 6px;
+            text-align: left;
+        }
+        img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>📚 Quản lý người dùng</h1>
+    <nav>
+        <a href="home.html">Trang chủ</a>
+        <a href="book.html">Quản lý Sách</a>
+    </nav>
+
+    <button id="logoutBtn">Logout</button>
+    <p id="logoutMessage" class="error"></p>
+</header>
+
+<main>
+    <section class="card">
+        <h2>🔍 Quản lý người dùng</h2>
+        <div class="actions">
+            <div class="action-group">
+                <button onclick="fetchAllUsers()">📄 Tải tất cả</button>
+            </div>
+            <div class="action-group">
+                <input id="nameKeyword" placeholder="Nhập tên..." />
+                <button onclick="searchByName()">🔎 Tìm theo tên</button>
+            </div>
+            <div class="action-group">
+                <input id="roleKeyword" placeholder="Nhập role..." />
+                <button onclick="filterByRole()">🧩 Lọc theo role</button>
+            </div>
+            <div class="action-group">
+                <input id="userId" type="number" placeholder="Nhập ID..." />
+                <button onclick="getById()">🆔 Tìm theo ID</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h3>➕ Thêm người dùng mới</h3>
+        <div class="add-user-form">
+            <input id="addUsername" placeholder="Username (Email)" />
+            <input id="addPassword" type="password" placeholder="Password" />
+            <button onclick="addUser()">✅ Thêm</button>
+        </div>
+        <p class="error" id="addUserMessage"></p>
+    </section>
+
+    <section class="card">
+        <h3>📋 Kết quả</h3>
+        <div id="userResult" class="user-list"></div>
+    </section>
+</main>
+
+<script src="user.js"></script>
+</body>
+</html>

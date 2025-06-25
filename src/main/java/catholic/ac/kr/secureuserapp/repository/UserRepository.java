@@ -15,10 +15,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User,Long> {
     Page<User> findAll(Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.username LIKE %:keyword%")
+    @Query("SELECT u FROM User u WHERE LOWER( u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<User> searchByName(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN  u.roles r WHERE r.name= :role")
+    @Query("SELECT u FROM User u JOIN  u.roles r WHERE LOWER( r.name) LIKE LOWER(CONCAT('%', :role, '%'))")
     Page<User> findByRole(@Param("role") String role, Pageable pageable);
 
     Optional<User> findByUsername(@NotBlank(message = "Tên không được để trống") String username);

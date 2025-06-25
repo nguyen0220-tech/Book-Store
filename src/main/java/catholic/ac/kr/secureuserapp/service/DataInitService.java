@@ -1,7 +1,9 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.model.entity.Category;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
+import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -9,15 +11,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 //class Khởi tạo ADMIN khi LẦN ĐẦU chạy ứng dụng
 @Service
 @RequiredArgsConstructor
-public class AddAdminService {
+public class DataInitService {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CategoryRepository categoryRepository;
 
     @PostConstruct
     //@PostConstruct: Phương thức addUserWithRoleAdmin() sẽ được gọi tự động sau khi tất cả các phụ thuộc được inject vào bean.
@@ -48,6 +53,25 @@ public class AddAdminService {
         }else
             System.out.println("admin already exist");
 
+
+    }
+
+    @PostConstruct
+    public void addCategory(){
+        List<String> categories = new ArrayList<>();
+        categories.add("Manga");
+        categories.add("Tiểu thuyết lãng mạn");
+        categories.add("Kinh dị");
+        categories.add("Hài hước");
+        categories.add("Giả tưởng");
+
+        for (String category : categories) {
+            categoryRepository.findByName(category)
+                    .orElseGet( ()->{
+                        System.out.println("DataInitService.addCategory");
+                        return categoryRepository.save(Category.builder().name(category).build());
+                    });
+        }
 
     }
 }

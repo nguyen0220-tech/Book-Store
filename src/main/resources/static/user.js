@@ -1,4 +1,4 @@
-// const API_BASE = "http://localhost:8080";
+//User Manager js
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
 

@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,14 +34,14 @@ public class UserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
 
-    @Cacheable(value = "userCache",key = "#userId")
+    @Cacheable(value = "userCache", key = "#userId")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ApiResponse<UserDTO>  findUserById(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow( ()->
+    public ApiResponse<UserDTO> findUserById(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() ->
                 new ResourceNotFoundException("User with id " + userId + " not found"));
         UserDTO userDTO = userMapper.toDTO(user);
 
-        return ApiResponse.success("User found with id " + user.getId(),userDTO);
+        return ApiResponse.success("User found with id " + user.getId(), userDTO);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -92,7 +93,12 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found")); // Tìm user theo id trong DB
 
-        user.setUsername(userDTO.getUsername());
+        if (!user.getUsername().equals(userDTO.getUsername())) {
+            if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+                throw new AlreadyExistsException(userDTO.getUsername() + " already exists");
+            }
+            user.setUsername(userDTO.getUsername());
+        }
 
 //        xu li Set<RoleDTO>
         Set<Role> roles = userDTO.getRoles().stream() // Lấy danh sách RoleDTO từ UserDTO → biến nó thành Stream
@@ -111,7 +117,7 @@ public class UserService {
 
     //@Transactional là một cơ chế giúp quản lý giao dịch (transaction) của database một cách tự động, giúp đảm bảo tính toàn vẹn dữ liệu và hỗ trợ rollback khi có lỗi xảy ra.
     @Transactional
-    @CacheEvict(value = "userCache",key = "#id") //Xoá cache khi xoá hoặc cập nhật
+    @CacheEvict(value = "userCache", key = "#id") //Xoá cache khi xoá hoặc cập nhật
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> deleteUser(Long id) {
         User user = userRepository.findById(id)

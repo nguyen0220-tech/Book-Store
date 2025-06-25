@@ -2,55 +2,140 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Book Store Admin - Home</title>
     <link rel="stylesheet" href="style.css" />
-    <title>BookStore</title>
+    <style>
+        nav {
+            margin-bottom: 1rem;
+        }
+        nav a {
+            margin-right: 1rem;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
+
 <header>
-    <h1>📚 Book Shop Admin</h1>
+    <h1>📚 Book Store </h1>
+    <nav>
+        <a href="book.html">Quản lý Sách</a>
+        <a href="user.html">Quản lý Người dùng</a>
+    </nav>
     <button id="logoutBtn">Logout</button>
     <p id="logoutMessage" class="error"></p>
 </header>
 
 <main>
     <section class="card">
-        <h2>🔍 Quản lý người dùng</h2>
-        <div class="actions">
-            <div class="action-group">
-                <button onclick="fetchAllUsers()">📄 Tải tất cả</button>
-            </div>
-            <div class="action-group">
-                <input id="nameKeyword" placeholder="Nhập tên..." />
-                <button onclick="searchByName()">🔎 Tìm theo tên</button>
-            </div>
-            <div class="action-group">
-                <input id="roleKeyword" placeholder="Nhập role..." />
-                <button onclick="filterByRole()">🧩 Lọc theo role</button>
-            </div>
-            <div class="action-group">
-                <input id="userId" type="number" placeholder="Nhập ID..." />
-                <button onclick="getById()">🆔 Tìm theo ID</button>
-            </div>
-        </div>
+        <h2>🔍 Tìm kiếm sách</h2>
+        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;" />
+        <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
+        <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
+        <button onclick="searchByCategory()">Tìm theo Thể loại</button>
     </section>
 
     <section class="card">
-        <h3>➕ Thêm người dùng mới</h3>
-        <div class="add-user-form">
-            <input id="addUsername" placeholder="Username (Email)" />
-            <input id="addPassword" type="password" placeholder="Password" />
-            <button onclick="addUser()">✅ Thêm</button>
-        </div>
-        <p class="error" id="addUserMessage"></p>
-    </section>
-
-    <section class="card">
-        <h3>📋 Kết quả</h3>
-        <div id="userResult" class="user-list"></div>
+        <h3>📋 Kết quả tìm kiếm sách</h3>
+        <div id="bookList"></div>
     </section>
 </main>
 
-<script src="script.js"></script>
+<script>
+    const API_BASE = window.location.origin;
+    const accessToken = localStorage.getItem("accessToken");
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+            document.getElementById("logoutMessage").textContent = "Không tìm thấy refresh token!";
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/auth/logout`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ refreshToken })
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                window.location.href = "/auth.html";
+            } else {
+                document.getElementById("logoutMessage").textContent = result.message || "Logout thất bại!";
+            }
+        } catch (err) {
+            document.getElementById("logoutMessage").textContent = "Lỗi server: " + err.message;
+        }
+    });
+
+    async function searchByAuthor() {
+        const keyword = document.getElementById("searchKeyword").value.trim();
+        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+        await searchBooks(`by-author`, keyword);
+    }
+
+    async function searchByTitle() {
+        const keyword = document.getElementById("searchKeyword").value.trim();
+        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+        await searchBooks(`by-title`, keyword);
+    }
+
+    async function searchByCategory() {
+        const keyword = document.getElementById("searchKeyword").value.trim();
+        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+        await searchBooks(`by-category`, keyword);
+    }
+
+    async function searchBooks(type, keyword) {
+        try {
+            const url = new URL(`${API_BASE}/book/${type}`);
+            url.searchParams.append("page", 0);
+            url.searchParams.append("size", 5);
+            url.searchParams.append(type === "by-category" ? "category" : type === "by-author" ? "author" : "title", keyword);
+
+            const res = await fetch(url, {
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                showBooks(result.data.content || []);
+            } else {
+                alert(result.message || "Lỗi khi tìm kiếm sách");
+            }
+        } catch (err) {
+            alert("Lỗi server: " + err.message);
+        }
+    }
+
+    function showBooks(books) {
+        const html = books.length === 0
+            ? "<p>Không có kết quả</p>"
+            : books.map(b => `
+        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+          <b>Title:</b> ${b.title} <br/>
+          <b>Author:</b> ${b.author} <br/>
+          <b>Price:</b> ${b.price} <br/>
+          <b>Stock:</b> ${b.stock} <br/>
+          <b>Description:</b> ${b.description} <br/>
+          <b>Category:</b> ${b.categoryName} <br/>
+          <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" />
+        </div>
+      `).join("");
+        document.getElementById("bookList").innerHTML = html;
+    }
+</script>
+
 </body>
 </html>
