@@ -4,7 +4,22 @@ body {
     font-family: Arial;
     text-align: center;
     margin-top: 40px;
+    background: linear-gradient(to right, #e6f0ec, #f0f7f4);
+    font-family: 'Segoe UI', sans-serif;
 }
+
+header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
 
 form {
     display: none;
@@ -37,10 +52,6 @@ button {
 .error {
     color: red;
     margin-top: 10px;
-}
-body {
-    background: linear-gradient(to right, #e6f0ec, #f0f7f4);
-    font-family: 'Segoe UI', sans-serif;
 }
 
 /* Nút với hiệu ứng đẹp */
@@ -99,4 +110,75 @@ form.active {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+}
+
+#logoutBtn {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 1000;
+    background-color: #e74c3c;
+    padding: 8px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#logoutBtn:hover {
+    background-color: #c0392b;
+}
+
+@media (max-width: 600px) {
+    #logoutBtn {
+        top: 8px;
+        right: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+}
+
+
+input {
+    padding: 6px 10px;
+    margin: 4px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.add-user-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.user-list > div {
+    border: 1px solid #ddd;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.user-list button {
+    margin-right: 8px;
+    margin-top: 8px;
 }
