@@ -64,6 +64,7 @@
             if (res.ok && result.success) {
                 localStorage.setItem("accessToken", result.data.accessToken);
                 localStorage.setItem("refreshToken", result.data.refreshToken);
+                localStorage.setItem("userId", result.data.userId);
                 window.location.href = "/home.html";
             } else {
                 document.getElementById("loginMessage").textContent = result.message || "Login failed";

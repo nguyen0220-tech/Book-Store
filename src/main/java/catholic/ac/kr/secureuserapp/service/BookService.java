@@ -11,12 +11,13 @@ import catholic.ac.kr.secureuserapp.repository.BookRepository;
 import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -56,6 +57,20 @@ public class BookService {
         Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
 
         return ApiResponse.success("Books", bookDTOS);
+    }
+
+    public ApiResponse<Page<BookDTO>> getRandomBooks(int page, int size) {
+        int total = bookRepository.countAllBooks();
+
+        int offset = page * size;
+        List<Book> randomBooks = bookRepository.findRandomBooks(size, offset);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Book> pageResult = new PageImpl<>(randomBooks, pageable, total);
+
+        Page<BookDTO> bookDTOS = bookMapper.toBookDTO(pageResult);
+
+        return ApiResponse.success("Random books", bookDTOS);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

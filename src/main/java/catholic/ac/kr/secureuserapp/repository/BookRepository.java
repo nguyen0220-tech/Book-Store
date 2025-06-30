@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))")
     Page<Book> findByTitle(@Param("title") String title, Pageable pageable);
@@ -17,6 +19,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE LOWER(b.category.name) LIKE LOWER(CONCAT('%', :category, '%'))")
     Page<Book> findByCategory(@Param("category") String category, Pageable pageable);
 
+    //random books
+    @Query(value = "SELECT * FROM Book ORDER BY random() LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Book> findRandomBooks(@Param("limit") int limit, @Param("offset") int offset);
 
-
+    @Query(value = "SELECT COUNT(*) FROM Book", nativeQuery = true)
+    int countAllBooks();
 }

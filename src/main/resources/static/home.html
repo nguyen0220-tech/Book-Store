@@ -1,31 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Book Store Admin - Home</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css"/>
     <style>
+        .cart-link {
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 1rem;
+        }
+
+        .cart-link:hover {
+            background-color: #218838;
+        }
+
+
         nav {
             margin-bottom: 1rem;
         }
+
         nav a {
             margin-right: 1rem;
             text-decoration: none;
             color: #007bff;
             font-weight: bold;
         }
+
         nav a:hover {
             text-decoration: underline;
         }
+
         .error {
             color: red;
         }
+
         .pagination button {
             margin: 0 3px;
             padding: 4px 8px;
             cursor: pointer;
         }
+
         .pagination button.active {
             font-weight: bold;
             background-color: #007bff;
@@ -43,6 +63,7 @@
         <a href="book.html">Quản lý Sách</a>
         <a href="user.html">Quản lý Người dùng</a>
     </nav>
+    <a href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
     <button id="logoutBtn">Logout</button>
     <p id="logoutMessage" class="error"></p>
 </header>
@@ -50,146 +71,20 @@
 <main>
     <section class="card">
         <h2>🔍 Tìm kiếm sách</h2>
-        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;" />
+        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;"/>
         <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
         <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
         <button onclick="searchByCategory()">Tìm theo Thể loại</button>
     </section>
 
     <section class="card">
-        <h3>📋 Kết quả tìm kiếm sách</h3>
+        <h3>📋 Danh sách sản phẩm</h3>
         <div id="bookList"></div>
         <div id="paginationControls" class="pagination" style="margin-top: 1rem;"></div>
     </section>
 </main>
 
-<script>
-    const API_BASE = window.location.origin;
-    const accessToken = localStorage.getItem("accessToken");
-
-    let currentPage = 0;
-    let currentSearchType = "";
-    let currentKeyword = "";
-    let totalPages = 0;
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) {
-            document.getElementById("logoutMessage").textContent = "Không tìm thấy refresh token!";
-            return;
-        }
-        try {
-            const res = await fetch(`${API_BASE}/auth/logout`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ refreshToken })
-            });
-            const result = await res.json();
-            if (res.ok && result.success) {
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("refreshToken");
-                window.location.href = "/auth.html";
-            } else {
-                document.getElementById("logoutMessage").textContent = result.message || "Logout thất bại!";
-            }
-        } catch (err) {
-            document.getElementById("logoutMessage").textContent = "Lỗi server: " + err.message;
-        }
-    });
-
-    async function searchByAuthor() {
-        const keyword = document.getElementById("searchKeyword").value.trim();
-        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
-        await searchBooks("by-author", keyword);
-    }
-
-    async function searchByTitle() {
-        const keyword = document.getElementById("searchKeyword").value.trim();
-        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
-        await searchBooks("by-title", keyword);
-    }
-
-    async function searchByCategory() {
-        const keyword = document.getElementById("searchKeyword").value.trim();
-        if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
-        await searchBooks("by-category", keyword);
-    }
-
-    async function searchBooks(type, keyword, page = 0) {
-        currentPage = page;
-        currentSearchType = type;
-        currentKeyword = keyword;
-
-        try {
-            const url = new URL(`${API_BASE}/book/${type}`);
-            url.searchParams.append("page", page);
-            url.searchParams.append("size", 5);
-            url.searchParams.append(
-                type === "by-category" ? "category" : type === "by-author" ? "author" : "title",
-                keyword
-            );
-
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            });
-            const result = await res.json();
-
-            if (res.ok && result.success) {
-                const books = result.data.content || [];
-                totalPages = result.data.totalPages || 1;
-                showBooks(books);
-                renderPagination();
-            } else {
-                alert(result.message || "Lỗi khi tìm kiếm sách");
-            }
-        } catch (err) {
-            alert("Lỗi server: " + err.message);
-        }
-    }
-
-    function showBooks(books) {
-        const html =
-            books.length === 0
-                ? "<p>Không có kết quả</p>"
-                : books
-                    .map(
-                        (b) => `
-        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-          <b>Title:</b> ${b.title} <br/>
-          <b>Author:</b> ${b.author} <br/>
-          <b>Price:</b> ${b.price} <br/>
-          <b>Stock:</b> ${b.stock} <br/>
-          <b>Description:</b> ${b.description} <br/>
-          <b>Category:</b> ${b.categoryName} <br/>
-          <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" />
-        </div>
-      `
-                    )
-                    .join("");
-        document.getElementById("bookList").innerHTML = html;
-    }
-
-    function renderPagination() {
-        const container = document.getElementById("paginationControls");
-        container.innerHTML = "";
-
-        if (totalPages <= 1) return;
-
-        for (let i = 0; i < totalPages; i++) {
-            const btn = document.createElement("button");
-            btn.textContent = i + 1;
-            if (i === currentPage) {
-                btn.classList.add("active");
-            }
-            btn.onclick = () => goToPage(i);
-            container.appendChild(btn);
-        }
-    }
-
-    function goToPage(page) {
-        searchBooks(currentSearchType, currentKeyword, page);
-    }
-</script>
+<script src="home.js"> </script>
 
 </body>
 </html>

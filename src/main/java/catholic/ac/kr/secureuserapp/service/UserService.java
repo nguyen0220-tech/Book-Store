@@ -35,7 +35,7 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     @Cacheable(value = "userCache", key = "#userId")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserDTO> findUserById(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new ResourceNotFoundException("User with id " + userId + " not found"));
@@ -44,7 +44,7 @@ public class UserService {
         return ApiResponse.success("User found with id " + user.getId(), userDTO);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserDTO>> findAllUsers() {
         List<User> users = userRepository.findAll();
 
@@ -53,7 +53,7 @@ public class UserService {
         return ApiResponse.success("Users found", userDTOs);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         Page<User> users = userRepository.searchByName(keyword, pageable);
@@ -62,7 +62,7 @@ public class UserService {
         return ApiResponse.success("Users found with name: " + keyword, result);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<UserDTO>> findAllUsersByRole(int page, int size, String role) {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> users = userRepository.findByRole(role, pageable);

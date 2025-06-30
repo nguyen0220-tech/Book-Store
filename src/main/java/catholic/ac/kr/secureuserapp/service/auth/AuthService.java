@@ -122,7 +122,7 @@ public class AuthService {
             Map<String, Object> claims = new HashMap<>();
             claims.put("id", user.getId());
             claims.put("username", user.getUsername());
-            claims.put("roles", user.getRoles());
+            claims.put("roles", user.getRoles().stream().map(Role::getName).toList());
 
             String accessToken = jwtUtil.generateAccessToken(userDetails.getUsername(), claims);
 
@@ -132,7 +132,7 @@ public class AuthService {
 
             loginFailCounts.remove(username); // Nếu login thành công → reset số lần nhập sai
 
-            TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken.getToken());
+            TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken.getToken(), user.getId());
 
             return ApiResponse.success("Successfully logged in", tokenResponse);
         } catch (Exception e) {
@@ -199,7 +199,7 @@ public class AuthService {
                         refreshToken.getIpAddress())
                 .getData();
 
-        TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken.getToken());
+        TokenResponse tokenResponse = new TokenResponse(newAccessToken, newRefreshToken.getToken(), user.getId());
 
         return ApiResponse.success("Refreshed token", tokenResponse);
     }

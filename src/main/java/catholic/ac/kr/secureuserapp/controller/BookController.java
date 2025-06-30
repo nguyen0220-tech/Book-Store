@@ -51,6 +51,14 @@ public class BookController {
         return ResponseEntity.ok(bookService.getAllBooksByTitle(page, size, title));
     }
 
+    @GetMapping("random")
+    public ResponseEntity<ApiResponse<Page<BookDTO>>> getRandomBooks(
+            @RequestParam int page,
+            @RequestParam int size
+    ){
+        return ResponseEntity.ok(bookService.getRandomBooks(page, size));
+    }
+
     @PostMapping("add")
     public ResponseEntity<ApiResponse<BookDTO>> createBook(@Valid @RequestBody CreateBookRequest request){
         return ResponseEntity.ok(bookService.createBook(request));
