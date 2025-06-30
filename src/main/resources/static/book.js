@@ -1,5 +1,8 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
+let currentPage = 0;
+const pageSize = 5;
+let totalPages = 0;
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -10,7 +13,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     try {
         const res = await fetch(`${API_BASE}/auth/logout`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ refreshToken })
         });
         const result = await res.json();
@@ -26,11 +29,11 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     }
 });
 
-async function loadAllBooks() {
+async function loadAllBooks(page = 0) {
     try {
         const url = new URL(`${API_BASE}/book`);
-        url.searchParams.append("page", 0);
-        url.searchParams.append("size", 50);
+        url.searchParams.append("page", page);
+        url.searchParams.append("size", pageSize);
 
         const res = await fetch(url, {
             headers: { "Authorization": `Bearer ${accessToken}` }
@@ -38,12 +41,68 @@ async function loadAllBooks() {
         const result = await res.json();
         if (res.ok && result.success) {
             showBooks(result.data.content || []);
+            totalPages = result.data.totalPages;
+            currentPage = result.data.number;
+            renderPagination();
         } else {
             alert(result.message || "Lỗi khi tải sách");
         }
     } catch (err) {
         alert("Lỗi server: " + err.message);
     }
+}
+
+function renderPagination() {
+    const container = document.getElementById("paginationControls");
+    container.innerHTML = "";
+
+    const prev = document.createElement("button");
+    prev.textContent = "« Prev";
+    prev.disabled = currentPage === 0;
+    prev.onclick = () => loadAllBooks(currentPage - 1);
+    container.appendChild(prev);
+
+    for (let i = 0; i < totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        if (i === currentPage) btn.classList.add("active");
+        btn.onclick = () => loadAllBooks(i);
+        container.appendChild(btn);
+    }
+
+    const next = document.createElement("button");
+    next.textContent = "Next »";
+    next.disabled = currentPage === totalPages - 1;
+    next.onclick = () => loadAllBooks(currentPage + 1);
+    container.appendChild(next);
+}
+
+function showBooks(books) {
+    const tbody = document.querySelector("#bookTable tbody");
+    tbody.innerHTML = "";
+    if (books.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='10'>Không có sách nào</td></tr>";
+        return;
+    }
+    books.forEach(b => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${b.id}</td>
+            <td>${b.title}</td>
+            <td>${b.author}</td>
+            <td>${b.price}</td>
+            <td>${b.stock}</td>
+            <td>${b.description}</td>
+            <td><img src="${b.imgUrl}" alt="${b.title}"/></td>
+            <td>${b.categoryId || ""}</td>
+            <td>${b.categoryName || ""}</td>
+            <td>
+                <button onclick="deleteBook(${b.id})">Xóa</button>
+                <button onclick="editBook(${b.id})">Sửa</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 async function addBook() {
@@ -73,7 +132,7 @@ async function addBook() {
         const result = await res.json();
         if (res.ok && result.success) {
             alert("Thêm sách thành công");
-            loadAllBooks();
+            loadAllBooks(currentPage);
             clearAddForm();
         } else {
             document.getElementById("addBookMessage").textContent = result.message || "Lỗi khi thêm sách";
@@ -93,34 +152,6 @@ function clearAddForm() {
     document.getElementById("addCategoryId").value = "";
 }
 
-function showBooks(books) {
-    const tbody = document.querySelector("#bookTable tbody");
-    tbody.innerHTML = "";
-    if (books.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='10'>Không có sách nào</td></tr>";
-        return;
-    }
-    books.forEach(b => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-        <td>${b.id}</td>
-        <td>${b.title}</td>
-        <td>${b.author}</td>
-        <td>${b.price}</td>
-        <td>${b.stock}</td>
-        <td>${b.description}</td>
-        <td><img src="${b.imgUrl}" alt="${b.title}"/></td>
-        <td>${b.categoryId || ""}</td>
-        <td>${b.categoryName || ""}</td>
-        <td>
-          <button onclick="deleteBook(${b.id})">Xóa</button>
-          <button onclick="editBook(${b.id})">Sửa</button>
-        </td>
-      `;
-        tbody.appendChild(tr);
-    });
-}
-
 async function deleteBook(id) {
     if (!confirm(`Bạn có chắc muốn xóa sách ID=${id}?`)) return;
     try {
@@ -131,7 +162,7 @@ async function deleteBook(id) {
         const result = await res.json();
         if (res.ok && result.success) {
             alert("Xóa sách thành công");
-            loadAllBooks();
+            loadAllBooks(currentPage);
         } else {
             alert(result.message || "Lỗi khi xóa sách");
         }
@@ -141,7 +172,7 @@ async function deleteBook(id) {
 }
 
 function editBook(id) {
-    fetch(`${API_BASE}/book?page=0&size=50`, {
+    fetch(`${API_BASE}/book?page=0&size=100`, {
         headers: { "Authorization": `Bearer ${accessToken}` }
     })
         .then(res => res.json())
@@ -186,7 +217,7 @@ function editBook(id) {
                     .then(res => {
                         if (res.success) {
                             alert("Cập nhật sách thành công");
-                            loadAllBooks();
+                            loadAllBooks(currentPage);
                         } else {
                             alert(res.message || "Lỗi khi cập nhật sách");
                         }
@@ -199,6 +230,4 @@ function editBook(id) {
         .catch(err => alert("Lỗi server: " + err.message));
 }
 
-
-// Tự động load sách khi mở trang
 loadAllBooks();

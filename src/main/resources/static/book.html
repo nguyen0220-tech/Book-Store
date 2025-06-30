@@ -33,16 +33,19 @@
             text-align: left;
         }
         img {
-            max-width: 80px;
-            max-height: 80px;
-        }
-
-        img {
             max-width: 100px;
             max-height: 120px;
             object-fit: contain;
         }
-
+        #paginationControls button {
+            margin: 0 4px;
+            padding: 5px 10px;
+        }
+        #paginationControls .active {
+            font-weight: bold;
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -73,15 +76,17 @@
 
     <section class="card">
         <h2>📋 Danh sách sách</h2>
-        <button onclick="loadAllBooks()">Tải tất cả sách</button>
+        <button onclick="loadAllBooks(currentPage)">Tải tất cả sách</button>
         <table id="bookTable">
             <thead>
             <tr>
-                <th>Id</th><th>Title</th><th>Author</th><th>Price</th><th>Stock</th><th>Description</th><th>Image</th><th>Category ID</th><th>Category Name</th><th>Actions</th>
+                <th>Id</th><th>Title</th><th>Author</th><th>Price</th><th>Stock</th>
+                <th>Description</th><th>Image</th><th>Category ID</th><th>Category Name</th><th>Actions</th>
             </tr>
             </thead>
             <tbody></tbody>
         </table>
+        <div id="paginationControls" style="margin-top: 10px;"></div>
     </section>
 </main>
 <script src="book.js"></script>
