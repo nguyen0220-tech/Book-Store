@@ -125,4 +125,48 @@ async function clearCart() {
     }
 }
 
+async function placeOrder() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return alert("Vui lòng đăng nhập");
+
+    // LẤY GIÁ TRỊ TỪ INPUT FORM
+    const recipientName = document.getElementById("recipientName").value.trim();
+    const recipientPhone = document.getElementById("recipientPhone").value.trim();
+    const shippingAddress = document.getElementById("shippingAddress").value.trim();
+
+    if (!recipientName || !recipientPhone || !shippingAddress) {
+        alert("❗ Vui lòng nhập đầy đủ thông tin giao hàng");
+        return;
+    }
+
+    const orderRequest = {
+        userId: parseInt(userId),
+        recipientName,
+        recipientPhone,
+        shippingAddress
+    };
+
+    try {
+        const res = await fetch(`${API_BASE}/order/checkout`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(orderRequest)
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            alert("✅ Đặt hàng thành công!");
+            window.location.href = "order-history.html";
+        } else {
+            alert("❌ " + (result.message || "Lỗi khi đặt hàng"));
+        }
+
+    } catch (err) {
+        alert("⚠️ Lỗi server: " + err.message);
+    }
+}
+
 window.onload = loadCart;
