@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.mapper;
 
 import catholic.ac.kr.secureuserapp.model.dto.RoleDTO;
 import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserProfileDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import org.mapstruct.Mapper;
@@ -17,6 +18,8 @@ public interface UserMapper {
     UserDTO toDTO(User user);
 
     User toUser(UserDTO userDTO);
+
+    UserProfileDTO toUserProfileDTO(User user);
 
     RoleDTO toDTO(Role role);
 

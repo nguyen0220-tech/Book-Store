@@ -3,10 +3,9 @@ package catholic.ac.kr.secureuserapp.service;
 import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
-import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
-import catholic.ac.kr.secureuserapp.model.dto.UserDTO;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
 
     @Cacheable(value = "userCache", key = "#userId")
     @PreAuthorize("hasRole('ADMIN')")
@@ -126,5 +126,56 @@ public class UserService {
         userRepository.deleteById(user.getId());
 
         return ApiResponse.success("User deleted successfully");
+    }
+
+    public ApiResponse<UserProfileDTO> getUserProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        UserProfileDTO userProfileDTO = userMapper.toUserProfileDTO(user);
+
+        return ApiResponse.success("User profile", userProfileDTO);
+    }
+
+    public ApiResponse<UserProfileDTO> updateUserProfile(Long id, UpdateProfileRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setFullName(request.getFullName());
+        user.setLiking(request.getLiking());
+        user.setAddress(request.getAddress());
+        user.setPhone(request.getPhone());
+
+        userRepository.save(user);
+
+        UserProfileDTO userProfileDTO = userMapper.toUserProfileDTO(user);
+
+        return ApiResponse.success("Updated user profile", userProfileDTO);
+    }
+
+    @Transactional
+    public ApiResponse<String> changePassword(Long id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return ApiResponse.error("Old password does not match");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ApiResponse.error("Password does not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        userRepository.save(user);
+
+        emailService.sendSimpleMail(
+                user.getUsername(),
+                "Password changed",
+                "Your password has been changed"
+        );
+
+        return ApiResponse.success("Password changed successfully");
     }
 }

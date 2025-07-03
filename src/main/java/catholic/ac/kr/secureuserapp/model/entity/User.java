@@ -35,4 +35,13 @@ public class User {
 
     @Column(nullable = false)
     private boolean enabled = false; // mặc định false, chỉ khi xác thực email mới true
+
+//    @Column(nullable = false)
+    private String fullName;
+
+    private String address;
+
+    private String phone;
+
+    private String liking;
 }

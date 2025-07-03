@@ -257,6 +257,8 @@ nav a:hover {
 .error {
     color: red;
 }
+.success { color: green; }
+
 
 .pagination button {
     margin: 0 3px;
@@ -308,4 +310,23 @@ nav a:hover {
 
 .back-button:hover {
     background-color: #0056b3;
+}
+
+/* user profile */
+.profile-container {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+h2 {
+    margin-top: 20px;
 }

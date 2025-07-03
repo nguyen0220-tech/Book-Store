@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang cá nhân</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f8;
+        }
+
+        header {
+            background: #007bff;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: white;
+            margin-right: 1rem;
+            text-decoration: none;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin: 0.8rem 0 0.2rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 1.2rem;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        #message {
+            margin-top: 1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>👤 Trang cá nhân</h1>
+    <nav>
+        <a href="home.html">🏠 Trang chủ</a>
+    </nav>
+</header>
+
+<main class="profile-container">
+    <h2>Thông tin cá nhân</h2>
+    <div>
+        <label>Username:</label>
+        <input type="text" id="username" disabled>
+
+        <label>Họ tên:</label>
+        <input type="text" id="fullName">
+
+        <label>Địa chỉ:</label>
+        <input type="text" id="address">
+
+        <label>Sở thích:</label>
+        <input type="text" id="liking">
+
+        <label>Số điện thoại:</label>
+        <input type="text" id="phone">
+
+        <button onclick="updateProfile()">💾 Cập nhật thông tin</button>
+    </div>
+
+    <h2>Đổi mật khẩu</h2>
+    <div>
+        <label>Mật khẩu cũ:</label>
+        <input type="password" id="oldPassword">
+
+        <label>Mật khẩu mới:</label>
+        <input type="password" id="newPassword">
+
+        <label>Xác nhận mật khẩu mới:</label>
+        <input type="password" id="confirmPassword">
+
+        <button onclick="changePassword()">🔒 Đổi mật khẩu</button>
+    </div>
+
+    <p id="message"></p>
+</main>
+
+<script src="user-profile.js"></script>
+</body>
+</html>
