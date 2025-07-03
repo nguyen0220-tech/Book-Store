@@ -228,5 +228,6 @@ window.onload = () => {
         // Ẩn chức năng quản lý
         document.querySelector('a[href="book.html"]').style.display = "none";
         document.querySelector('a[href="user.html"]').style.display = "none";
+        document.querySelector('a[href="order-manager.html"]').style.display = "none";
     }
 };
