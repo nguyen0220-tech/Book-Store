@@ -1,9 +1,8 @@
 const API_BASE = window.location.origin;
-const userId = localStorage.getItem("userId");
 const accessToken = localStorage.getItem("accessToken");
 
 window.onload = () => {
-    if (!userId || !accessToken) {
+    if (!accessToken) {
         alert("Vui lòng đăng nhập lại.");
         window.location.href = "auth.html";
         return;
@@ -13,7 +12,7 @@ window.onload = () => {
 
 async function fetchOrderHistory() {
     try {
-        const res = await fetch(`${API_BASE}/order/user/${userId}`, {
+        const res = await fetch(`${API_BASE}/order/my-order`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -41,19 +40,25 @@ function renderOrders(orders) {
     }
 
     container.innerHTML = orders.map(order => `
-    <div class="order-card">
-      <div class="order-header">
-        🧾 Đơn hàng #${order.orderId} | Ngày: ${formatDate(order.orderDate)} | Tổng: ${order.totalPrice.toLocaleString()}₩ | Trạng thái: ${order.orderStatus}
-      </div>
-      ${order.items.map(item => `
-        <div class="order-item">
-          📚 <b>${item.title}</b><br/>
-          <img src="${item.imgUrl}" style="max-width:60px;" /> x ${item.quantity} cuốn - Giá: ${item.price.toLocaleString()}₩
+        <div class="order-card">
+            <div class="order-header">
+                🧾 Đơn hàng #${order.orderId}<br/>
+                ⏰ Ngày: ${formatDate(order.orderDate)}<br/>
+                💸 Tổng đơn (trước giảm): <s>${(order.totalPrice + (order.totalDiscount || 0)).toLocaleString()}₩</s><br/>
+                🎁 Giảm giá: <span style="color: red;">- ${(order.totalDiscount || 0).toLocaleString()}₩</span><br/>
+                💳 Thanh toán: <b>${order.totalPrice.toLocaleString()}₩</b><br/>
+                📦 Trạng thái: ${order.orderStatus}
+            </div>
+            ${order.items.map(item => `
+                <div class="order-item">
+                    📚 <b>${item.title}</b><br/>
+                    <img src="${item.imgUrl}" style="max-width:60px;" /> x ${item.quantity} cuốn - Giá: ${item.price.toLocaleString()}₩
+                </div>
+            `).join('')}
         </div>
-      `).join('')}
-    </div>
-  `).join('');
+    `).join('');
 }
+
 
 function formatDate(timestamp) {
     const date = new Date(timestamp);

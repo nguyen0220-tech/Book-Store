@@ -4,9 +4,11 @@ import catholic.ac.kr.secureuserapp.Status.OrderStatus;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.OrderDTO;
 import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,13 +20,15 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/checkout")
-    public ResponseEntity<ApiResponse<OrderDTO>> checkout(@RequestBody OrderRequest request) {
-        return ResponseEntity.ok(orderService.checkout(request));
+    public ResponseEntity<ApiResponse<OrderDTO>> checkout(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestBody OrderRequest request) {
+        return ResponseEntity.ok(orderService.checkout(userDetails.getUser().getId(),request));
     }
 
-    @GetMapping("user/{userId}")
-    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrder(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(orderService.getOrderByUserId(userId));
+    @GetMapping("my-order")
+    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrder(@AuthenticationPrincipal MyUserDetails userDetails) {
+        return ResponseEntity.ok(orderService.getOrderByUserId(userDetails.getUser().getId()));
     }
 
     @GetMapping("admin/all")

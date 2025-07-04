@@ -1,10 +1,9 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
-const userId = localStorage.getItem("userId");
 
 window.onload = async () => {
     try {
-        const res = await fetch(`${API_BASE}/user/profile/${userId}`, {
+        const res = await fetch(`${API_BASE}/user/my-profile`, {
             headers: { "Authorization": `Bearer ${accessToken}` }
         });
         const data = await res.json();
@@ -30,7 +29,7 @@ async function updateProfile() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/user/profile/update/${userId}`, {
+        const res = await fetch(`${API_BASE}/user/my-profile/update`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -59,7 +58,7 @@ async function changePassword() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/user/profile/setup-pass/${userId}`, {
+        const res = await fetch(`${API_BASE}/user/my-profile/setup-pass`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

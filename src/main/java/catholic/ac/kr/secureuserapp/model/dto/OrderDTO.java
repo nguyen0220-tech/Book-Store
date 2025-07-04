@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.model.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -14,6 +15,8 @@ public class OrderDTO {
     private long userId;
 
     private double totalPrice;
+
+    private BigDecimal totalDiscount;
 
     private Timestamp orderDate;
 

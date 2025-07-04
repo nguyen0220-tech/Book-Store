@@ -1,13 +1,24 @@
-/* style.css */
-
+/* Chung */
 body {
-    font-family: Arial;
+    font-family: 'Segoe UI', sans-serif;
     text-align: center;
     margin-top: 40px;
     background: linear-gradient(to right, #e6f0ec, #f0f7f4);
-    font-family: 'Segoe UI', sans-serif;
 }
 
+h2 {
+    margin-top: 20px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Header */
 header {
     background: #2c3e50;
     color: #fff;
@@ -20,36 +31,25 @@ header {
     z-index: 10;
 }
 
-
+/* Form */
 form {
     display: none;
     margin: 20px auto;
     width: 300px;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 form.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
 }
 
-input {
-    display: block;
-    margin: 10px auto;
-    padding: 8px;
-    width: 90%;
-}
-
-.toggle {
-    color: blue;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-.error {
-    color: red;
-    margin-top: 10px;
-}
-
-/* Nút với hiệu ứng đẹp */
+/* Nút hiệu ứng */
 button {
     padding: 12px 24px;
     margin-top: 20px;
@@ -91,22 +91,7 @@ button:focus {
     box-shadow: 0 0 10px #4CAF50;
 }
 
-
-/* Animation chuyển đổi form */
-form {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-form.active {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
+/* Nút logout */
 #logoutBtn {
     position: fixed;
     top: 16px;
@@ -131,14 +116,23 @@ form.active {
     }
 }
 
-
-input {
-    padding: 6px 10px;
-    margin: 4px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+/* Thông báo lỗi/thành công */
+.error {
+    color: red;
+    margin-top: 10px;
 }
 
+.success {
+    color: green;
+}
+
+.toggle {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Card & layout */
 .card {
     background: white;
     padding: 1.5rem;
@@ -178,24 +172,7 @@ input {
     margin-top: 8px;
 }
 
-/* cart */
-.continue-shopping {
-    display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 1rem 0;
-    transition: background-color 0.3s ease;
-}
-
-.continue-shopping:hover {
-    background-color: #0056b3;
-}
-
-
+/* Table & Cart */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -223,22 +200,23 @@ img {
     margin-top: 1rem;
 }
 
-/* home */
-.cart-link {
-    background-color: #28a745;
+.continue-shopping {
+    display: inline-block;
+    background-color: #007bff;
     color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
     text-decoration: none;
     font-weight: bold;
-    margin-left: 1rem;
+    margin: 1rem 0;
+    transition: background-color 0.3s ease;
 }
 
-.cart-link:hover {
-    background-color: #218838;
+.continue-shopping:hover {
+    background-color: #0056b3;
 }
 
-
+/* Home navigation */
 nav {
     margin-bottom: 1rem;
 }
@@ -254,12 +232,21 @@ nav a:hover {
     text-decoration: underline;
 }
 
-.error {
-    color: red;
+.cart-link {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 1rem;
 }
-.success { color: green; }
 
+.cart-link:hover {
+    background-color: #218838;
+}
 
+/* Pagination */
 .pagination button {
     margin: 0 3px;
     padding: 4px 8px;
@@ -274,7 +261,7 @@ nav a:hover {
     border-radius: 4px;
 }
 
-/* order-history*/
+/* Order History */
 .order-card {
     border: 1px solid #ccc;
     padding: 1rem;
@@ -282,19 +269,23 @@ nav a:hover {
     border-radius: 8px;
     background-color: #f9f9f9;
 }
+
 .order-header {
     font-weight: bold;
     margin-bottom: 0.5rem;
 }
+
 .order-item {
     margin-left: 1rem;
     padding: 0.5rem 0;
     border-bottom: 1px solid #eee;
 }
+
 .order-item:last-child {
     border-bottom: none;
 }
 
+/* Back button */
 .back-button {
     display: inline-block;
     padding: 8px 16px;
@@ -312,7 +303,7 @@ nav a:hover {
     background-color: #0056b3;
 }
 
-/* user profile */
+/* Profile */
 .profile-container {
     max-width: 600px;
     margin: 30px auto;
@@ -321,12 +312,29 @@ nav a:hover {
     border-radius: 12px;
 }
 
-input, textarea {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 12px;
+/*coupon*/
+.coupon-box {
+    border: 2px dashed #3498db;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 12px;
+    background-color: #f9fefe;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-align: left;
+    font-size: 16px;
+    transition: transform 0.2s ease;
 }
 
-h2 {
-    margin-top: 20px;
+.coupon-box:hover {
+    transform: scale(1.02);
+    background-color: #e8f6ff;
+}
+
+.coupon-box b {
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.coupon-box strong {
+    color: #e74c3c;
 }

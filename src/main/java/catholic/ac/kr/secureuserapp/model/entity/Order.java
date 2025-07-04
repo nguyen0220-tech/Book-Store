@@ -2,7 +2,6 @@ package catholic.ac.kr.secureuserapp.model.entity;
 
 import catholic.ac.kr.secureuserapp.Status.OrderStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +27,8 @@ public class Order {
 
     @Column(nullable = false)
     private BigDecimal totalPrice;
+
+    private BigDecimal totalDiscount;
 
     @Enumerated(EnumType.STRING) // ánh xạ enum sang String trong DB
     @Column(nullable = false)

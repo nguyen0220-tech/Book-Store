@@ -2,15 +2,15 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.entity.User;
-import catholic.ac.kr.secureuserapp.service.FileService;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final FileService fileService;
 
     @GetMapping("userid")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(@RequestParam("id") Long id) {
@@ -65,20 +64,20 @@ public class UserController {
         return ResponseEntity.ok(userService.deleteUser(id));
     }
 
-    @GetMapping("profile/{id}")
-    public ResponseEntity<ApiResponse<UserProfileDTO>> getUserProfile(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(userService.getUserProfile(id));
+    @GetMapping("my-profile")
+    public ResponseEntity<ApiResponse<UserProfileDTO>> getUserProfile(@AuthenticationPrincipal MyUserDetails userDetails) {
+        return ResponseEntity.ok(userService.getUserProfile(userDetails.getUser().getId()));
     }
 
-    @PutMapping("profile/update/{id}")
+    @PutMapping("my-profile/update")
     public ResponseEntity<ApiResponse<UserProfileDTO>> updateUserProfile(
-            @PathVariable Long id,
+            @AuthenticationPrincipal MyUserDetails userDetails,
             @Valid @RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(userService.updateUserProfile(id, request));
+        return ResponseEntity.ok(userService.updateUserProfile(userDetails.getUser().getId(), request));
     }
 
-    @PutMapping("/profile/setup-pass/{id}")
-    public ResponseEntity<ApiResponse<?>> changePassword(@PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
-        return ResponseEntity.ok(userService.changePassword(id, request));
+    @PutMapping("/my-profile/setup-pass")
+    public ResponseEntity<ApiResponse<?>> changePassword(@AuthenticationPrincipal MyUserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
+        return ResponseEntity.ok(userService.changePassword(userDetails.getUser().getId(), request));
     }
 }

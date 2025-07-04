@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Coupon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.4rem;
+            margin-top: 0.2rem;
+        }
+
+        small {
+            color: gray;
+            font-size: 0.8rem;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+        }
+
+        #couponList {
+            margin-top: 2rem;
+        }
+
+        #couponList div {
+            padding: 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .actions button {
+            margin-left: 0.5rem;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<h2>🎁 Tạo / Cập nhật Coupon</h2>
+<a href="home.html" class="back-button">🏠 Quay về Trang chủ</a>
+
+<form id="couponForm" onsubmit="event.preventDefault(); submitCoupon()">
+
+    <div class="form-group">
+        <label for="couponCode">Mã Coupon (Mã nay khi tạo/cập nhật coupon hệ thống sẽ tự động nhập nên không cần điền trực tiếp)</label>
+        <input id="couponCode" />
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input id="percentDiscount" type="checkbox" onchange="toggleDiscountType()"/>
+            Sử dụng giảm giá theo phần trăm
+        </label>
+        <small>Nếu bật, hệ thống sẽ dùng phần trăm thay vì giảm số tiền cố định.</small>
+    </div>
+
+    <div class="form-group" id="fixedDiscountGroup">
+        <label for="discountAmount">Giảm giá cố định (₩)</label>
+        <input id="discountAmount" type="number" min="0" value="0"/>
+        <small>Ví dụ: nhập 5000 sẽ giảm 5,000₩</small>
+    </div>
+
+    <div class="form-group" id="percentDiscountGroup" style="display:none">
+        <label for="discountPercent">Phần trăm giảm (%)</label>
+        <input id="discountPercent" type="number" min="0" max="100" value="0"/>
+        <small>Ví dụ: nhập 10 sẽ giảm 10%</small>
+    </div>
+
+    <div class="form-group">
+        <label for="minimumAmount">Số tiền tối thiểu để áp dụng (₩)</label>
+        <input id="minimumAmount" type="number" min="0" value="0"/>
+        <small>Đơn hàng cần đạt mức này để dùng coupon</small>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input id="active" type="checkbox" checked />
+            Kích hoạt coupon (active)?
+        </label>
+        <small>Nếu bỏ chọn, coupon sẽ không được áp dụng kể cả khi chưa hết hạn</small>
+    </div>
+
+
+    <div class="form-group">
+        <label for="description">Mô tả</label>
+        <textarea id="description" rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="expired">Ngày hết hạn</label>
+        <input id="expired" type="datetime-local" required/>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input id="usage" type="checkbox"/>
+            Coupon dùng được nhiều lần?
+        </label>
+        <small>Nếu chọn, coupon có thể dùng nhiều lần (tuỳ theo số lượng)</small>
+    </div>
+
+    <div class="form-group">
+        <label for="maxUsage">Số lần sử dụng tối đa</label>
+        <input id="maxUsage" type="number" min="0" value="0"/>
+    </div>
+
+    <div class="form-group">
+        <label for="usageCount">Số lần đã sử dụng</label>
+        <input id="usageCount" type="number" min="0" value="0"/>
+    </div>
+
+    <button type="submit">💾 Lưu Coupon</button>
+</form>
+
+<h3>📋 Danh sách Coupon</h3>
+<div id="couponList"></div>
+
+<script src="coupon-admin.js"></script>
+
+</body>
+</html>

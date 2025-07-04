@@ -1,6 +1,5 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
-const userId = localStorage.getItem("userId");
 
 let currentPage = 0;
 let currentSearchType = "";
@@ -158,11 +157,11 @@ function showBooks(books) {
 }
 
 async function addToCart(bookId) {
-    if (!userId) return alert("Vui lòng đăng nhập");
+    if (!accessToken) return alert("Vui lòng đăng nhập");
 
     const qtyInput = document.getElementById(`qty-${bookId}`);
     const quantity = parseInt(qtyInput.value);
-    const maxStock = parseInt(qtyInput.max);  // Lấy giá trị max từ input
+    const maxStock = parseInt(qtyInput.max);
 
     if (isNaN(quantity) || quantity <= 0) {
         alert("Số lượng không hợp lệ");
@@ -171,7 +170,7 @@ async function addToCart(bookId) {
 
     if (quantity > maxStock) {
         alert(`⚠️ Số lượng vượt quá số lượng còn lại trong kho (${maxStock})`);
-        qtyInput.value = maxStock;  // Tự động đặt lại giá trị tối đa
+        qtyInput.value = maxStock;
         return;
     }
 
@@ -182,7 +181,7 @@ async function addToCart(bookId) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({userId: parseInt(userId), bookId, quantity})
+            body: JSON.stringify({ bookId, quantity })  // ❌ Bỏ userId
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -229,5 +228,6 @@ window.onload = () => {
         document.querySelector('a[href="book.html"]').style.display = "none";
         document.querySelector('a[href="user.html"]').style.display = "none";
         document.querySelector('a[href="order-manager.html"]').style.display = "none";
+        document.querySelector('a[href="coupon-admin.html"]').style.display = "none";
     }
 };

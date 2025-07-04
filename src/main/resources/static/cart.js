@@ -1,10 +1,9 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
-const userId = localStorage.getItem("userId");
 
 async function loadCart() {
     try {
-        const res = await fetch(`${API_BASE}/cart?userId=${userId}`, {
+        const res = await fetch(`${API_BASE}/cart`, {
             headers: {
                 "Authorization": `Bearer ${accessToken}`
             }
@@ -73,7 +72,6 @@ async function updateQuantity(bookId, quantity) {
                 "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
-                userId: parseInt(userId),
                 bookId,
                 quantity: parseInt(quantity)
             })
@@ -93,7 +91,7 @@ async function updateQuantity(bookId, quantity) {
 
 async function removeItem(bookId) {
     try {
-        const res = await fetch(`${API_BASE}/cart/items?userId=${userId}&bookId=${bookId}`, {
+        const res = await fetch(`${API_BASE}/cart/items?bookId=${bookId}`, {
             method: "DELETE",
             headers: {"Authorization": `Bearer ${accessToken}`}
         });
@@ -113,9 +111,9 @@ async function removeItem(bookId) {
 async function clearCart() {
     if (!confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) return;
 
-    const res = await fetch(`${API_BASE}/cart?userId=${userId}`, {
+    const res = await fetch(`${API_BASE}/cart`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${accessToken}` }
+        headers: {"Authorization": `Bearer ${accessToken}`}
     });
     const result = await res.json();
     if (res.ok && result.success) {
@@ -126,13 +124,12 @@ async function clearCart() {
 }
 
 async function placeOrder() {
-    const userId = localStorage.getItem("userId");
-    if (!userId) return alert("Vui lòng đăng nhập");
+    if (!accessToken) return alert("Vui lòng đăng nhập");
 
-    // LẤY GIÁ TRỊ TỪ INPUT FORM
     const recipientName = document.getElementById("recipientName").value.trim();
     const recipientPhone = document.getElementById("recipientPhone").value.trim();
     const shippingAddress = document.getElementById("shippingAddress").value.trim();
+    const couponCode = document.getElementById("couponCode").value.trim();
 
     if (!recipientName || !recipientPhone || !shippingAddress) {
         alert("❗ Vui lòng nhập đầy đủ thông tin giao hàng");
@@ -140,10 +137,10 @@ async function placeOrder() {
     }
 
     const orderRequest = {
-        userId: parseInt(userId),
         recipientName,
         recipientPhone,
-        shippingAddress
+        shippingAddress,
+        couponCode
     };
 
     try {
