@@ -14,9 +14,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +31,17 @@ public class CouponService {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<CouponDTO>> getAllCoupons() {
         List<Coupon> coupons = couponRepository.findAll();
-        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(coupons);
+
+        coupons.removeIf(coupon -> {
+            boolean isExpired = coupon.getExpired().isBefore(LocalDateTime.now());
+            if (isExpired) {
+                couponRepository.delete(coupon);
+            }
+            return isExpired;
+        });
+        List<CouponDTO> couponDTOS = coupons.stream()
+                .map(CouponMapper::toCouponDTO)
+                .toList();
 
         return ApiResponse.success("All coupon", couponDTOS);
 
@@ -50,7 +64,17 @@ public class CouponService {
 
         List<Coupon> coupons = couponRepository.findByUserId(user.getId());
 
-        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(coupons);
+        List<Coupon> validCoupons = new ArrayList<>();
+        for (Coupon coupon : coupons) {
+            if (coupon.getExpired().isBefore(LocalDateTime.now())){
+                couponRepository.delete(coupon);
+            }
+            else {
+                validCoupons.add(coupon);
+            }
+        }
+
+        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(validCoupons);
 
         return ApiResponse.success("Coupon found with userid "+userId,couponDTOS);
     }
@@ -58,11 +82,11 @@ public class CouponService {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<CouponDTO> createCoupon(CouponRequest request) {
         String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        RandomGenerator randomGenerator = RandomGenerator.getDefault();
+        SecureRandom random = new SecureRandom();
+        String randomCode = IntStream.range(0,10)
+                .mapToObj( c -> String.valueOf(chars.charAt(random.nextInt(chars.length()))))
+                .collect(Collectors.joining());
 
-        String randomCode = randomGenerator.ints(10,0,chars.length())
-                .mapToObj( i -> String.valueOf(chars.charAt(i)))
-                .collect( Collectors.joining() );
         request.setCouponCode(randomCode.toUpperCase());
 
         Coupon coupon = CouponMapper.toCoupon(request);

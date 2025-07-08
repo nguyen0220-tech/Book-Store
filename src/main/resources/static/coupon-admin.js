@@ -29,7 +29,7 @@ async function submitCoupon() {
         minimumAmount: parseFloat(document.getElementById("minimumAmount").value),
         active: document.getElementById("active").checked,
         description: document.getElementById("description").value.trim(),
-        expired: new Date(document.getElementById("expired").value).toISOString(),
+        expired: document.getElementById("expired").value + ":00",
         usage: document.getElementById("usage").checked,
         maxUsage: parseInt(document.getElementById("maxUsage").value),
         usageCount: parseInt(document.getElementById("usageCount").value)
