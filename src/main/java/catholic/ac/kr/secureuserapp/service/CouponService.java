@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
@@ -27,7 +29,17 @@ public class CouponService {
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<CouponDTO>> getAllCoupons() {
         List<Coupon> coupons = couponRepository.findAll();
-        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(coupons);
+        //delete valid coupon with stream
+        coupons.removeIf(coupon -> {
+            boolean isExpired = coupon.getExpired().isAfter(LocalDateTime.now());
+            if (isExpired) {
+                couponRepository.delete(coupon);
+            }
+            return isExpired;
+        });
+        List<CouponDTO> couponDTOS = coupons.stream()
+                .map(CouponMapper::toCouponDTO)
+                .toList();
 
         return ApiResponse.success("All coupon", couponDTOS);
 
@@ -50,7 +62,17 @@ public class CouponService {
 
         List<Coupon> coupons = couponRepository.findByUserId(user.getId());
 
-        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(coupons);
+        List<Coupon> validCoupons = new ArrayList<>();
+        for (Coupon coupon : coupons) {
+            if (coupon.getExpired().isBefore(LocalDateTime.now())){
+                couponRepository.delete(coupon);
+            }
+            else {
+                validCoupons.add(coupon);
+            }
+        }
+
+        List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(validCoupons);
 
         return ApiResponse.success("Coupon found with userid "+userId,couponDTOS);
     }
