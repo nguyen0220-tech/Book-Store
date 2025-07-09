@@ -18,7 +18,6 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,13 +31,13 @@ public class CouponService {
     public ApiResponse<List<CouponDTO>> getAllCoupons() {
         List<Coupon> coupons = couponRepository.findAll();
 
-        coupons.removeIf(coupon -> {
-            boolean isExpired = coupon.getExpired().isBefore(LocalDateTime.now());
-            if (isExpired) {
-                couponRepository.delete(coupon);
-            }
-            return isExpired;
-        });
+//        coupons.removeIf(coupon -> {
+//            boolean isExpired = coupon.getExpired().isBefore(LocalDateTime.now());
+//            if (isExpired) {
+//                couponRepository.delete(coupon);
+//            }
+//            return isExpired;
+//        });
         List<CouponDTO> couponDTOS = coupons.stream()
                 .map(CouponMapper::toCouponDTO)
                 .toList();
@@ -129,6 +128,4 @@ public class CouponService {
 
         return ApiResponse.success("Coupon Deleted");
     }
-
-
 }
