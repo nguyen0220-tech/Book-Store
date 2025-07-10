@@ -14,7 +14,8 @@ import java.util.List;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "orders")
 public class Order {
     @Id
@@ -24,6 +25,10 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "coupon_code")
+    private Coupon coupon;
 
     @Column(nullable = false)
     private BigDecimal totalPrice;
@@ -37,7 +42,7 @@ public class Order {
     @Column(nullable = false)
     private Timestamp createdAt;
 
-    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
     @Column(nullable = false)

@@ -19,6 +19,8 @@ public class CouponMapper {
         couponDTO.setActive(coupon.isActive());
         couponDTO.setDescription(coupon.getDescription());
         couponDTO.setExpired(coupon.getExpired());
+        couponDTO.setMaxUsage(coupon.getMaxUsage());
+        couponDTO.setUsageCount(coupon.getUsageCount());
         couponDTO.setUsage(coupon.isUsage());
 
         return couponDTO;

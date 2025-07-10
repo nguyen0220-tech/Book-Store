@@ -16,4 +16,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     @Query("SELECT c FROM Coupon c JOIN c.users u WHERE u.id = :userId")
     List<Coupon> findByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.coupon.couponCode = :couponCode AND o.user.id = :userId")
+    int countUsageCouponByUserId(@Param("couponCode") String couponCode, @Param("userId") Long userId);
+
 }

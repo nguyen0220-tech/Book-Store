@@ -29,4 +29,6 @@ public class OrderDTO {
     private String recipientName;
 
     private String recipientPhone;
+
+    private String couponCode;
 }

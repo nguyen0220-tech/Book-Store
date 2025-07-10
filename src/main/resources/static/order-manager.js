@@ -22,6 +22,7 @@ async function loadOrders() {
                     <td>${order.userId}</td>
                     <td>${order.totalPrice}₩</td>
                     <td>${order.totalDiscount || 0}₩</td>
+                    <td>${order.couponCode || '-'}</td>
                     <td>${new Date(order.orderDate).toLocaleString()}</td>
                     <td>${order.orderStatus}</td>
                     <td>${order.recipientName || ''}</td>

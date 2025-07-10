@@ -5,20 +5,40 @@ let editingCode = null; // nếu khác null -> đang sửa
 
 async function loadCoupons() {
     const res = await fetch(`${API_BASE}/coupon`, {
-        headers: {Authorization: `Bearer ${accessToken}`}
+        headers: { Authorization: `Bearer ${accessToken}` }
     });
     const data = await res.json();
+
     if (data.success) {
-        document.getElementById("couponList").innerHTML = data.data.map(c => `
-            <div>
-                <b>${c.couponCode}</b> - ${c.percentDiscount ? c.discountPercent + "%" : c.discountAmount + "₩"}
-                - Hết hạn: ${c.expired?.split("T")[0]} - ${c.description}
-                <button onclick="editCoupon('${c.couponCode}')">✏️</button>
-                <button onclick="deleteCoupon('${c.couponCode}')">❌</button>
-            </div>
-        `).join("");
+        const list = data.data.map(c => {
+            const discountText = c.percentDiscount
+                ? `${c.discountPercent}%`
+                : `${c.discountAmount.toLocaleString()}₩`;
+
+            const expiredDate = c.expired?.split("T")[0] || "Không rõ";
+
+            return `
+                <div style="border-bottom: 1px solid #ccc; padding: 0.5rem 0;">
+                    <b>🎁 ${c.couponCode}</b> - <span>${discountText}</span><br/>
+                    💰 Tối thiểu: ${c.minimumAmount.toLocaleString()}₩ |
+                    🔁 Dùng nhiều lần: ${c.usage ? "✅" : "❌"} |
+                    📊 Đã dùng: <b>${c.usageCount}/${c.maxUsage}</b> |
+                    🕒 Hết hạn: ${expiredDate}<br/>
+                    📝 <i>${c.description || "Không có mô tả"}</i>
+                    <div class="actions" style="margin-top: 0.3rem;">
+                        <button onclick="editCoupon('${c.couponCode}')">✏️ Sửa</button>
+                        <button onclick="deleteCoupon('${c.couponCode}')">❌ Xoá</button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        document.getElementById("couponList").innerHTML = list;
+    } else {
+        alert(data.message || "Không thể tải danh sách coupon");
     }
 }
+
 
 async function submitCoupon() {
     const request = {

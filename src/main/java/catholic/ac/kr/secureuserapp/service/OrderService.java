@@ -48,9 +48,9 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal finalTotal = total;
-
+        Coupon coupon = null;
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
-            Coupon coupon = couponRepository.findByCouponCode(request.getCouponCode())
+            coupon = couponRepository.findByCouponCode(request.getCouponCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
             finalTotal = applyCoupon(total, coupon, userId);
         }
@@ -65,6 +65,10 @@ public class OrderService {
         order.setShippingAddress(request.getShippingAddress());
         order.setRecipientName(request.getRecipientName());
         order.setRecipientPhone(request.getRecipientPhone());
+
+        if (coupon != null) {
+            order.setCoupon(coupon);
+        }
 
         List<OrderItem> orderItems = new ArrayList<>();
 
@@ -109,6 +113,10 @@ public class OrderService {
 
         if (total.compareTo(coupon.getMinimumAmount()) < 0)
             throw new RuntimeException("Total amount is less than minimum required for coupon");
+
+        if (!coupon.isUsage() && couponRepository.countUsageCouponByUserId(coupon.getCouponCode(),userId) >= 1) {
+            throw new RuntimeException("Coupon already used");
+        }
 
         BigDecimal discount = coupon.isPercentDiscount()
                 ? total.multiply(coupon.getDiscountPercent()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)

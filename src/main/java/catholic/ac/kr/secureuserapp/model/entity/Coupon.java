@@ -16,7 +16,7 @@ import java.util.Set;
 @Getter @Setter
 public class Coupon {
     @Id
-    @Column(length = 10, nullable = false)
+    @Column(name = "coupon_code", length = 10, nullable = false)
     private String couponCode;
 
     private BigDecimal discountAmount; //giam gia co dinh
@@ -42,7 +42,7 @@ public class Coupon {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_coupon",
-            joinColumns = @JoinColumn(name = "coupon_code",referencedColumnName = "couponCode"),
+            joinColumns = @JoinColumn(name = "coupon_code",referencedColumnName = "coupon_code"),
             inverseJoinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id")
     )
     Set<User> users;
