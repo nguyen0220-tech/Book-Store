@@ -42,7 +42,7 @@ public class RefreshTokenService {
 
         RefreshToken token = new RefreshToken();
         token.setUser(user);
-        token.setToken(UUID.randomUUID().toString());
+        token.setToken(generateUniqueToken());
         token.setExpiryDate(LocalDateTime.now().plusDays(3));
         token.setDeviceId(deviceId);
         token.setUserAgent(userAgent);
@@ -53,6 +53,14 @@ public class RefreshTokenService {
         refreshTokenRepository.save(token);
 
         return ApiResponse.success("Refresh token created", token);
+    }
+
+    private String generateUniqueToken() {
+        String token;
+        do {
+            token = UUID.randomUUID().toString();
+        }while (refreshTokenRepository.findByToken(token).isPresent());
+        return token;
     }
 
     public boolean isValid(RefreshToken token) {
