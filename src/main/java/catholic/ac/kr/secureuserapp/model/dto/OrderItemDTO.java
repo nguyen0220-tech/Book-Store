@@ -16,4 +16,5 @@ public class OrderItemDTO {
     private String imgUrl;
     private int quantity;
     private double price;
+    private boolean reviewed;
 }

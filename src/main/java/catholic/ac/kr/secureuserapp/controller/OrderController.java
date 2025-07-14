@@ -42,4 +42,9 @@ public class OrderController {
             @RequestParam("status") OrderStatus status) {
         return ResponseEntity.ok(orderService.updateOrderStatus(orderId, status));
     }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<ApiResponse<String>> deleteOrderHistory(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.deleteOrderById(id));
+    }
 }

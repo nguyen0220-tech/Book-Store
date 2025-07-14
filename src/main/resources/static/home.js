@@ -127,12 +127,8 @@ function showBooks(books) {
     const html =
         books.length === 0
             ? "<p>Không có kết quả</p>"
-            : books
-                .map(
-                    (b) => `
+            : books.map((b) => `
     <div style="display: flex; justify-content: space-between; border:1px solid #ccc; margin:10px; padding:10px;">
-
-      <!-- LEFT: BOOK INFO -->
       <div style="flex: 1;">
         <b>Title:</b> ${b.title} <br/>
         <b>Author:</b> ${b.author} <br/>
@@ -141,20 +137,59 @@ function showBooks(books) {
         <b>Description:</b> ${b.description} <br/>
         <b>Category:</b> ${b.categoryName} <br/>
         <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" /><br/>
+        <button onclick="toggleReviews(${b.id})">👁️ Xem đánh giá</button>
+        <div id="reviews-${b.id}" style="display:none; margin-top:10px;"></div>
       </div>
 
-      <!-- RIGHT: ACTIONS -->
       <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px;">
         <label for="qty-${b.id}">Số lượng:</label>
         <input type="number" id="qty-${b.id}" value="1" min="1" max="${b.stock}" style="width: 60px;"/>
         <button onclick="addToCart(${b.id})">🛒 Thêm vào giỏ</button>
       </div>
     </div>
-  `
-                )
-                .join("");
+  `).join("");
+
     document.getElementById("bookList").innerHTML = html;
 }
+
+async function toggleReviews(bookId) {
+    const container = document.getElementById(`reviews-${bookId}`);
+    if (container.style.display === "none") {
+        try {
+            const res = await fetch(`${API_BASE}/review/book?bookId=${bookId}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                container.innerHTML = `<p style="color:red;">Không thể tải đánh giá</p>`;
+                container.style.display = "block";
+                return;
+            }
+
+            const reviews = result.data;
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `<p>Chưa có đánh giá nào cho sách này.</p>`;
+            } else {
+                container.innerHTML = reviews.map(r => `
+                    <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;">
+                        🧑 <b>${r.username}</b> - 🕒 ${new Date(r.createdAt).toLocaleDateString("ko-KR")}<br/>
+                        ✍️ ${r.content}
+                    </div>
+                `).join('');
+            }
+
+            container.style.display = "block";
+        } catch (err) {
+            container.innerHTML = `<p style="color:red;">Lỗi server: ${err.message}</p>`;
+            container.style.display = "block";
+        }
+    } else {
+        container.style.display = "none";
+    }
+}
+
 
 async function addToCart(bookId) {
     if (!accessToken) return alert("Vui lòng đăng nhập");

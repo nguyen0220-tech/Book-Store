@@ -28,6 +28,7 @@ public interface OrderMapper {
     @Mapping(source = "book.title",target = "title")
     @Mapping(source = "book.price",target = "price")
     @Mapping(source = "book.imgUrl",target = "imgUrl")
+    @Mapping(target = "reviewed", ignore = true)
     OrderItemDTO toOrderItemDTO(OrderItem orderItem);
 
     @Mapping(target = "book",ignore = true)

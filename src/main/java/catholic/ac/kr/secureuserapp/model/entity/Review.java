@@ -6,31 +6,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class OrderItem {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id",nullable = false)
-    private Order order;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id",nullable = false)
     private Book book;
 
-    @Column(nullable = false)
-    private int quantity;
+    @ManyToOne(fetch = FetchType.LAZY) //một đơn hàng có thể chứa nhiều sách, và mỗi sách cần 1 review riêng biệt
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @Column(nullable = false,length = 2000)
+    private String content;
 
     @Column(nullable = false)
-    private BigDecimal price;
-
-    @Column(nullable = false)
-    private boolean reviewed;
+    private Timestamp createdAt;
 }

@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.OrderMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.OrderDTO;
+import catholic.ac.kr.secureuserapp.model.dto.OrderItemDTO;
 import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;
@@ -30,6 +31,7 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public ApiResponse<OrderDTO> checkout(Long userId, OrderRequest request) {
@@ -86,6 +88,7 @@ public class OrderService {
             item.setBook(book);
             item.setQuantity(cartItem.getQuantity());
             item.setPrice(book.getPrice());
+            item.setReviewed(false);
 
             orderItems.add(item);
         }
@@ -114,7 +117,7 @@ public class OrderService {
         if (total.compareTo(coupon.getMinimumAmount()) < 0)
             throw new RuntimeException("Total amount is less than minimum required for coupon");
 
-        if (!coupon.isUsage() && couponRepository.countUsageCouponByUserId(coupon.getCouponCode(),userId) >= 1) {
+        if (!coupon.isUsage() && couponRepository.countUsageCouponByUserId(coupon.getCouponCode(), userId) >= 1) {
             throw new RuntimeException("Coupon already used");
         }
 
@@ -132,6 +135,16 @@ public class OrderService {
         List<Order> orders = orderRepository.findByUserId(userId);
         List<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
 
+        for (int i = 0; i < orders.size(); i++) {
+            Order order = orders.get(i);
+            OrderDTO orderDTO = orderDTOS.get(i);
+
+            for (OrderItemDTO itemDTO : orderDTO.getItems()) {
+                boolean reviewed = reviewRepository.existsByUserIdAndBookIdAndOrderId(userId, itemDTO.getBookId(), order.getId());
+                if (reviewed)
+                    itemDTO.setReviewed(true);
+            }
+        }
         return ApiResponse.success("success", orderDTOS);
     }
 
@@ -152,5 +165,15 @@ public class OrderService {
         orderRepository.save(order);
 
         return ApiResponse.success("Updated order status successfully", orderMapper.toOrderDTO(order));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @Transactional
+    public ApiResponse<String> deleteOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        orderRepository.delete(order);
+        return ApiResponse.success("Deleted order successfully");
     }
 }
