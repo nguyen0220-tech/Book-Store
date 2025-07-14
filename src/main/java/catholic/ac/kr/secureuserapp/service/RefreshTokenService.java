@@ -7,6 +7,7 @@ import catholic.ac.kr.secureuserapp.model.entity.RefreshToken;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenMapper refreshTokenMapper;
@@ -30,16 +32,19 @@ public class RefreshTokenService {
     }
 
     public ApiResponse<RefreshToken> createRefreshToken(User user, String deviceId, String userAgent, String ipAddress) {
-//        refreshTokenRepository.deleteByUser(user); // nếu dung đa thiết bi thì không đuoc xóa
-//        refreshTokenRepository.flush(); //phương thức của EntityManager (và JpaRepository) để ép JPA đồng bộ dữ liệu từ bộ nhớ tạm (persistence context) xuống database ngay lập tức
+        // Tìm tất cả token của cùng user + deviceId
+        List<RefreshToken> existingTokens = refreshTokenRepository.findByUserAndDeviceId(user, deviceId);
 
-        Optional<RefreshToken> existingTokenOpt = refreshTokenRepository.findByUserAndDeviceId(user, deviceId);
+        if (!existingTokens.isEmpty()) {
+            for (RefreshToken old : existingTokens) {
+                if (!old.isRevoked()) {
+                    old.setRevoked(true);
+                }
+            }
+            refreshTokenRepository.saveAll(existingTokens); // Lưu lại tất cả sau khi revoke
+        }
 
-        existingTokenOpt.ifPresent(old -> {
-            old.setRevoked(true);
-            refreshTokenRepository.save(old);
-        });
-
+        // Tạo token mới
         RefreshToken token = new RefreshToken();
         token.setUser(user);
         token.setToken(generateUniqueToken());
@@ -51,7 +56,6 @@ public class RefreshTokenService {
         token.setCreatedAt(LocalDateTime.now());
 
         refreshTokenRepository.save(token);
-
         return ApiResponse.success("Refresh token created", token);
     }
 
@@ -59,7 +63,7 @@ public class RefreshTokenService {
         String token;
         do {
             token = UUID.randomUUID().toString();
-        }while (refreshTokenRepository.findByToken(token).isPresent());
+        } while (refreshTokenRepository.findByToken(token).isPresent());
         return token;
     }
 
@@ -67,7 +71,6 @@ public class RefreshTokenService {
         return token != null && !token.isRevoked() && token.getExpiryDate().isAfter(LocalDateTime.now());
     }
 
-    // Revoke token (thu hồi) khi đã sử dụng xong
     @Transactional
     public void revokeToken(RefreshToken token) {
         token.setRevoked(true);
@@ -76,12 +79,13 @@ public class RefreshTokenService {
 
     @Transactional
     public boolean revokeByDeviceId(User user, String deviceId) {
-        Optional<RefreshToken> token = refreshTokenRepository.findByUserAndDeviceId(user, deviceId);
-        if (token.isPresent()) {
-            token.get().setRevoked(true);
-            refreshTokenRepository.save(token.get());
-            return true;
+        List<RefreshToken> tokens = refreshTokenRepository.findByUserAndDeviceId(user, deviceId);
+        if (tokens.isEmpty()) return false;
+
+        for (RefreshToken token : tokens) {
+            token.setRevoked(true);
         }
-        return false;
+        refreshTokenRepository.saveAll(tokens);
+        return true;
     }
 }

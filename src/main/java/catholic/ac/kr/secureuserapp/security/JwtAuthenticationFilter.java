@@ -29,7 +29,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
 //      1. Lấy giá trị từ header "Authorization"
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -83,6 +82,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
         }
 //      8. Tiếp tục chạy các filter tiếp theo
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected  boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.equals("/auth/refresh");
+
     }
 }
 

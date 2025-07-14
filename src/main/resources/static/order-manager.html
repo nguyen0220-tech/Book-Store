@@ -12,6 +12,22 @@
 </header>
 
 <main>
+    <label for="sortSelect">Sắp xếp:</label>
+    <select id="sortSelect" onchange="handleSortChange()">
+        <option value="default">Mặc định</option>
+        <option value="descPrice">Giá trị đơn hàng giảm dần</option>
+        <option value="ascPrice">Giá trị đơn hàng tăng dần</option>
+        <option value="createdAt">Ngày đặt hàng (mới nhất)</option>
+    </select>
+    <label for="statusFilter">Lọc theo trạng thái:</label>
+    <select id="statusFilter" onchange="handleStatusFilter()">
+        <option value="">Tất cả</option>
+        <option value="PENDING">Đang xử lý</option>
+        <option value="PAID">Đã thanh toán</option>
+        <option value="SHIPPED">Đã giao</option>
+        <option value="CANCELLED">Đã hủy</option>
+    </select>
+
     <table border="1">
         <thead>
         <tr>
@@ -30,6 +46,8 @@
         </thead>
         <tbody id="orderTableBody"></tbody>
     </table>
+    <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
+
 </main>
 
 <script src="order-manager.js"></script>

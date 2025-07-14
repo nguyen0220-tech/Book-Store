@@ -10,6 +10,10 @@ import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,9 +154,42 @@ public class OrderService {
 
     //only ADMIN
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<List<OrderDTO>> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        List<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
+    public ApiResponse<Page<OrderDTO>> getAllOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
+        return ApiResponse.success("success", orderDTOS);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilter(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("totalPrice").descending());
+        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
+        return ApiResponse.success("success", orderDTOS);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilterASC(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("totalPrice").ascending());
+        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
+        return ApiResponse.success("success", orderDTOS);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilterCreated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
+        return ApiResponse.success("success", orderDTOS);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilterByStatus(int page, int size,OrderStatus status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByStatus(status,pageable);
+        Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
         return ApiResponse.success("success", orderDTOS);
     }
 

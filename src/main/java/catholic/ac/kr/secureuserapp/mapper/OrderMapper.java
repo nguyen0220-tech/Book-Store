@@ -6,6 +6,8 @@ import catholic.ac.kr.secureuserapp.model.entity.Order;
 import catholic.ac.kr.secureuserapp.model.entity.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 
@@ -35,5 +37,9 @@ public interface OrderMapper {
     @Mapping(target = "order",ignore = true)
     OrderItem toOrderItem(OrderItemDTO orderItemDTO);
 
+    default Page<OrderDTO>toOrderDTO(Page<Order> orders) {
+        List<OrderDTO> dtoList = toOrderDTO(orders.getContent());
+        return new PageImpl<>(dtoList, orders.getPageable(), orders.getTotalElements());
+    }
     List<OrderDTO> toOrderDTO(List<Order> orders);
 }
