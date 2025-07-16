@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chi tiết sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        img { max-width: 200px; }
+    </style>
+</head>
+<body>
+<header >
+    <h1>Chi tiết sách</h1>
+    <a href="home.html"  class="cart-link">🏠 Quay về trang chủ</a>
+</header>
+
+<div id="bookDetailContainer">
+    <!-- Thông tin sách sẽ được chèn vào đây -->
+</div>
+
+<script>
+    const API_BASE = window.location.origin;
+    const accessToken = localStorage.getItem("accessToken");
+
+    function getBookIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("bookId");
+    }
+
+    async function fetchBookDetail(bookId) {
+        try {
+            const res = await fetch(`${API_BASE}/book/${bookId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                showBookDetail(result.data);
+            } else {
+                alert(result.message || "Không thể lấy chi tiết sách");
+            }
+        } catch (err) {
+            alert("Lỗi server: " + err.message);
+        }
+    }
+
+    function showBookDetail(book) {
+        const container = document.getElementById("bookDetailContainer");
+        container.innerHTML = `
+                <h2>${book.title}</h2>
+                <img src="${book.imgUrl}" alt="${book.title}" />
+                <p><b>Tác giả:</b> ${book.author}</p>
+                <p><b>Giá:</b> ${book.price.toLocaleString()} ₩</p>
+                <p><b>Mô tả:</b> ${book.description}</p>
+                <p><b>Thể loại:</b> ${book.categoryName}</p>
+                <p><b>Kho:</b> ${book.stock}</p>
+            `;
+    }
+
+    window.onload = () => {
+        const bookId = getBookIdFromUrl();
+        if (!bookId) {
+            alert("Không tìm thấy ID sách trong URL");
+            return;
+        }
+        fetchBookDetail(bookId);
+    }
+</script>
+</body>
+</html>

@@ -12,14 +12,15 @@
 <body>
 
 <header>
-    <h1>📚 Book Store</h1>
+    <h1> 📚 Book Store</h1>
     <nav>
         <a href="user.html">Quản lý Người dùng</a>
         <a href="book.html">Quản lý kho Sách</a>
         <a href="order-manager.html">Quản lý đơn hàng</a>
         <a href="coupon-admin.html">Quản lý Coupon</a>
     </nav>
-    <a href="user-profile.html" class="cart-link">Trang cá nhân</a>
+    <a href="user-profile.html" class="cart-link">🏠 Trang cá nhân</a>
+    <a href="book-mark.html" class="cart-link">❤️ Sách Yêu Thích</a>
     <a href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
     <a href="order-history.html" class="cart-link">📦 Xem lịch sử đặt hàng</a>
     <button id="logoutBtn">Logout</button>
@@ -29,11 +30,25 @@
 <main>
     <section class="card">
         <h2>🔍 Tìm kiếm sách</h2>
-        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;"/>
+        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;" />
         <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
         <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
         <button onclick="searchByCategory()">Tìm theo Thể loại</button>
     </section>
+
+    <!-- Gộp hai phần top sách vào một div dùng flex -->
+    <div style="display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap;">
+        <section class="card" style="flex: 1;">
+            <h3>📖 Top 5 sách mới nhất</h3>
+            <div id="newBookList"></div>
+        </section>
+
+        <section class="card" style="flex: 1;">
+            <h3>🔥 Top 5 sách bán chạy</h3>
+            <div id="topBooks"></div>
+        </section>
+    </div>
+
 
     <section class="card">
         <h3>📋 Danh sách sản phẩm</h3>

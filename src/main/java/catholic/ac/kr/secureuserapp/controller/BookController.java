@@ -3,6 +3,7 @@ package catholic.ac.kr.secureuserapp.controller;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
 import catholic.ac.kr.secureuserapp.model.dto.CreateBookRequest;
+import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +11,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("book")
 @RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
+
+    @GetMapping("{bookId}")
+    public ResponseEntity<ApiResponse<BookDTO>> getBook(@PathVariable("bookId") Long bookId) {
+        return ResponseEntity.ok(bookService.getBookById(bookId));
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<BookDTO>>> findAllBooks(
@@ -57,6 +65,16 @@ public class BookController {
             @RequestParam int size
     ){
         return ResponseEntity.ok(bookService.getRandomBooks(page, size));
+    }
+
+    @GetMapping("top-book")
+    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopBooks(){
+        return ResponseEntity.ok(bookService.getTopBooks());
+    }
+
+    @GetMapping("top-new")
+    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopNewBooks(){
+        return ResponseEntity.ok(bookService.getTopNewBooks());
     }
 
     @PostMapping("add")

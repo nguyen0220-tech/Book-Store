@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.mapper.BookMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
 import catholic.ac.kr.secureuserapp.model.dto.CreateBookRequest;
+import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import catholic.ac.kr.secureuserapp.model.entity.Category;
 import catholic.ac.kr.secureuserapp.repository.BookRepository;
@@ -16,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +26,15 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final CategoryRepository categoryRepository;
+
+    public ApiResponse<BookDTO> getBookById(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+
+        BookDTO bookDTO = bookMapper.bookToBookDTO(book);
+
+        return ApiResponse.success("Book found", bookDTO);
+    }
 
     public ApiResponse<Page<BookDTO>> getAllBooks(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -71,6 +80,16 @@ public class BookService {
         Page<BookDTO> bookDTOS = bookMapper.toBookDTO(pageResult);
 
         return ApiResponse.success("Random books", bookDTOS);
+    }
+
+    public ApiResponse<List<TopBookDTO>> getTopBooks() {
+        List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0,5));
+        return ApiResponse.success("Top books", topBookDTOS);
+    }
+
+    public ApiResponse<List<TopBookDTO>> getTopNewBooks() {
+        List<TopBookDTO> topBookDTOS = bookRepository.findTop5NewBooks(PageRequest.of(0,5));
+        return ApiResponse.success("Top books", topBookDTOS);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

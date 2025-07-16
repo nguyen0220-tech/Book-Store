@@ -5,6 +5,7 @@ let currentPage = 0;
 let currentSearchType = "";
 let currentKeyword = "";
 let totalPages = 0;
+let bookmarkedBookIds = [];
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -31,6 +32,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
         document.getElementById("logoutMessage").textContent = "Lỗi server: " + err.message;
     }
 });
+
 //giai ma TOKEN
 function parseJwt(token) {
     try {
@@ -42,6 +44,21 @@ function parseJwt(token) {
     }
 }
 
+async function fetchBookMarks() {
+    try {
+        const res = await fetch(`${API_BASE}/book-mark`, {
+            headers: {Authorization: `Bearer ${accessToken}`}
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            bookmarkedBookIds = result.data.map(b => b.bookId);
+        } else {
+            console.warn("Không thể tải danh sách bookmark");
+        }
+    } catch (err) {
+        console.error("Lỗi khi tải bookmark:", err.message);
+    }
+}
 
 
 async function fetchRandomBooks(page = 0) {
@@ -55,7 +72,7 @@ async function fetchRandomBooks(page = 0) {
         url.searchParams.append("size", 5);
 
         const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
 
@@ -123,14 +140,19 @@ async function searchBooks(type, keyword, page = 0) {
     }
 }
 
+let currentBooks = [];
+
 function showBooks(books) {
+    currentBooks = books
     const html =
         books.length === 0
             ? "<p>Không có kết quả</p>"
-            : books.map((b) => `
+            : books.map((b) => {
+                const isBookmarked = bookmarkedBookIds.includes(b.id);
+                return `
     <div style="display: flex; justify-content: space-between; border:1px solid #ccc; margin:10px; padding:10px;">
       <div style="flex: 1;">
-        <b>Title:</b> ${b.title} <br/>
+        <b>Title:</b> <a href="book-detail.html?bookId=${b.id}">${b.title}</a> <br/>
         <b>Author:</b> ${b.author} <br/>
         <b>Price:</b> ${b.price} <br/>
         <b>Stock:</b> ${b.stock} <br/>
@@ -138,6 +160,10 @@ function showBooks(books) {
         <b>Category:</b> ${b.categoryName} <br/>
         <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" /><br/>
         <button onclick="toggleReviews(${b.id})">👁️ Xem đánh giá</button>
+        <button onclick="toggleBookmark(${b.id})" style="margin-left:10px;">
+            ${isBookmarked ? '💔 Bỏ yêu thích' : '❤️ Yêu thích'}
+        </button>
+
         <div id="reviews-${b.id}" style="display:none; margin-top:10px;"></div>
       </div>
 
@@ -146,10 +172,42 @@ function showBooks(books) {
         <input type="number" id="qty-${b.id}" value="1" min="1" max="${b.stock}" style="width: 60px;"/>
         <button onclick="addToCart(${b.id})">🛒 Thêm vào giỏ</button>
       </div>
-    </div>
-  `).join("");
+    </div>`;
+            }).join("");
 
     document.getElementById("bookList").innerHTML = html;
+}
+
+function getCurrentBooks() {
+    return currentBooks;
+}
+
+async function toggleBookmark(bookId) {
+    const isBookmarked = bookmarkedBookIds.includes(bookId);
+    const method = isBookmarked ? 'DELETE' : 'POST';
+    const url = `${API_BASE}/book-mark/${isBookmarked ? 'remove' : 'add'}?bookId=${bookId}`;
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            if (isBookmarked) {
+                bookmarkedBookIds = bookmarkedBookIds.filter(id => id !== bookId);
+            } else {
+                bookmarkedBookIds.push(bookId);
+            }
+            showBooks(await getCurrentBooks()); // reload UI
+        } else {
+            alert(result.message || "Lỗi khi cập nhật bookmark");
+        }
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
 }
 
 async function toggleReviews(bookId) {
@@ -157,7 +215,7 @@ async function toggleReviews(bookId) {
     if (container.style.display === "none") {
         try {
             const res = await fetch(`${API_BASE}/review/book?bookId=${bookId}`, {
-                headers: { Authorization: `Bearer ${accessToken}` }
+                headers: {Authorization: `Bearer ${accessToken}`}
             });
 
             const result = await res.json();
@@ -216,7 +274,7 @@ async function addToCart(bookId) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ bookId, quantity })  // ❌ Bỏ userId
+            body: JSON.stringify({bookId, quantity})  // ❌ Bỏ userId
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -250,9 +308,102 @@ function goToPage(page) {
     searchBooks(currentSearchType, currentKeyword, page);
 }
 
+async function fetchTopNewBooks() {
+    try {
+        const res = await fetch(`${API_BASE}/book/top-new`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+
+        if (res.ok && result.success) {
+            const books = result.data;
+            const html = books.map(b => `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+                    <a href="book-detail.html?bookId=${b.bookId}"><b>${b.title}</b></a><br/>
+                    <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
+                    <span>Giá: ${b.price.toLocaleString()} ₩</span><br/>
+                    <label>Số lượng:</label>
+                    <input type="number" id="qty-new-${b.bookId}" value="1" min="1" style="width: 60px;"/>
+                    <button onclick="addTopToCart(${b.bookId}, 'new')">🛒 Thêm vào giỏ</button>
+                </div>
+            `).join("");
+            document.getElementById("newBookList").innerHTML = html;
+        } else {
+            alert(result.message || "Không thể lấy sách mới");
+        }
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
+}
+
+async function fetchTopBooks() {
+    try {
+        const res = await fetch(`${API_BASE}/book/top-book`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+
+        if (!res.ok || !result.success) {
+            document.getElementById("topBooks").innerHTML = "<p>Không thể tải top sách.</p>";
+            return;
+        }
+
+        const books = result.data;
+        const html = books.map((b, idx) => `
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+                <b>#${idx + 1} <a href="book-detail.html?bookId=${b.bookId}">${b.title}</a></b><br/>
+                <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
+                <span>Giá: ${b.price.toLocaleString()} ₩</span><br/>
+                <span>Đã bán: ${b.totalSold} cuốn</span><br/>
+                <label>Số lượng:</label>
+                <input type="number" id="qty-top-${b.bookId}" value="1" min="1" style="width: 60px;"/>
+                <button onclick="addTopToCart(${b.bookId}, 'top')">🛒 Thêm vào giỏ</button>
+            </div>
+        `).join("");
+
+        document.getElementById("topBooks").innerHTML = html;
+    } catch (err) {
+        document.getElementById("topBooks").innerHTML = "<p>Lỗi server: " + err.message + "</p>";
+    }
+}
+
+async function addTopToCart(bookId, type) {
+    if (!accessToken) return alert("Vui lòng đăng nhập");
+
+    const qtyInput = document.getElementById(`qty-${type}-${bookId}`);
+    const quantity = parseInt(qtyInput.value);
+
+    if (isNaN(quantity) || quantity <= 0) {
+        alert("Số lượng không hợp lệ");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/cart/items`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ bookId, quantity })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            alert("✅ Đã thêm vào giỏ");
+        } else {
+            alert(result.message || "Thêm thất bại");
+        }
+    } catch (err) {
+        alert("Lỗi: " + err.message);
+    }
+}
+
 //khi app khoi dong
-window.onload = () => {
-    fetchRandomBooks();
+window.onload = async () => {
+    await fetchBookMarks();
+    await fetchRandomBooks();
+    await fetchTopBooks()
+    await fetchTopNewBooks()
 
     const token = localStorage.getItem("accessToken");
     const payload = parseJwt(token);

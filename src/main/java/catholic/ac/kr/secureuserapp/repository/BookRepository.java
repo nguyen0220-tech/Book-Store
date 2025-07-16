@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.repository;
 
+import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,23 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query(value = "SELECT COUNT(*) FROM Book", nativeQuery = true)
     int countAllBooks();
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.TopBookDTO (
+                i.book.id, i.book.title, i.book.price ,i.book.imgUrl, SUM(i.quantity))
+                    FROM OrderItem i
+                        GROUP BY i.book.id, i.book.title, i.book.price, i.book.imgUrl
+                            ORDER BY SUM(i.quantity) DESC
+            """)
+    List<TopBookDTO> findTop5SellingBooks(Pageable pageable);
+
+    @Query("""
+                SELECT new catholic.ac.kr.secureuserapp.model.dto.TopBookDTO(
+                b.id, b.title,b.price,b.imgUrl
+                )
+                FROM  Book b
+                GROUP BY b.id,b.title,b.price,b.imgUrl
+                ORDER BY b.createdAt DESC
+            """)
+    List<TopBookDTO> findTop5NewBooks(Pageable pageable);
 }

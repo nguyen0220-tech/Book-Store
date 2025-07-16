@@ -69,7 +69,16 @@
         <input id="addStock" type="number" placeholder="Stock" />
         <input id="addDescription" placeholder="Description" />
         <input id="addImgUrl" placeholder="Image URL" />
-        <input id="addCategoryId" type="number" placeholder="Category ID" />
+
+        <label for="addCategoryId">Category:</label>
+        <select id="addCategoryId">
+            <option value="1">Manga</option>
+            <option value="2">Tiểu thuyết lãng mạn</option>
+            <option value="3">Kinh dị</option>
+            <option value="4">Hài hước</option>
+            <option value="5">Giả tưởng</option>
+        </select>
+
         <button onclick="addBook()">Add</button>
         <p id="addBookMessage" class="error"></p>
     </section>
