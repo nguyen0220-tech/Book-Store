@@ -93,20 +93,214 @@ async function fetchRandomBooks(page = 0) {
 async function searchByAuthor() {
     const keyword = document.getElementById("searchKeyword").value.trim();
     if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+
     await searchBooks("by-author", keyword);
+    await saveSearchHistory("by-author", keyword);
 }
 
 async function searchByTitle() {
     const keyword = document.getElementById("searchKeyword").value.trim();
     if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+
     await searchBooks("by-title", keyword);
+    await saveSearchHistory("by-title", keyword);
 }
 
 async function searchByCategory() {
     const keyword = document.getElementById("searchKeyword").value.trim();
     if (!keyword) return alert("Vui lòng nhập từ khóa tìm kiếm");
+
     await searchBooks("by-category", keyword);
+    await saveSearchHistory("by-category", keyword);
 }
+
+// --- Search History ---
+const searchHistoryListEl = document.getElementById("searchHistoryList");
+const clearSearchHistoryBtn = document.getElementById("clearSearchHistoryBtn");
+
+// Lấy danh sách lịch sử tìm kiếm từ server và hiển thị
+async function loadSearchHistory() {
+    try {
+        const res = await fetch(`${API_BASE}/search-history`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            renderSearchHistory(result.data);
+        } else {
+            console.warn("Không tải được lịch sử tìm kiếm");
+            searchHistoryListEl.innerHTML = "<i>Không có lịch sử tìm kiếm</i>";
+        }
+    } catch (err) {
+        console.error("Lỗi tải lịch sử tìm kiếm:", err.message);
+        searchHistoryListEl.innerHTML = "<i>Lỗi khi tải lịch sử tìm kiếm</i>";
+    }
+}
+
+// Hiển thị danh sách lịch sử tìm kiếm
+function renderSearchHistory(historyArray) {
+    if (!historyArray || historyArray.length === 0) {
+        searchHistoryListEl.innerHTML = "<i>Chưa có lịch sử tìm kiếm</i>";
+        return;
+    }
+
+    searchHistoryListEl.innerHTML = "";
+
+    historyArray.forEach(item => {
+        // item: { id, search, searchAt, type }
+
+        const div = document.createElement("div");
+        div.style.display = "flex";
+        div.style.justifyContent = "space-between";
+        div.style.alignItems = "center";
+        div.style.padding = "6px 0";
+        div.style.borderBottom = "1px solid #eee";
+
+        const infoDiv = document.createElement("div");
+
+        // Hiển thị loại tìm kiếm tiếng Việt
+        const typeLabel = translateSearchType(item.type);
+
+        const keywordSpan = document.createElement("span");
+        keywordSpan.textContent = `📚 [${typeLabel}] ${item.search}`;
+        keywordSpan.style.fontWeight = "bold";
+        keywordSpan.style.cursor = "pointer";
+
+        // Click để tự điền và tìm lại
+        keywordSpan.addEventListener("click", () => {
+            document.getElementById("searchKeyword").value = item.search;
+
+            // Gọi đúng hàm tìm kiếm theo type
+            const type = item.type?.toLowerCase(); // "CATEGORY" → "category"
+            if (type === "author") searchByAuthor();
+            else if (type === "title") searchByTitle();
+            else if (type === "category") searchByCategory();
+        });
+
+        const timeSpan = document.createElement("div");
+        timeSpan.style.fontSize = "0.8em";
+        timeSpan.style.color = "gray";
+        timeSpan.textContent = "🕘 " + formatTime(item.searchAt);
+
+        infoDiv.appendChild(keywordSpan);
+        infoDiv.appendChild(timeSpan);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑️";
+        deleteBtn.style.marginLeft = "10px";
+        deleteBtn.title = "Xóa lịch sử này";
+
+        deleteBtn.addEventListener("click", async () => {
+            await deleteSearchHistory(item.search);
+        });
+
+        div.appendChild(infoDiv);
+        div.appendChild(deleteBtn);
+        searchHistoryListEl.appendChild(div);
+    });
+}
+
+// Format ISO time: "2025-07-18 18:50"
+function formatTime(isoString) {
+    const date = new Date(isoString);
+    const yyyy = date.getFullYear();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${MM}-${dd} ${hh}:${mm}`;
+}
+
+function translateSearchType(type) {
+    switch (type?.toUpperCase()) {
+        case "AUTHOR": return "Tác giả";
+        case "TITLE": return "Tiêu đề";
+        case "CATEGORY": return "Thể loại";
+        default: return type;
+    }
+}
+
+async function saveSearchHistory(type, keyword) {
+    if (!accessToken) return;
+
+    let searchType;
+    switch (type) {
+        case "by-author":
+            searchType = "AUTHOR";
+            break;
+        case "by-title":
+            searchType = "TITLE";
+            break;
+        case "by-category":
+            searchType = "CATEGORY";
+            break;
+        default:
+            return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/search-history/add`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                keyword: keyword,
+                type: searchType
+            })
+        });
+
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+            console.warn("Không thể lưu lịch sử tìm kiếm:", result.message);
+        }
+    } catch (err) {
+        console.error("Lỗi khi lưu lịch sử tìm kiếm:", err.message);
+    }
+}
+
+async function deleteSearchHistory(keyword) {
+    if (!confirm(`Bạn có chắc muốn xóa lịch sử tìm kiếm: "${keyword}"?`)) return;
+
+    try {
+        const url = new URL(`${API_BASE}/search-history/delete`);
+        url.searchParams.append("keyword", keyword);
+
+        const res = await fetch(url, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            loadSearchHistory();
+        } else {
+            alert(result.message || "Xóa lịch sử tìm kiếm thất bại");
+        }
+    } catch (err) {
+        alert("Lỗi khi xóa lịch sử tìm kiếm: " + err.message);
+    }
+}
+
+clearSearchHistoryBtn.addEventListener("click", async () => {
+    if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử tìm kiếm?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/search-history/delete-all`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            loadSearchHistory();
+        } else {
+            alert(result.message || "Xóa toàn bộ lịch sử tìm kiếm thất bại");
+        }
+    } catch (err) {
+        alert("Lỗi khi xóa toàn bộ lịch sử tìm kiếm: " + err.message);
+    }
+});
+
 
 async function searchBooks(type, keyword, page = 0) {
     currentPage = page;
@@ -400,6 +594,7 @@ async function addTopToCart(bookId, type) {
 
 //khi app khoi dong
 window.onload = async () => {
+   await loadSearchHistory()
     await fetchBookMarks();
     await fetchRandomBooks();
     await fetchTopBooks()

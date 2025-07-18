@@ -34,6 +34,17 @@
         <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
         <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
         <button onclick="searchByCategory()">Tìm theo Thể loại</button>
+        <section class="card" style="margin-top: 1rem;">
+            <h3>🕘 Lịch sử tìm kiếm gần đây</h3>
+            <div id="searchHistoryList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff; width: 300px;"></div>
+            <button id="clearSearchHistoryBtn" style="margin-top: 5px;">Xóa tất cả lịch sử tìm kiếm</button>
+        </section>
+    </section>
+
+    <section class="card">
+        <h3>📋 Danh sách sản phẩm</h3>
+        <div id="bookList"></div>
+        <div id="paginationControls" class="pagination" style="margin-top: 1rem;"></div>
     </section>
 
     <!-- Gộp hai phần top sách vào một div dùng flex -->
@@ -49,12 +60,6 @@
         </section>
     </div>
 
-
-    <section class="card">
-        <h3>📋 Danh sách sản phẩm</h3>
-        <div id="bookList"></div>
-        <div id="paginationControls" class="pagination" style="margin-top: 1rem;"></div>
-    </section>
 </main>
 
 <script src="home.js"> </script>
