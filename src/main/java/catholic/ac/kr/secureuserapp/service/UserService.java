@@ -145,6 +145,7 @@ public class UserService {
         user.setLiking(request.getLiking());
         user.setAddress(request.getAddress());
         user.setPhone(request.getPhone());
+        user.setSex(request.getSex());
 
         userRepository.save(user);
 

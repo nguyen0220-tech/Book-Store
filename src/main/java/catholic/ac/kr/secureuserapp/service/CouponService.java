@@ -66,7 +66,8 @@ public class CouponService {
         List<Coupon> validCoupons = new ArrayList<>();
         for (Coupon coupon : coupons) {
             if (coupon.getExpired().isBefore(LocalDateTime.now())){
-                couponRepository.delete(coupon);
+                coupon.setActive(false);
+                couponRepository.save(coupon);
             }
             else {
                 validCoupons.add(coupon);

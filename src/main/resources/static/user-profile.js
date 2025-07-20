@@ -14,6 +14,8 @@ window.onload = async () => {
             document.getElementById("address").value = user.address || "";
             document.getElementById("liking").value = user.liking || "";
             document.getElementById("phone").value = user.phone || "";
+            document.getElementById("sex").value = user.sex || "UNKNOWN";
+
         }
     } catch (err) {
         showMessage("Không thể tải thông tin người dùng", true);
@@ -25,8 +27,10 @@ async function updateProfile() {
         fullName: document.getElementById("fullName").value,
         address: document.getElementById("address").value,
         liking: document.getElementById("liking").value,
-        phone: document.getElementById("phone").value
+        phone: document.getElementById("phone").value,
+        sex: document.getElementById("sex").value
     };
+
 
     try {
         const res = await fetch(`${API_BASE}/user/my-profile/update`, {

@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
+import catholic.ac.kr.secureuserapp.Status.Sex;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,4 +45,7 @@ public class User {
     private String phone;
 
     private String liking;
+
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
 }

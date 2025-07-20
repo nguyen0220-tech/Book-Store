@@ -14,4 +14,5 @@ public class UserProfileDTO {
     private String address;
     private String phone;
     private String liking;
+    private String sex;
 }

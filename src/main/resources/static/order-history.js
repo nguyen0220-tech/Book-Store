@@ -76,6 +76,10 @@ function renderOrders(orders) {
                 🎟️ Mã coupon: <b>${order.couponCode || "Không dùng"}</b><br/>
                 💳 Thanh toán: <b>${order.totalPrice.toLocaleString()}₩</b><br/>
                 📦 Trạng thái: ${order.orderStatus}<br/>
+                <button onclick="downloadInvoice(${order.orderId})"
+                style="margin-top: 10px; color: white; background-color: green; border: none; padding: 5px 10px; border-radius: 5px;">
+                📄 Xem hoá đơn PDF
+            </button>
                 <button onclick="deleteOrder(${order.orderId})" style="margin-top: 10px; color: white; background-color: red; border: none; padding: 5px 10px; border-radius: 5px;">❌ Xoá đơn</button>
             </div>
         `;
@@ -145,9 +149,31 @@ async function submitReview(bookId, orderId) {
     }
 }
 
-
-
 function formatDate(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString("ko-KR");
+}
+
+async function downloadInvoice(orderId) {
+    try {
+        const res = await fetch(`${API_BASE}/order/${orderId}/invoice`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        if (!res.ok) {
+            alert("❌ Không thể tải hoá đơn.");
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        window.open(url, '_blank');
+
+    } catch (err) {
+        alert("Lỗi khi tải hoá đơn: " + err.message);
+    }
 }

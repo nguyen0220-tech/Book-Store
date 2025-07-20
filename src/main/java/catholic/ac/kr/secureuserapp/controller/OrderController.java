@@ -4,14 +4,18 @@ import catholic.ac.kr.secureuserapp.Status.OrderStatus;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.OrderDTO;
 import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
+import catholic.ac.kr.secureuserapp.model.entity.Order;
+import catholic.ac.kr.secureuserapp.repository.OrderRepository;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import catholic.ac.kr.secureuserapp.service.InvoiceService;
 import catholic.ac.kr.secureuserapp.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -19,6 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
+    private final InvoiceService invoiceService;
 
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<OrderDTO>> checkout(
@@ -83,5 +89,26 @@ public class OrderController {
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<String>> deleteOrderHistory(@PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.deleteOrderById(id));
+    }
+
+    @GetMapping("{orderId}/invoice")
+    public ResponseEntity<byte[]> downloadInvoice(@PathVariable Long orderId, Principal principal) { //Principal là interface đại diện cho chủ thể đã được xác thực
+        Order order = orderRepository.getOrderByIdAndUser(orderId, principal.getName());
+
+        try {
+            byte[] pdfBytes = invoiceService.generateInvoicePdf(order);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.inline() //chỉ muốn xem file PDF trực tiếp trên trình duyệt
+                    .filename("invoice-" + orderId + ".pdf")
+                    .build());
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        }
     }
 }
