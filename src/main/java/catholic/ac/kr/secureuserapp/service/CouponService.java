@@ -34,7 +34,8 @@ public class CouponService {
 //        coupons.removeIf(coupon -> {
 //            boolean isExpired = coupon.getExpired().isBefore(LocalDateTime.now());
 //            if (isExpired) {
-//                couponRepository.delete(coupon);
+//                coupon.setActive(false);
+//                couponRepository.save(coupon);
 //            }
 //            return isExpired;
 //        });

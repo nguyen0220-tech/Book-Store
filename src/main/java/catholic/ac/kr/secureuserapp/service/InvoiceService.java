@@ -27,7 +27,6 @@ public class InvoiceService {
 
         document.add(new Paragraph("INVOICE - BOOKSTORE", boldFont));
         document.add(new Paragraph("Num: " + order.getId()));
-        document.add(new Paragraph("Num: " + order.getId()));
         document.add(new Paragraph("Order date :" + order.getCreatedAt()));
         //kiểm tra giới tính khách hàng
         Sex sex = order.getUser().getSex();
@@ -37,7 +36,7 @@ public class InvoiceService {
             document.add(new Paragraph("Customer: Mrs." + order.getUser().getUsername()));
         } else
             document.add(new Paragraph("Customer: " + order.getUser().getUsername()));
-        document.add(new Paragraph("Discount:" + order.getTotalDiscount() + "won"));
+        document.add(new Paragraph("Discount as Coupon:" + order.getTotalDiscount() + "won"));
         document.add(new Paragraph(" "));
 
         PdfPTable table = getPdfPTable(order);
@@ -51,20 +50,23 @@ public class InvoiceService {
     }
 
     private static PdfPTable getPdfPTable(Order order) {
-        PdfPTable table = new PdfPTable(4); //4 cột
+        PdfPTable table = new PdfPTable(5); //so cột
         table.addCell("Name");
         table.addCell("Quantity");
         table.addCell("Price");
-        table.addCell("Price x Quantity");
+        table.addCell("Sale Price");
+        table.addCell("Sale Price(Price) x Quantity");
 
 
         for (OrderItem item : order.getOrderItems()) {
             table.addCell(item.getBook().getTitle());
             table.addCell(String.valueOf(item.getQuantity()));
             table.addCell(item.getBook().getPrice().toString());
+            table.addCell(item.getBook().getSalePrice() != null
+                    ? item.getBook().getSalePrice().toString()
+                    : "-");
             table.addCell((item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))).toString());
         }
         return table;
     }
-
 }

@@ -15,6 +15,7 @@ public interface CartMapper {
     @Mapping(source = "book.title",target = "title")
     @Mapping(source = "book.price",target = "price")
     @Mapping(source = "book.imgUrl",target = "imgUrl")
+    @Mapping(source = "book.salePrice",target = "salePrice")
     CartItemDTO toCartItemDTO(CartItem cartItem);
 
     // DTO → Entity: khai báo không ánh xạ book vì cần fetch từ DB riêng trong service,nếu không khai báo sẽ báo lỗi

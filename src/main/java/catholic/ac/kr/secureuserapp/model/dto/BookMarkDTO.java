@@ -15,5 +15,6 @@ public class BookMarkDTO {
     private String author;
     private String description;
     private BigDecimal price;
+    private BigDecimal salePrice;
     private String imgUrl;
 }

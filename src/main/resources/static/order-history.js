@@ -1,6 +1,9 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
 
+let currentPage = 0;
+const pageSize = 5;
+
 window.onload = () => {
     if (!accessToken) {
         alert("Vui lòng đăng nhập lại.");
@@ -10,9 +13,11 @@ window.onload = () => {
     fetchOrderHistory();
 };
 
-async function fetchOrderHistory() {
+async function fetchOrderHistory(page = 0) {
+    currentPage = page;
+
     try {
-        const res = await fetch(`${API_BASE}/order/my-order`, {
+        const res = await fetch(`${API_BASE}/order/my-order?page=${page}&size=${pageSize}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
@@ -24,11 +29,31 @@ async function fetchOrderHistory() {
             return;
         }
 
-        const orders = result.data;
-        renderOrders(orders);
+        const ordersPage = result.data;
+        renderOrders(ordersPage.content); // dữ liệu đơn hàng
+        renderPagination(ordersPage.totalPages, ordersPage.number); // phân trang
     } catch (err) {
         alert("Lỗi server: " + err.message);
     }
+}
+
+function renderPagination(totalPages, currentPage) {
+    const paginationDiv = document.getElementById("pagination");
+    if (!paginationDiv) return;
+
+    let html = "";
+
+    for (let i = 0; i < totalPages; i++) {
+        html += `
+            <button 
+                onclick="fetchOrderHistory(${i})" 
+                style="margin: 0 5px; padding: 5px 10px; ${i === currentPage ? 'font-weight: bold; background-color: #ccc;' : ''}">
+                ${i + 1}
+            </button>
+        `;
+    }
+
+    paginationDiv.innerHTML = html;
 }
 
 async function deleteOrder(orderId) {

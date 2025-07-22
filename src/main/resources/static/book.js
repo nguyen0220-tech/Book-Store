@@ -52,28 +52,28 @@ async function loadAllBooks(page = 0) {
     }
 }
 
-function renderPagination() {
+function renderPagination(loadFn = loadAllBooks) {
     const container = document.getElementById("paginationControls");
     container.innerHTML = "";
 
     const prev = document.createElement("button");
     prev.textContent = "« Prev";
     prev.disabled = currentPage === 0;
-    prev.onclick = () => loadAllBooks(currentPage - 1);
+    prev.onclick = () => loadFn(currentPage - 1);
     container.appendChild(prev);
 
     for (let i = 0; i < totalPages; i++) {
         const btn = document.createElement("button");
         btn.textContent = i + 1;
         if (i === currentPage) btn.classList.add("active");
-        btn.onclick = () => loadAllBooks(i);
+        btn.onclick = () => loadFn(i);
         container.appendChild(btn);
     }
 
     const next = document.createElement("button");
     next.textContent = "Next »";
     next.disabled = currentPage === totalPages - 1;
-    next.onclick = () => loadAllBooks(currentPage + 1);
+    next.onclick = () => loadFn(currentPage + 1);
     container.appendChild(next);
 }
 
@@ -81,7 +81,7 @@ function showBooks(books) {
     const tbody = document.querySelector("#bookTable tbody");
     tbody.innerHTML = "";
     if (books.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='10'>Không có sách nào</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='11'>Không có sách nào</td></tr>";
         return;
     }
     books.forEach(b => {
@@ -91,6 +91,7 @@ function showBooks(books) {
             <td>${b.title}</td>
             <td>${b.author}</td>
             <td>${b.price}</td>
+            <td>${b.salePrice !== null ? b.salePrice : "-"}</td>
             <td>${b.stock}</td>
             <td>${b.description}</td>
             <td><img src="${b.imgUrl}" alt="${b.title}"/></td>
@@ -109,6 +110,8 @@ async function addBook() {
     const title = document.getElementById("addTitle").value.trim();
     const author = document.getElementById("addAuthor").value.trim();
     const price = parseFloat(document.getElementById("addPrice").value);
+    const salePriceInput = document.getElementById("addSalePrice").value;
+    const salePrice = salePriceInput ? parseFloat(salePriceInput) : null;
     const stock = parseInt(document.getElementById("addStock").value);
     const description = document.getElementById("addDescription").value.trim();
     const imgUrl = document.getElementById("addImgUrl").value.trim();
@@ -120,6 +123,11 @@ async function addBook() {
     }
     document.getElementById("addBookMessage").textContent = "";
 
+    const body = { title, author, price, stock, description, imgUrl, categoryId };
+    if (salePrice !== null && !isNaN(salePrice)) {
+        body.salePrice = salePrice;
+    }
+
     try {
         const res = await fetch(`${API_BASE}/book/add`, {
             method: "POST",
@@ -127,7 +135,7 @@ async function addBook() {
                 "Authorization": `Bearer ${accessToken}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ title, author, price, stock, description, imgUrl, categoryId })
+            body: JSON.stringify(body)
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -146,6 +154,7 @@ function clearAddForm() {
     document.getElementById("addTitle").value = "";
     document.getElementById("addAuthor").value = "";
     document.getElementById("addPrice").value = "";
+    document.getElementById("addSalePrice").value = "";
     document.getElementById("addStock").value = "";
     document.getElementById("addDescription").value = "";
     document.getElementById("addImgUrl").value = "";
@@ -187,6 +196,8 @@ function editBook(id) {
                 if (!author) return;
                 const price = prompt("Price:", book.price);
                 if (isNaN(price)) return alert("Giá không hợp lệ");
+                const salePrice = prompt("Sale Price:", book.salePrice ?? "");
+                if (salePrice && isNaN(salePrice)) return alert("Sale Price không hợp lệ");
                 const stock = prompt("Stock:", book.stock);
                 if (isNaN(stock)) return alert("Stock không hợp lệ");
                 const description = prompt("Description:", book.description);
@@ -199,6 +210,7 @@ function editBook(id) {
                     title,
                     author,
                     price: parseFloat(price),
+                    salePrice: salePrice ? parseFloat(salePrice) : null,
                     stock: parseInt(stock),
                     description,
                     imgUrl,
@@ -228,6 +240,37 @@ function editBook(id) {
             }
         })
         .catch(err => alert("Lỗi server: " + err.message));
+}
+
+async function searchBooksByTitle(page = 0) {
+    const title = document.getElementById("searchTitleInput").value.trim();
+    if (!title) {
+        loadAllBooks(); // fallback nếu rỗng
+        return;
+    }
+
+    try {
+        const url = new URL(`${API_BASE}/book/by-title`);
+        url.searchParams.append("page", page);
+        url.searchParams.append("size", pageSize);
+        url.searchParams.append("title", title);
+
+        const res = await fetch(url, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            showBooks(result.data.content || []);
+            totalPages = result.data.totalPages;
+            currentPage = result.data.number;
+            renderPagination(() => searchBooksByTitle); // truyền callback tìm kiếm lại
+        } else {
+            alert(result.message || "Không tìm thấy sách phù hợp");
+        }
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
 }
 
 loadAllBooks();

@@ -337,7 +337,7 @@ async function searchBooks(type, keyword, page = 0) {
 let currentBooks = [];
 
 function showBooks(books) {
-    currentBooks = books
+    currentBooks = books;
     const html =
         books.length === 0
             ? "<p>Không có kết quả</p>"
@@ -348,7 +348,12 @@ function showBooks(books) {
       <div style="flex: 1;">
         <b>Title:</b> <a href="book-detail.html?bookId=${b.id}">${b.title}</a> <br/>
         <b>Author:</b> ${b.author} <br/>
-        <b>Price:</b> ${b.price} <br/>
+        <b>Price:</b> ${
+                    b.salePrice && b.salePrice < b.price
+                        ? `<span style="text-decoration: line-through; color: gray;">${b.price}</span> 
+                   <span style="color: red; font-weight: bold;">${b.salePrice}</span>`
+                        : `${b.price}`
+                } <br/>
         <b>Stock:</b> ${b.stock} <br/>
         <b>Description:</b> ${b.description} <br/>
         <b>Category:</b> ${b.categoryName} <br/>
@@ -511,16 +516,23 @@ async function fetchTopNewBooks() {
 
         if (res.ok && result.success) {
             const books = result.data;
-            const html = books.map(b => `
-                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
-                    <a href="book-detail.html?bookId=${b.bookId}"><b>${b.title}</b></a><br/>
-                    <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
-                    <span>Giá: ${b.price.toLocaleString()} ₩</span><br/>
-                    <label>Số lượng:</label>
-                    <input type="number" id="qty-new-${b.bookId}" value="1" min="1" style="width: 60px;"/>
-                    <button onclick="addTopToCart(${b.bookId}, 'new')">🛒 Thêm vào giỏ</button>
-                </div>
-            `).join("");
+            const html = books.map(b => {
+                const hasSale = b.salePrice !== null && b.salePrice < b.price;
+                const priceHtml = hasSale
+                    ? `<span>Giá: <s>${b.price.toLocaleString()}₩</s> <b style="color:red">${b.salePrice.toLocaleString()}₩</b></span>`
+                    : `<span>Giá: ${b.price.toLocaleString()}₩</span>`;
+
+                return `
+                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+                        <a href="book-detail.html?bookId=${b.bookId}"><b>${b.title}</b></a><br/>
+                        <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
+                        ${priceHtml}<br/>
+                        <label>Số lượng:</label>
+                        <input type="number" id="qty-new-${b.bookId}" value="1" min="1" style="width: 60px;"/>
+                        <button onclick="addTopToCart(${b.bookId}, 'new')">🛒 Thêm vào giỏ</button>
+                    </div>
+                `;
+            }).join("");
             document.getElementById("newBookList").innerHTML = html;
         } else {
             alert(result.message || "Không thể lấy sách mới");
@@ -543,17 +555,24 @@ async function fetchTopBooks() {
         }
 
         const books = result.data;
-        const html = books.map((b, idx) => `
-            <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
-                <b>#${idx + 1} <a href="book-detail.html?bookId=${b.bookId}">${b.title}</a></b><br/>
-                <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
-                <span>Giá: ${b.price.toLocaleString()} ₩</span><br/>
-                <span>Đã bán: ${b.totalSold} cuốn</span><br/>
-                <label>Số lượng:</label>
-                <input type="number" id="qty-top-${b.bookId}" value="1" min="1" style="width: 60px;"/>
-                <button onclick="addTopToCart(${b.bookId}, 'top')">🛒 Thêm vào giỏ</button>
-            </div>
-        `).join("");
+        const html = books.map((b, idx) => {
+            const hasSale = b.salePrice !== null && b.salePrice < b.price;
+            const priceHtml = hasSale
+                ? `<span>Giá: <s>${b.price.toLocaleString()}₩</s> <b style="color:red">${b.salePrice.toLocaleString()}₩</b></span>`
+                : `<span>Giá: ${b.price.toLocaleString()}₩</span>`;
+
+            return `
+                <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+                    <b>#${idx + 1} <a href="book-detail.html?bookId=${b.bookId}">${b.title}</a></b><br/>
+                    <img src="${b.imgUrl}" style="max-width: 80px;" /><br/>
+                    ${priceHtml}<br/>
+                    <span>Đã bán: ${b.totalSold} cuốn</span><br/>
+                    <label>Số lượng:</label>
+                    <input type="number" id="qty-top-${b.bookId}" value="1" min="1" style="width: 60px;"/>
+                    <button onclick="addTopToCart(${b.bookId}, 'top')">🛒 Thêm vào giỏ</button>
+                </div>
+            `;
+        }).join("");
 
         document.getElementById("topBooks").innerHTML = html;
     } catch (err) {

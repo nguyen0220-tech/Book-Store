@@ -65,7 +65,8 @@
         <h2>➕ Thêm sách mới</h2>
         <input id="addTitle" placeholder="Title" />
         <input id="addAuthor" placeholder="Author" />
-        <input id="addPrice" type="number" placeholder="Price" step="0.01" />
+        <input id="addPrice" type="number" placeholder="Original Price" step="0.01" />
+        <input id="addSalePrice" type="number" placeholder="Sale Price" step="0.01" />
         <input id="addStock" type="number" placeholder="Stock" />
         <input id="addDescription" placeholder="Description" />
         <input id="addImgUrl" placeholder="Image URL" />
@@ -85,12 +86,16 @@
 
     <section class="card">
         <h2>📋 Danh sách sách</h2>
+        <input type="text" id="searchTitleInput" placeholder="Tìm kiếm theo tiêu đề" />
+        <button onclick="searchBooksByTitle()">Tìm kiếm</button>
         <button onclick="loadAllBooks(currentPage)">Tải tất cả sách</button>
         <table id="bookTable">
             <thead>
             <tr>
-                <th>Id</th><th>Title</th><th>Author</th><th>Price</th><th>Stock</th>
-                <th>Description</th><th>Image</th><th>Category ID</th><th>Category Name</th><th>Actions</th>
+                <th>Id</th><th>Title</th><th>Author</th>
+                <th>Price</th><th>Sale Price</th><th>Stock</th>
+                <th>Description</th><th>Image</th>
+                <th>Category ID</th><th>Category Name</th><th>Actions</th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -98,6 +103,7 @@
         <div id="paginationControls" style="margin-top: 10px;"></div>
     </section>
 </main>
+
 <script src="book.js"></script>
 
 </body>

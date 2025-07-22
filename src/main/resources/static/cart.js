@@ -19,36 +19,48 @@ async function loadCart() {
             }
 
             const html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ảnh</th>
-                                <th>Tiêu đề</th>
-                                <th>Giá</th>
-                                <th>Số lượng</th>
-                                <th>Thành tiền</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${items.map(item => `
-                                <tr>
-                                    <td><img src="${item.imgUrl}" /></td>
-                                    <td>${item.title}</td>
-                                    <td>${item.price}₩</td>
-                                    <td>
-                                        <input type="number" value="${item.quantity}" min="1"
-                                            onchange="updateQuantity(${item.bookId}, this.value)" />
-                                    </td>
-                                    <td>${item.price * item.quantity}₩</td>
-                                    <td class="actions">
-                                        <button onclick="removeItem(${item.bookId})">❌ Xóa</button>
-                                    </td>
-                                </tr>
-                            `).join("")}
-                        </tbody>
-                    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>Ảnh</th>
+                <th>Tiêu đề</th>
+                <th>Giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${items.map(item => {
+                const hasSale = item.salePrice !== null && item.salePrice < item.price;
+                const displayPrice = hasSale
+                    ? `<span style="text-decoration: line-through; color: gray;">${item.price.toLocaleString()}₩</span>
+                       <br/><span style="color: red; font-weight: bold;">${item.salePrice.toLocaleString()}₩</span>`
+                    : `${item.price.toLocaleString()}₩`;
+
+                const unitPrice = hasSale ? item.salePrice : item.price;
+                const subtotal = unitPrice * item.quantity;
+
+                return `
+                    <tr>
+                        <td><img src="${item.imgUrl}" /></td>
+                        <td>${item.title}</td>
+                        <td>${displayPrice}</td>
+                        <td>
+                            <input type="number" value="${item.quantity}" min="1"
+                                onchange="updateQuantity(${item.bookId}, this.value)" />
+                        </td>
+                        <td>${subtotal.toLocaleString()}₩</td>
+                        <td class="actions">
+                            <button onclick="removeItem(${item.bookId})">❌ Xóa</button>
+                        </td>
+                    </tr>
                 `;
+            }).join("")}
+        </tbody>
+    </table>
+`;
+
 
             document.getElementById("cartContainer").innerHTML = html;
             document.getElementById("totalPrice").textContent =

@@ -33,27 +33,36 @@ async function fetchBookMarks() {
 }
 
 function renderBookmarks(bookmarks) {
-    const html = bookmarks.map(book => `
-        <div class="book-card">
-            <div>
-                <b>📖 Title:</b> ${book.title} <br/>
-                <b>✍️ Author:</b> ${book.author} <br/>
-                <b>💰 Price:</b> ${book.price} <br/>
-                <b>📝 Description:</b> ${book.description} <br/>
-                <img src="${book.imgUrl}" alt="${book.title}" style="max-width:100px; max-height:100px;" />
-            </div>
-            <div style="display:flex; flex-direction:column; justify-content:center; gap: 6px;">
-                <button onclick="removeBookmark(${book.bookId})">💔 Bỏ yêu thích</button>
+    const html = bookmarks.map(book => {
+        const hasSale = book.salePrice && book.salePrice > 0;
+        const priceHtml = hasSale
+            ? `<b>💰 Price:</b> <span style="text-decoration: line-through; color:gray;">${book.price.toLocaleString()}₫</span>
+               <span style="color:red; font-weight:bold;"> → ${book.salePrice.toLocaleString()}₫</span>`
+            : `<b>💰 Price:</b> ${book.price.toLocaleString()}₫`;
 
-                <label for="qty-${book.bookId}">Số lượng:</label>
-                <input type="number" id="qty-${book.bookId}" value="1" min="1" style="width: 60px;"/>
-                <button onclick="addToCart(${book.bookId})">🛒 Thêm vào giỏ</button>
+        return `
+            <div class="book-card">
+                <div>
+                    <b>📖 Title:</b> ${book.title} <br/>
+                    <b>✍️ Author:</b> ${book.author} <br/>
+                    ${priceHtml} <br/>
+                    <b>📝 Description:</b> ${book.description} <br/>
+                    <img src="${book.imgUrl}" alt="${book.title}" style="max-width:100px; max-height:100px;" />
+                </div>
+                <div style="display:flex; flex-direction:column; justify-content:center; gap: 6px;">
+                    <button onclick="removeBookmark(${book.bookId})">💔 Bỏ yêu thích</button>
+
+                    <label for="qty-${book.bookId}">Số lượng:</label>
+                    <input type="number" id="qty-${book.bookId}" value="1" min="1" style="width: 60px;"/>
+                    <button onclick="addToCart(${book.bookId})">🛒 Thêm vào giỏ</button>
+                </div>
             </div>
-        </div>
-    `).join("");
+        `;
+    }).join("");
 
     document.getElementById("bookmarkList").innerHTML = html;
 }
+
 
 async function addToCart(bookId) {
     if (!accessToken) return alert("Vui lòng đăng nhập");

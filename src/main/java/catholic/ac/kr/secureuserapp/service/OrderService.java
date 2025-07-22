@@ -36,6 +36,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final ReviewRepository reviewRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ApiResponse<OrderDTO> checkout(Long userId, OrderRequest request) {
@@ -49,8 +50,23 @@ public class OrderService {
         }
 
         //total price
+//        BigDecimal total = BigDecimal.ZERO;
+//        for (CartItem item : cartItems) {
+//            if (item.getBook().getSalePrice() == null) {
+//                total = total.add(item.getBook().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+//            }
+//            if (item.getBook().getSalePrice() != null) {
+//                total = total.add(item.getBook().getSalePrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+//            }
+//        }
+
         BigDecimal total = cartItems.stream()
-                .map(item -> item.getBook().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(item -> {
+                    BigDecimal unitPrice = item.getBook().getSalePrice() != null
+                            ? item.getBook().getSalePrice()
+                            : item.getBook().getPrice();
+                    return unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal finalTotal = total;
@@ -91,7 +107,8 @@ public class OrderService {
             item.setOrder(order);
             item.setBook(book);
             item.setQuantity(cartItem.getQuantity());
-            item.setPrice(book.getPrice());
+            BigDecimal purchasePrice = book.getSalePrice() != null ? book.getSalePrice() : book.getPrice(); //kiem tra luc mua la gia giam hay gia goc
+            item.setPrice(purchasePrice);
             item.setReviewed(false);
 
             orderItems.add(item);
@@ -99,6 +116,7 @@ public class OrderService {
 
         order.setOrderItems(orderItems);
         orderRepository.save(order);
+        notificationService.createNotification(order.getUser().getId(), order.getId()); //gửi thông báo PENDING khi đặt hàng thành công
 
         cartItemRepository.deleteAll(cartItems); //clear caer
 
@@ -135,20 +153,24 @@ public class OrderService {
         return total.subtract(discount);
     }
 
-    public ApiResponse<List<OrderDTO>> getOrderByUserId(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        List<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
-
-        for (int i = 0; i < orders.size(); i++) {
-            Order order = orders.get(i);
-            OrderDTO orderDTO = orderDTOS.get(i);
-
+    public ApiResponse<Page<OrderDTO>> getOrderByUserId(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Order> orders = orderRepository.findByUserId(userId, pageable);
+        Page<OrderDTO> orderDTOS = orders.map(order -> {
+            OrderDTO orderDTO = orderMapper.toOrderDTO(order);
             for (OrderItemDTO itemDTO : orderDTO.getItems()) {
-                boolean reviewed = reviewRepository.existsByUserIdAndBookIdAndOrderId(userId, itemDTO.getBookId(), order.getId());
-                if (reviewed)
+                boolean reviewed = reviewRepository.existsByUserIdAndBookIdAndOrderId(
+                        userId,
+                        itemDTO.getBookId(),
+                        order.getId()
+                );
+
+                if (reviewed) {
                     itemDTO.setReviewed(true);
+                }
             }
-        }
+            return orderDTO;
+        });
         return ApiResponse.success("success", orderDTOS);
     }
 
@@ -186,9 +208,9 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilterByStatus(int page, int size,OrderStatus status) {
+    public ApiResponse<Page<OrderDTO>> getAllOrdersAndFilterByStatus(int page, int size, OrderStatus status) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Order> orders = orderRepository.findByStatus(status,pageable);
+        Page<Order> orders = orderRepository.findByStatus(status, pageable);
         Page<OrderDTO> orderDTOS = orderMapper.toOrderDTO(orders);
         return ApiResponse.success("success", orderDTOS);
     }
@@ -200,6 +222,7 @@ public class OrderService {
 
         order.setStatus(status);
         orderRepository.save(order);
+        notificationService.createNotification(order.getUser().getId(), orderId); //gửi thông báo khi cập nhật status cua đơn hàng
 
         return ApiResponse.success("Updated order status successfully", orderMapper.toOrderDTO(order));
     }

@@ -20,6 +20,9 @@ public class CouponCleanupTask {
                 .filter(coupon -> coupon.getExpired().isBefore(LocalDateTime.now()))
                 .toList();
 
-        couponRepository.deleteAll(expiredCoupons);
+        for (Coupon coupon : expiredCoupons) {
+            coupon.setActive(false);
+            couponRepository.save(coupon);
+        }
     }
 }

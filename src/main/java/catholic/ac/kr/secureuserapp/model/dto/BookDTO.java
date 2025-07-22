@@ -13,6 +13,7 @@ public class BookDTO {
     private String title;
     private String author;
     private BigDecimal price;
+    private BigDecimal salePrice;
     private int stock;
     private String description;
     private String imgUrl;

@@ -7,7 +7,9 @@ import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
 import catholic.ac.kr.secureuserapp.model.dto.CreateBookRequest;
 import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
+import catholic.ac.kr.secureuserapp.model.entity.BookMark;
 import catholic.ac.kr.secureuserapp.model.entity.Category;
+import catholic.ac.kr.secureuserapp.repository.BookMarkRepository;
 import catholic.ac.kr.secureuserapp.repository.BookRepository;
 import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +29,8 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final CategoryRepository categoryRepository;
+    private final NotificationService notificationService;
+    private final BookMarkRepository bookMarkRepository;
 
     public ApiResponse<BookDTO> getBookById(Long bookId) {
         Book book = bookRepository.findById(bookId)
@@ -83,12 +88,12 @@ public class BookService {
     }
 
     public ApiResponse<List<TopBookDTO>> getTopBooks() {
-        List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0,5));
+        List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0, 5));
         return ApiResponse.success("Top books", topBookDTOS);
     }
 
     public ApiResponse<List<TopBookDTO>> getTopNewBooks() {
-        List<TopBookDTO> topBookDTOS = bookRepository.findTop5NewBooks(PageRequest.of(0,5));
+        List<TopBookDTO> topBookDTOS = bookRepository.findTop5NewBooks(PageRequest.of(0, 5));
         return ApiResponse.success("Top books", topBookDTOS);
     }
 
@@ -116,17 +121,33 @@ public class BookService {
         Category category = categoryRepository.findById(bookDTO.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid category"));
 
+        BigDecimal oldSalePrice = book.getSalePrice();
+        BigDecimal newSalePrice = bookDTO.getSalePrice();
+
+        // Cập nhật thông tin
         book.setTitle(bookDTO.getTitle());
         book.setAuthor(bookDTO.getAuthor());
         book.setPrice(bookDTO.getPrice());
+        book.setSalePrice(newSalePrice);  // <-- set sau khi lấy oldSalePrice
         book.setStock(bookDTO.getStock());
         book.setDescription(bookDTO.getDescription());
         book.setImgUrl(bookDTO.getImgUrl());
         book.setCategory(category);
 
         Book savedBook = bookRepository.save(book);
-        BookDTO updatedBookDTO = bookMapper.bookToBookDTO(savedBook);
 
+        // Kiểm tra xem có phải từ "không giảm giá" → "giảm giá"
+        boolean oldIsZero = oldSalePrice == null || oldSalePrice.compareTo(BigDecimal.ZERO) == 0;
+        boolean newIsDiscounted = newSalePrice != null && newSalePrice.compareTo(BigDecimal.ZERO) > 0;
+
+        if (oldIsZero && newIsDiscounted) {
+            List<BookMark> bookMarkList = bookMarkRepository.findByBookId(book.getId());
+            for (BookMark bm : bookMarkList) {
+                notificationService.createBookMarkDiscountNotification(bm.getUser().getId(), book);
+            }
+        }
+
+        BookDTO updatedBookDTO = bookMapper.bookToBookDTO(savedBook);
         return ApiResponse.success("Book updated", updatedBookDTO);
     }
 

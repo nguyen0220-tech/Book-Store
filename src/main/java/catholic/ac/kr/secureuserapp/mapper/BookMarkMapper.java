@@ -15,6 +15,7 @@ public class BookMarkMapper {
         bookMarkDTO.setAuthor(bookMark.getBook().getAuthor());
         bookMarkDTO.setDescription(bookMark.getBook().getDescription());
         bookMarkDTO.setPrice(bookMark.getBook().getPrice());
+        bookMarkDTO.setSalePrice(bookMark.getBook().getSalePrice());
         bookMarkDTO.setImgUrl(bookMark.getBook().getImgUrl());
 
         return bookMarkDTO;

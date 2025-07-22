@@ -28,6 +28,8 @@ public class Book {
     @Column(nullable = false)
     private BigDecimal price;
 
+    private BigDecimal salePrice;
+
     @Column(nullable = false)
     private int stock;
 

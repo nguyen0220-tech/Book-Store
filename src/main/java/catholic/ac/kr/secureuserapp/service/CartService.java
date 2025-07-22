@@ -34,8 +34,16 @@ public class CartService {
 
         CartDTO cartDTO = cartMapper.toCartDTO(cart);
 
-        double total = cartDTO.getItems().stream()      //Lấy danh sách các CartItemDTO từ DTO (giỏ hàng)
-                .mapToDouble(item -> item.getPrice() * item.getQuantity()) //Biến mỗi CartItemDTO thành một giá trị double
+        double total = cartDTO.getItems().stream()      //Lấy danh sách các CartItemDTO từ DTO (giỏ hàng) -> Biến mỗi CartItemDTO thành một giá trị double
+                .mapToDouble(item -> {
+                    double p = (item.getSalePrice() != null
+                            && item.getSalePrice() > 0
+                            && item.getSalePrice() < item.getPrice())
+                            ? item.getSalePrice()
+                            : item.getPrice();
+
+                    return p*item.getQuantity();
+                })
                 .sum();
         cartDTO.setTotalPrice(total);
 

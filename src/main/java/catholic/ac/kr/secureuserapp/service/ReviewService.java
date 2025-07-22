@@ -3,7 +3,6 @@ package catholic.ac.kr.secureuserapp.service;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.ReviewMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.OrderItemDTO;
 import catholic.ac.kr.secureuserapp.model.dto.ReviewDTO;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;

@@ -20,6 +20,10 @@ public class CreateBookRequest {
     @DecimalMin(value = "0.0",inclusive = false)
     private BigDecimal price;
 
+    @NotNull
+    @DecimalMin(value = "0.0",inclusive = false)
+    private BigDecimal salePrice;
+
     @Min(0)
     private int stock;
 

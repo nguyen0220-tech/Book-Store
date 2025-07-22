@@ -16,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("order")
@@ -34,8 +33,11 @@ public class OrderController {
     }
 
     @GetMapping("my-order")
-    public ResponseEntity<ApiResponse<List<OrderDTO>>> getOrder(@AuthenticationPrincipal MyUserDetails userDetails) {
-        return ResponseEntity.ok(orderService.getOrderByUserId(userDetails.getUser().getId()));
+    public ResponseEntity<ApiResponse<Page<OrderDTO>>> getOrder(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(orderService.getOrderByUserId(userDetails.getUser().getId(),page,size));
     }
 
     @GetMapping("admin/all")

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo</title>
+    <style>
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: white;
+            border-bottom: 2px solid #ccc;
+            z-index: 1000;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 100px 20px 20px 20px;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        nav a {
+            text-decoration: none;
+            font-size: 16px;
+            color: #007bff;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .notification-unread {
+            background-color: #fff3cd; /* vàng nhạt */
+            border: 1px solid #ffeeba;
+            font-weight: bold;
+        }
+
+        .notification-read {
+            background-color: #f8f9fa; /* xám nhạt */
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+
+        .notification-item:hover {
+            background-color: #e2e6ea;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h1>🔔 Thông báo</h1>
+    <a href="home.html">🏠 Trang chủ</a>
+</nav>
+
+<div>
+    <strong>Thông báo chưa đọc: <span id="unreadCount">0</span></strong>
+</div>
+
+<ul id="notificationList"></ul>
+<div id="paginationControls" style="margin-top: 20px;"></div>
+
+
+<div id="notificationDetail" style="margin-top: 20px; display: none;">
+    <h2>Chi tiết thông báo</h2>
+    <p id="detailContent"></p>
+    <button id="markSelectedReadBtn">Đánh dấu đã đọc các mục đã chọn</button>
+</div>
+
+<script src="notification.js"></script>
+</body>
+</html>

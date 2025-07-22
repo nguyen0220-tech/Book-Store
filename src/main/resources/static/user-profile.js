@@ -88,3 +88,31 @@ function showMessage(msg, isError = false) {
     messageEl.innerText = msg;
     messageEl.className = isError ? "error" : "success";
 }
+
+function fetchUnreadCount() {
+    fetch(`${API_BASE}/notify/un-read`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const count = data.data;
+                const badge = document.getElementById("unreadBadge");
+                if (count > 0) {
+                    badge.textContent = `(${count})`;
+                } else {
+                    badge.textContent = "";
+                }
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi lấy số thông báo chưa đọc:", err);
+        });
+}
+
+// Gọi khi trang load xong
+document.addEventListener("DOMContentLoaded", () => {
+    fetchUnreadCount();
+});

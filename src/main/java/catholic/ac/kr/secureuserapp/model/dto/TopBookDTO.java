@@ -18,10 +18,11 @@ public record TopBookDTO(
         Long bookId,
         String title,
         BigDecimal price,
+        BigDecimal salePrice,
         String imgUrl,
         Long totalSold
 ) {
-    public TopBookDTO(Long bookId, String title, BigDecimal price, String imgUrl) {
-        this(bookId, title, price, imgUrl, 0L);
+    public TopBookDTO(Long bookId, String title, BigDecimal price,BigDecimal salePrice, String imgUrl) {
+        this(bookId, title, price,salePrice, imgUrl, 0L);
     }
 }

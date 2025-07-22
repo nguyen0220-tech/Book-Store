@@ -13,4 +13,5 @@ public class CartItemDTO {
     private int quantity;    // Số lượng chọn
     private String imgUrl;   // Lấy từ Book
     private double price;    // Lấy từ Book (có thể để tính tổng tiền)
+    private Double salePrice;
 }

@@ -29,19 +29,19 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("""
             SELECT new catholic.ac.kr.secureuserapp.model.dto.TopBookDTO (
-                i.book.id, i.book.title, i.book.price ,i.book.imgUrl, SUM(i.quantity))
-                    FROM OrderItem i
-                        GROUP BY i.book.id, i.book.title, i.book.price, i.book.imgUrl
-                            ORDER BY SUM(i.quantity) DESC
+            i.book.id, i.book.title, i.book.price,i.book.salePrice ,i.book.imgUrl, SUM(i.quantity))
+            FROM OrderItem i
+            GROUP BY i.book.id, i.book.title, i.book.price,i.book.salePrice, i.book.imgUrl
+            ORDER BY SUM(i.quantity) DESC
             """)
     List<TopBookDTO> findTop5SellingBooks(Pageable pageable);
 
     @Query("""
                 SELECT new catholic.ac.kr.secureuserapp.model.dto.TopBookDTO(
-                b.id, b.title,b.price,b.imgUrl
+                b.id, b.title,b.price,b.salePrice,b.imgUrl
                 )
                 FROM  Book b
-                GROUP BY b.id,b.title,b.price,b.imgUrl
+                GROUP BY b.id,b.title,b.price,b.salePrice,b.imgUrl
                 ORDER BY b.createdAt DESC
             """)
     List<TopBookDTO> findTop5NewBooks(Pageable pageable);
