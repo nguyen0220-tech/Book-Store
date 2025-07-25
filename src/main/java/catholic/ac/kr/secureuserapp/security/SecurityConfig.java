@@ -81,9 +81,11 @@ public class SecurityConfig {
                                 "/*.css",             // css
                                 "/*.js",              // js
                                 "/*.png", "/*.jpg", "/*.svg",  // ảnh
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/ws/**"
                         )
                         .permitAll()         // cho phép không login/signup/verify...
+                        .requestMatchers("/chat/**").authenticated()
                         .anyRequest().authenticated()  // các request còn lại cần token JWT hợp lệ
                 )
                 .authenticationProvider(authenticationProvider())                            // cung cấp cách xác thực người dùng

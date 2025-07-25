@@ -3,13 +3,18 @@ package catholic.ac.kr.secureuserapp.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 //=========Sinh và xác minh JWT============
 @Component // Đánh dấu class này là một bean của Spring
@@ -58,5 +63,21 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Authentication getAuthentication(String token) {
+        String username = extractUsername(token);
+        var claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        var roles = (List<String>) claims.get("roles");
+        var authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+
+        return new UsernamePasswordAuthenticationToken(username, null, authorities);
     }
 }

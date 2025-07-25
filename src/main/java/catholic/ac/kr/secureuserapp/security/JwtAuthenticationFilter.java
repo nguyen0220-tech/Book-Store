@@ -31,13 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { //filter đ�
             throws ServletException, IOException {
 //      1. Lấy giá trị từ header "Authorization"
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return; //Không có header Authorization Hoặc không bắt đầu bằng "Bearer "→ Bỏ qua filter này, để tiếp tục xử lý bởi các filter khác
-        }
+        String token = null;
 
-//      2. Lấy token JWT từ header (bỏ chữ "Bearer " phía trước)
-        String token = authHeader.substring(7);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else if (request.getParameter("token") != null) {
+            token = request.getParameter("token");  //  Lấy token từ query param nếu không có header
+        }
 
 //      3. Kiểm tra token có hợp lệ không
         if (!jwtUtil.isTokenValid(token)) {
