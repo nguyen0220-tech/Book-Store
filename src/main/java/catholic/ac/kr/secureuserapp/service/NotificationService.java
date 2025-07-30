@@ -12,12 +12,16 @@ import catholic.ac.kr.secureuserapp.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,7 @@ public class NotificationService {
     private final BookMarkRepository bookMarkRepository;
     private final NotificationRepository notificationRepository;
     private final CategoryRepository categoryRepository;
+    private final CouponRepository couponRepository;
 
     public ApiResponse<Page<NotificationDTO>> getAllNotifications(Long userId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -47,6 +52,16 @@ public class NotificationService {
         }
 
         return ApiResponse.error("Notification not found");
+    }
+
+    public ApiResponse<Page<NotificationDTO>> getNotificationByUserIdAnFilterType(
+            Long userId, NotificationType type, int page, int siz) {
+        Pageable pageable = PageRequest.of(page, siz, Sort.by("createdAt").descending());
+        Page<Notification> notificationList = notificationRepository.findByUserIdAndType(userId, type, pageable);
+        Page<NotificationDTO> dtoList = notificationList.map(NotificationMapper::toNotificationDTO);
+
+        return ApiResponse.success("Filter notification with type: " + type, dtoList);
+
     }
 
     public ApiResponse<NotificationDTO> createNotification(Long userId, Long orderId) {
@@ -104,14 +119,20 @@ public class NotificationService {
         Sex sex = user.getSex();
         String call;
         if (sex == Sex.MALE) {
-            call = "Mr";
+            call = "Mr.";
         } else if (sex == Sex.FEMALE) {
-            call = "Mrs";
+            call = "Mrs.";
         } else call = "";
 
+        String message;
 
-        String message = String.format("[%s %s] %s - %s : big sale %.2f -> %.2f won",
-                call,user.getUsername(), category.getName(), book.getTitle(), book.getPrice(), book.getSalePrice());
+        if (user.getFullName() == null || user.getFullName().isEmpty()) {
+            message = String.format("[%s %s] %s - %s : Big sale %.2f -> %.2f won",
+                    call, user.getUsername(), category.getName(), book.getTitle(), book.getPrice(), book.getSalePrice());
+        } else
+            message = String.format("[%s %s] %s - %s : Big sale %.2f -> %.2f won",
+                    call, user.getFullName(), category.getName(), book.getTitle(), book.getPrice(), book.getSalePrice());
+
 
         boolean alreadyNotified = notificationRepository.existsByBookAndMessage(user, book, message);
 
@@ -134,6 +155,59 @@ public class NotificationService {
     }
 
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Map<String, Object>> createSystemNotification(String message) {
+        List<User> users = userRepository.findAll();
+        List<Notification> notifications = new ArrayList<>();
+
+        for (User user : users) {
+            notifications.add(Notification.builder()
+                    .user(user)
+                    .order(null)
+                    .book(null)
+                    .message(message)
+                    .read(false)
+                    .createdAt(new Timestamp(System.currentTimeMillis()))
+                    .type(NotificationType.SYSTEM)
+                    .build());
+        }
+
+        notificationRepository.saveAll(notifications);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("message", message);
+        result.put("sendCount", notifications.size());
+
+        return ApiResponse.success("Created and send system notification: ", result);
+    }
+
+    public void createCouponExpiredNotification() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Coupon> expiredCouponOfOneDayLeft = couponRepository.findAll().stream()
+                .filter(coupon -> {
+                    long hourLeft = Duration.between(now, coupon.getExpired()).toHours(); //.toHours():Lấy tổng số giờ của khoảng thời gian Duration vừa tính được
+                    return hourLeft <= 24 && hourLeft > 0 && coupon.isActive();
+                }).toList();
+
+        List<Notification> notifications = new ArrayList<>();
+        for (Coupon coupon : expiredCouponOfOneDayLeft) {
+            for (User user : coupon.getUsers()) {
+                System.out.println("KIEM TRA USER: "+user.getUsername());
+                notifications.add(Notification.builder()
+                        .user(user)
+                        .book(null)
+                        .order(null)
+                        .createdAt(new Timestamp(System.currentTimeMillis()))
+                        .read(false)
+                        .message("Coupon " + coupon.getCouponCode() + " sẽ hết hạn sau 24h")
+                        .type(NotificationType.COUPON)
+                        .build());
+            }
+        }
+        notificationRepository.saveAll(notifications);
+    }
+
+    @Transactional
     public ApiResponse<String> markNotificationAsRead(Long userId, Long notificationId) {
         if (notificationRepository.markAsRead(userId, notificationId) == 0) {
             throw new ResourceNotFoundException("Notification not found");
@@ -149,12 +223,12 @@ public class NotificationService {
         }
         return ApiResponse.success("notification unread", count);
     }
-}
 
-/*
-xu li:chi khi thay doi gia sale moi gui thong bao
-loi hien thi
- 📩 Book One Piece : big sale 159000.00 -> 0.00 won
-📦 Đơn hàng #null
-🕒 03:42:17 22/7/2025
- */
+    @Transactional
+    public ApiResponse<String> deleteNotification(Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(()->new ResourceNotFoundException("Notification not found"));
+        notificationRepository.delete(notification);
+        return ApiResponse.success("Notification deleted");
+    }
+}

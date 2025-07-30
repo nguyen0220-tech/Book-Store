@@ -72,6 +72,16 @@
 
 <div>
     <strong>Thông báo chưa đọc: <span id="unreadCount">0</span></strong>
+
+    <label for="typeFilter">Lọc theo loại:</label>
+    <select id="typeFilter">
+        <option value="">-- Tất cả --</option>
+        <option value="ORDER">Đơn hàng</option>
+        <option value="BOOK_DISCOUNT">Khuyến mãi sách</option>
+        <option value="COUPON">Mã giảm giá</option>
+        <option value="SYSTEM">Hệ thống</option>
+    </select>
+
 </div>
 
 <ul id="notificationList"></ul>
@@ -82,6 +92,7 @@
     <h2>Chi tiết thông báo</h2>
     <p id="detailContent"></p>
     <button id="markSelectedReadBtn">Đánh dấu đã đọc các mục đã chọn</button>
+    <button id="deleteSelectedBtn" style="margin-left: 10px; background-color: red; color: white;">Xóa các mục đã chọn</button>
 </div>
 
 <script src="notification.js"></script>

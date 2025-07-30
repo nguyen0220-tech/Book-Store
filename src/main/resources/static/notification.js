@@ -9,6 +9,7 @@ const unreadCountSpan = document.getElementById("unreadCount");
 const notificationList = document.getElementById("notificationList");
 const detailSection = document.getElementById("notificationDetail");
 const detailContent = document.getElementById("detailContent");
+const typeFilter = document.getElementById("typeFilter");
 
 let currentNotificationId = null;
 
@@ -29,7 +30,12 @@ function fetchUnreadCount() {
 
 // Lấy danh sách thông báo
 function fetchNotifications(page = 0) {
-    fetch(`${API_BASE}/notify?page=${page}&size=${pageSize}`, {
+    const selectedType = typeFilter.value;
+    const apiUrl = selectedType
+        ? `${API_BASE}/notify/filter?type=${selectedType}&page=${page}&size=${pageSize}`
+        : `${API_BASE}/notify?page=${page}&size=${pageSize}`;
+
+    fetch(apiUrl, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
@@ -46,24 +52,30 @@ function fetchNotifications(page = 0) {
                 pageData.content.forEach(notification => {
                     const li = document.createElement("li");
                     const icon = notification.read ? "✅" : "📩";
-                    const date = new Date(notification.createdAt).toLocaleString();
+                    const date = new Date(notification.createdAt).toLocaleDateString("vi-VN");
 
-                    let infoHtml = "";
-                    if (notification.type === "BOOK_DISCOUNT" && notification.title) {
-                        infoHtml += `📚 Sách: <strong>${notification.title}</strong><br>`;
-                    }
-                    if (notification.type === "ORDER" && notification.orderId) {
-                        infoHtml += `📦 Đơn hàng #${notification.orderId}<br>`;
+                    let typeText = "";
+                    switch (notification.type) {
+                        case "ORDER":
+                            typeText = "📦 Đơn hàng";
+                            break;
+                        case "BOOK_DISCOUNT":
+                            typeText = "📚 Khuyến mãi sách";
+                            break;
+                        case "COUPON":
+                            typeText = "🎟️ Thông báo coupon";
+                            break;
+                        case "SYSTEM":
+                            typeText = "⚙️ Hệ thống";
+                            break;
+                        default:
+                            typeText = notification.type;
                     }
 
                     li.innerHTML = `
-        <input type="checkbox" class="notification-checkbox" data-id="${notification.id}">
-        ${icon} <span style="font-weight: ${notification.read ? 'normal' : 'bold'}">
-            ${notification.message}
-        </span><br>
-        ${infoHtml}
-        🕒 ${date}
-    `;
+                        <input type="checkbox" class="notification-checkbox" data-id="${notification.id}">
+                        ${icon} <strong>${typeText}</strong> - 🕒 ${date}
+                    `;
                     li.style.cursor = "pointer";
                     li.style.marginBottom = "10px";
                     li.style.padding = "10px";
@@ -83,7 +95,7 @@ function fetchNotifications(page = 0) {
         });
 }
 
-
+// Phân trang
 function renderPaginationButtons() {
     const container = document.getElementById("paginationControls");
     container.innerHTML = "";
@@ -100,7 +112,6 @@ function renderPaginationButtons() {
     }
 }
 
-
 // Hiển thị chi tiết thông báo
 function showNotificationDetail(notificationId) {
     fetch(`${API_BASE}/notify/${notificationId}`, {
@@ -116,18 +127,19 @@ function showNotificationDetail(notificationId) {
                 const createdDate = new Date(notification.createdAt).toLocaleString();
 
                 detailContent.innerHTML = `
-    <p><strong>Nội dung:</strong> ${notification.message}</p>
-    ${notification.type === "BOOK_DISCOUNT" && notification.title ? `<p><strong>Sách:</strong> ${notification.title}</p>` : ""}
-    ${notification.type === "ORDER" && notification.orderId ? `<p><strong>Đơn hàng:</strong> #${notification.orderId}</p>` : ""}
-    <p><strong>Thời gian:</strong> ${createdDate}</p>
-    <p><strong>Trạng thái:</strong> ${notification.read ? "Đã đọc" : "Chưa đọc"}</p>
-`;
+                    <p><strong>Nội dung:</strong> ${notification.message}</p>
+                    ${notification.type === "BOOK_DISCOUNT" && notification.title ? `<p><strong>Sách:</strong> ${notification.title}</p>` : ""}
+                    ${notification.type === "ORDER" && notification.orderId ? `<p><strong>Đơn hàng:</strong> #${notification.orderId}</p>` : ""}
+                    <p><strong>Thời gian:</strong> ${createdDate}</p>
+                    <p><strong>Trạng thái:</strong> ${notification.read ? "Đã đọc" : "Chưa đọc"}</p>
+                `;
 
                 detailSection.style.display = "block";
             }
         });
 }
 
+// Đánh dấu đã đọc
 document.getElementById("markSelectedReadBtn").addEventListener("click", () => {
     const checkboxes = document.querySelectorAll(".notification-checkbox:checked");
     const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
@@ -154,6 +166,45 @@ document.getElementById("markSelectedReadBtn").addEventListener("click", () => {
             console.error(err);
             alert("Đã có lỗi xảy ra.");
         });
+});
+
+document.getElementById("deleteSelectedBtn").addEventListener("click", () => {
+    const checkboxes = document.querySelectorAll(".notification-checkbox:checked");
+    const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
+
+    if (ids.length === 0) {
+        alert("Vui lòng chọn ít nhất một thông báo để xóa.");
+        return;
+    }
+
+    if (!confirm("Bạn có chắc muốn xóa các thông báo đã chọn?")) return;
+
+    Promise.all(
+        ids.map(id =>
+            fetch(`${API_BASE}/notify/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+        )
+    )
+        .then(() => {
+            alert("Đã xóa các thông báo đã chọn.");
+            fetchNotifications();
+            fetchUnreadCount();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Đã có lỗi xảy ra khi xóa.");
+        });
+});
+
+
+// Sự kiện khi thay đổi bộ lọc loại thông báo
+typeFilter.addEventListener("change", () => {
+    currentPage = 0;
+    fetchNotifications();
 });
 
 // Khởi tạo

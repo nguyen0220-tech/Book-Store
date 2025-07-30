@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.repository;
 
+import catholic.ac.kr.secureuserapp.Status.NotificationType;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import catholic.ac.kr.secureuserapp.model.entity.Notification;
 import catholic.ac.kr.secureuserapp.model.entity.Order;
@@ -28,6 +29,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             UPDATE Notification n SET n.read=true WHERE n.user.id =:userId AND n.id=:notificationId
             """)
     int markAsRead(@Param("userId") Long userId, @Param("notificationId") Long notificationId);
+
+    Page<Notification> findByUserIdAndType(Long user_id, NotificationType type, Pageable pageable);
+
 
     @Query("""
             SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.read = false

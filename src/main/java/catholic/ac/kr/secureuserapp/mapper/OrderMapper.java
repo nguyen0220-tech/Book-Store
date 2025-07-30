@@ -20,7 +20,6 @@ public interface OrderMapper {
     @Mapping(source = "status", target = "orderStatus")
     @Mapping(source = "orderItems", target = "items")
     @Mapping(source = "coupon.couponCode",target = "couponCode") //Order có: Coupon coupon, Coupon có String couponCode;
-
     OrderDTO toOrderDTO(Order order);
 
     @Mapping(target = "user", ignore = true)

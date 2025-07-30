@@ -80,4 +80,9 @@ public class UserController {
     public ResponseEntity<ApiResponse<?>> changePassword(@AuthenticationPrincipal MyUserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
         return ResponseEntity.ok(userService.changePassword(userDetails.getUser().getId(), request));
     }
+
+    @PostMapping("/find-pass")
+    public ResponseEntity<ApiResponse<String>> findPassword(@RequestParam String username) {
+        return ResponseEntity.ok(userService.findPasswordByUsername(username));
+    }
 }

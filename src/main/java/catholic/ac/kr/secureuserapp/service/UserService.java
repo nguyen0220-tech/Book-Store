@@ -21,8 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -159,6 +161,19 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        if (user.getUsername().equals("admin")) {
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+                return ApiResponse.error("Old password does not match");
+            }
+
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ApiResponse.error("Password does not match");
+            }
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            return ApiResponse.success("Password changed successfully");
+        }
+
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             return ApiResponse.error("Old password does not match");
         }
@@ -178,5 +193,27 @@ public class UserService {
         );
 
         return ApiResponse.success("Password changed successfully");
+    }
+
+    public ApiResponse<String> findPasswordByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        String randomNewPassword = IntStream.range(0,5)
+                .mapToObj( c -> String.valueOf(chars.charAt(random.nextInt(chars.length()))))
+                .collect(Collectors.joining());
+
+        user.setPassword(passwordEncoder.encode(randomNewPassword));
+        userRepository.save(user);
+
+        emailService.sendSimpleMail(
+                user.getUsername(),
+                "Khôi phục mật khẩu",
+                "Mật khẩu mới của bạn là: "+randomNewPassword
+        );
+
+        return ApiResponse.success("Password reset successfully");
     }
 }

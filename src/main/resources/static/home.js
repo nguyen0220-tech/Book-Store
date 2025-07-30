@@ -354,8 +354,8 @@ function showBooks(books) {
                    <span style="color: red; font-weight: bold;">${b.salePrice}</span>`
                         : `${b.price}`
                 } <br/>
-        <b>Stock:</b> ${b.stock} <br/>
-        <b>Description:</b> ${b.description} <br/>
+<!--        <b>Stock:</b> ${b.stock} <br/>-->
+        <b>Description:</b> ${truncateToSentences(b.description, 2)} <br/>
         <b>Category:</b> ${b.categoryName} <br/>
         <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" /><br/>
         <button onclick="toggleReviews(${b.id})">👁️ Xem đánh giá</button>
@@ -375,6 +375,18 @@ function showBooks(books) {
             }).join("");
 
     document.getElementById("bookList").innerHTML = html;
+}
+
+function truncateToSentences(text, maxSentences) {
+    if (!text) return "";
+
+    // Tách theo các dấu kết thúc câu: ".", "!", "?" theo tiếng Việt/Anh
+    const sentences = text.match(/[^.!?]+[.!?]+/g);
+
+    if (!sentences) return text; // Không tìm thấy câu nào
+
+    // Lấy tối đa `maxSentences` câu và nối lại
+    return sentences.slice(0, maxSentences).join(' ').trim();
 }
 
 function getCurrentBooks() {
@@ -629,5 +641,6 @@ window.onload = async () => {
         document.querySelector('a[href="user.html"]').style.display = "none";
         document.querySelector('a[href="order-manager.html"]').style.display = "none";
         document.querySelector('a[href="coupon-admin.html"]').style.display = "none";
+        document.querySelector('a[href="system-notification.html"]').style.display = "none";
     }
 };

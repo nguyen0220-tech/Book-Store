@@ -50,21 +50,17 @@ public class InvoiceService {
     }
 
     private static PdfPTable getPdfPTable(Order order) {
-        PdfPTable table = new PdfPTable(5); //so cột
+        PdfPTable table = new PdfPTable(4); //so cột
         table.addCell("Name");
-        table.addCell("Quantity");
         table.addCell("Price");
-        table.addCell("Sale Price");
-        table.addCell("Sale Price(Price) x Quantity");
+        table.addCell("Quantity");
+        table.addCell("Price x Quantity");
 
 
         for (OrderItem item : order.getOrderItems()) {
             table.addCell(item.getBook().getTitle());
+            table.addCell(item.getPrice().toString());
             table.addCell(String.valueOf(item.getQuantity()));
-            table.addCell(item.getBook().getPrice().toString());
-            table.addCell(item.getBook().getSalePrice() != null
-                    ? item.getBook().getSalePrice().toString()
-                    : "-");
             table.addCell((item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))).toString());
         }
         return table;

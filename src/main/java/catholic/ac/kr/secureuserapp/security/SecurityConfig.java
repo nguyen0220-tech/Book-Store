@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
+                                "/user/find-pass",
                                 "/auth/**",           // cho phép toàn bộ API auth
                                 "/*.html",            // tất cả file .html trong static/
                                 "/*.css",             // css

@@ -15,6 +15,7 @@ public interface BookMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "category.name",target = "categoryName")
     @Mapping(source = "category.id", target = "categoryId")
+    @Mapping(source = "stock",target = "stock")
     BookDTO bookToBookDTO(Book book);
 
     @Mapping(target = "category", ignore = true) // map thủ công
