@@ -623,6 +623,72 @@ async function addTopToCart(bookId, type) {
     }
 }
 
+let postCurrentPage = 0;
+const postPageSize = 5;
+
+async function fetchUserPosts(page = 0, size = postPageSize) {
+    try {
+        const response = await fetch(`${API_BASE}/post/all?page=${page}&size=${size}`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Không thể tải bài viết");
+        }
+
+        const json = await response.json();
+        const dataPage = json.data; // Đây là Page<PostDTO>
+
+        const posts = dataPage.content || [];
+        renderUserPosts(posts);
+        renderPostPagination(dataPage);
+
+        postCurrentPage = dataPage.number;
+    } catch (error) {
+        console.error(error);
+        document.getElementById("userPostList").innerHTML = `<p style="color:red;">Lỗi tải bài viết: ${error.message}</p>`;
+    }
+}
+
+function renderUserPosts(posts) {
+    const container = document.getElementById("userPostList");
+    if (posts.length === 0) {
+        container.innerHTML = "<p>Chưa có bài viết nào.</p>";
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            ${posts.map(post => `
+                <div style="width: 100%; max-width: 600px; border:1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; background-color: #f9f9f9;">
+                    <p><strong>${post.username || "Ẩn danh"}</strong> | ${new Date(post.postDate).toLocaleString()}</p>
+                    <p>${post.content}</p>
+                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; max-height: 300px; border-radius: 6px;" />` : ""}
+                    <p><em>Chế độ: ${post.postShare === 'PUBLIC' ? 'Công khai' : post.postShare === 'FRIEND' ? 'Bạn bè' : 'Riêng tư'}</em></p>
+                </div>
+            `).join("")}
+        </div>
+    `;
+}
+
+
+function renderPostPagination(pageData) {
+    const container = document.getElementById("postPagination");
+    const totalPages = pageData.totalPages;
+    if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
+    }
+
+    let buttonsHtml = "";
+    for(let i=0; i<totalPages; i++) {
+        buttonsHtml += `<button style="margin-right:5px; ${i === postCurrentPage ? "font-weight:bold;" : ""}" onclick="fetchUserPosts(${i})">${i+1}</button>`;
+    }
+    container.innerHTML = buttonsHtml;
+}
+
 //khi app khoi dong
 window.onload = async () => {
    await loadSearchHistory()
@@ -630,6 +696,7 @@ window.onload = async () => {
     await fetchRandomBooks();
     await fetchTopBooks()
     await fetchTopNewBooks()
+    await fetchUserPosts(0)
 
     const token = localStorage.getItem("accessToken");
     const payload = parseJwt(token);

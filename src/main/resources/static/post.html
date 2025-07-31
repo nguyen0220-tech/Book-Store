@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang cá nhân</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+    }
+
+    header {
+      background: #007bff;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: white;
+      margin-right: 1rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin: 0.6rem 0 0.3rem;
+      font-weight: bold;
+      color: #555;
+    }
+
+    textarea, input, select {
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 0.8rem 1.4rem;
+      background: #28a745;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      align-self: flex-start;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    #postList {
+      margin-top: 2rem;
+    }
+
+    .post-item {
+      border-bottom: 1px solid #ccc;
+      padding: 1rem 0;
+      position: relative;
+    }
+
+    .post-item img {
+      max-width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+
+    .post-actions {
+      position: absolute;
+      top: 1rem;
+      right: 0;
+    }
+
+    .post-actions button {
+      margin-left: 5px;
+      padding: 4px 8px;
+      font-size: 0.85rem;
+      background-color: #ffc107;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .post-actions button.delete {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .post-meta {
+      font-size: 0.85rem;
+      color: gray;
+      margin-top: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Tạo bài viết mới</h1>
+  <nav>
+    <a href="home.html">🏠 Trang chủ</a>
+    <a href="coupon-user.html">🎁 Coupon</a>
+    <a href="order-history.html">📦 Đơn hàng</a>
+    <a href="notification.html">🔔 Thông báo</a>
+    <a href="user-profile.html">👤 Cá nhân</a>
+  </nav>
+</header>
+
+<div class="container">
+  <form onsubmit="event.preventDefault(); createPost();">
+    <label for="postContent">Nội dung bài viết</label>
+    <textarea id="postContent" rows="4" placeholder="Hãy chia sẻ cuốn sách mà bạn yêu thích !!!"></textarea>
+
+    <label for="imageUrl">Link ảnh (nếu có)</label>
+    <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg">
+
+    <label for="postShare">Chế độ hiển thị</label>
+    <select id="postShare">
+      <option value="PUBLIC">Công khai</option>
+      <option value="FRIEND">Bạn bè</option>
+      <option value="PRIVATE">Chỉ mình tôi</option>
+    </select>
+
+    <button type="submit">Đăng bài</button>
+  </form>
+
+  <h2>📰 Danh sách bài viết</h2>
+  <div id="postList"></div>
+</div>
+
+<script src="post.js"></script>
+</body>
+</html>
