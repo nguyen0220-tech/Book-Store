@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý Bạn Bè</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      border-bottom: 2px solid #4a90e2;
+      padding-bottom: 6px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+
+    header {
+      background: #007bff;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      margin-right: 1rem;
+      text-decoration: none;
+    }
+
+    input#searchInput {
+      width: 250px;
+      padding: 8px 12px;
+      border: 1.5px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    input#searchInput:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 5px #4a90e2;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #4a90e2;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      margin-left: 10px;
+      font-size: 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #357abd;
+    }
+
+    #userList, #friendList {
+      margin-top: 10px;
+      max-width: 600px;
+    }
+
+    #userList > div, #friendList > div {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: box-shadow 0.3s;
+    }
+
+    #userList > div:hover, #friendList > div:hover {
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+    }
+
+    #userList p, #friendList p {
+      margin: 0;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #34495e;
+    }
+
+    #pendingList {
+      list-style-type: none;
+      padding-left: 0;
+      max-width: 600px;
+    }
+
+    #pendingList li {
+      background: #fff;
+      margin-bottom: 12px;
+      padding: 12px 15px;
+      border-radius: 6px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    #pendingList button {
+      background-color: #27ae60;
+      padding: 6px 12px;
+      margin-left: 8px;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: background-color 0.25s;
+    }
+
+    #pendingList button:hover {
+      background-color: #1e8449;
+    }
+
+    #pendingList button.reject-btn {
+      background-color: #e74c3c;
+    }
+
+    #pendingList button.reject-btn:hover {
+      background-color: #c0392b;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+      input#searchInput {
+        width: 100%;
+        margin-bottom: 8px;
+        margin-left: 0;
+      }
+
+      button {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 8px;
+      }
+
+      #userList > div, #friendList > div, #pendingList li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      #userList > div button, #friendList > div button, #pendingList button {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+      }
+    }
+
+    /* Làm đẹp cho thông tin tổng */
+    #friendCount {
+      font-size: 1.1rem;
+      background: #ecf0f1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      color: #2c3e50;
+    }
+
+    /* Nút có icon đẹp hơn */
+    button.icon-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Nút xử lý bạn bè */
+    .friend-actions button {
+      margin-left: 8px;
+      padding: 5px 10px;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .friend-actions button.remove-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .friend-actions button.remove-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .friend-actions button.block-btn {
+      background-color: #7f8c8d;
+      color: white;
+    }
+
+    .friend-actions button.block-btn:hover {
+      background-color: #626d70;
+    }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>🔍 Tìm kiếm người dùng</h2>
+  <nav>
+    <a href="home.html" class="cart-link">🏠 Trang chủ</a>
+
+  </nav>
+</header>
+<div style="display:flex; align-items:center; max-width: 600px;">
+  <input id="searchInput" placeholder="Nhập tên người dùng hoặc email..." />
+  <button onclick="searchUsers()">Tìm</button>
+</div>
+
+<div id="userList"></div>
+
+<h2>👥 Danh sách bạn bè</h2>
+<div style="display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin-bottom: 10px;">
+  <div style="background-color: #ecf0f1; padding: 10px 16px; border-radius: 8px; font-weight: bold; color: #2c3e50;">
+    👥 Số lượng bạn bè: <span id="friendCountNumber">0</span>
+  </div>
+  <button onclick="loadFriends()">🔄 Tải lại</button>
+</div>
+<div id="friendList"></div>
+
+
+<h2>Lời mời kết bạn</h2>
+<ul id="pendingList"></ul>
+
+<h2>Danh sách bạn bè bị chặn</h2>
+<div id="blockedFriendList"></div>
+
+
+<script src="friend.js"></script>
+</body>
+</html>

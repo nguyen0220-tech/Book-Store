@@ -1,0 +1,78 @@
+package catholic.ac.kr.secureuserapp.controller;
+
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.FriendDTO;
+import catholic.ac.kr.secureuserapp.model.dto.FriendRequest;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import catholic.ac.kr.secureuserapp.service.FriendService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("friend")
+@RequiredArgsConstructor
+public class FriendController {
+    private final FriendService friendService;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<FriendDTO>>> getFriends(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(friendService.getFriends(userDetails.getUser().getId(), page, size));
+    }
+
+    @GetMapping("pending")
+    public ResponseEntity<ApiResponse<Page<FriendDTO>>> getPendingFriend(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(friendService.getPendingFriendRequests(userDetails.getUser().getId(), page, size));
+    }
+
+    @GetMapping("blocking")
+    public ResponseEntity<ApiResponse<Page<FriendDTO>>> getBlockingFriend(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(friendService.getBlockingFriend(userDetails.getUser().getId(), page, size));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<FriendDTO>> addFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.addFriend(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @PutMapping("accept")
+    public ResponseEntity<ApiResponse<String>> acceptFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.acceptFriendRequest(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @PutMapping("cancel")
+    public ResponseEntity<ApiResponse<String>> rejectFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.cancelFriendRequest(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @DeleteMapping("{friendId}")
+    public ResponseEntity<ApiResponse<String>> deleteFriend(@AuthenticationPrincipal MyUserDetails userDetails, @PathVariable Long friendId) {
+        return ResponseEntity.ok(friendService.deleteFriend(userDetails.getUser().getId(), friendId));
+    }
+
+    @PutMapping("block")
+    public ResponseEntity<ApiResponse<String>> blockFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.blockFriend(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @PutMapping("un-block")
+    public ResponseEntity<ApiResponse<String>> unBlockFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.unBlockFriend(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @GetMapping("count")
+    public ResponseEntity<ApiResponse<Integer>> countFriends(@AuthenticationPrincipal MyUserDetails userDetails) {
+        return ResponseEntity.ok(friendService.countFriends(userDetails.getUser().getId()));
+    }
+}

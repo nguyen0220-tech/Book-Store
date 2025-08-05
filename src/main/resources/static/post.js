@@ -256,6 +256,30 @@ function handleScroll() {
     }
 }
 
+async function fetchUnreadNotificationCount() {
+    try {
+        const res = await fetch(`${API_BASE}/notify/un-read`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const count = data.data;
+            const unreadSpan = document.getElementById("unreadCount");
+            if (count > 0) {
+                unreadSpan.textContent = `(${count})`;
+            } else {
+                unreadSpan.textContent = "";
+            }
+        }
+    } catch (err) {
+        console.error("Failed to fetch unread notifications:", err);
+    }
+}
+
+fetchUnreadNotificationCount();
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts(currentPage);
     window.addEventListener('scroll', handleScroll);

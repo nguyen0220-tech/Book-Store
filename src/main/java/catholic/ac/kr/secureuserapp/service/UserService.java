@@ -55,7 +55,7 @@ public class UserService {
         return ApiResponse.success("Users found", userDTOs);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ApiResponse<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         Page<User> users = userRepository.searchByName(keyword, pageable);

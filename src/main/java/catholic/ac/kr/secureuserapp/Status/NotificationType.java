@@ -4,5 +4,6 @@ public enum NotificationType {
     ORDER,
     BOOK_DISCOUNT,
     COUPON,
-    SYSTEM
+    SYSTEM,
+    FRIEND
 }

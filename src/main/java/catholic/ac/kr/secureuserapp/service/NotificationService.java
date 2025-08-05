@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.FriendStatus;
 import catholic.ac.kr.secureuserapp.Status.NotificationType;
 import catholic.ac.kr.secureuserapp.Status.OrderStatus;
 import catholic.ac.kr.secureuserapp.Status.Sex;
@@ -32,6 +33,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final CategoryRepository categoryRepository;
     private final CouponRepository couponRepository;
+    private final FriendRepository friendRepository;
 
     public ApiResponse<Page<NotificationDTO>> getAllNotifications(Long userId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -104,14 +106,15 @@ public class NotificationService {
         };
     }
 
-    public ApiResponse<NotificationDTO> createBookMarkDiscountNotification(Long userId, Book book) {
+    public void createBookMarkDiscountNotification(Long userId, Book book) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean isBookMarked = bookMarkRepository.existsByUserAndBook(user, book);
 
         if (!isBookMarked) {
-            return ApiResponse.success("Notification already exists. No new notification sent.");
+            ApiResponse.success("Notification already exists. No new notification sent.");
+            return;
         }
 
         Category category = categoryRepository.findByBookId(book.getId());
@@ -149,9 +152,10 @@ public class NotificationService {
 
             notificationRepository.save(notification);
 
-            return ApiResponse.success("Notification", NotificationMapper.toNotificationDTO(notification));
+            ApiResponse.success("Notification", NotificationMapper.toNotificationDTO(notification));
+            return;
         }
-        return ApiResponse.success("Book mark discount is not eligible for notification.");
+        ApiResponse.success("Book mark discount is not eligible for notification.");
     }
 
     @Transactional
@@ -192,7 +196,6 @@ public class NotificationService {
         List<Notification> notifications = new ArrayList<>();
         for (Coupon coupon : expiredCouponOfOneDayLeft) {
             for (User user : coupon.getUsers()) {
-                System.out.println("KIEM TRA USER: "+user.getUsername());
                 notifications.add(Notification.builder()
                         .user(user)
                         .book(null)
@@ -205,6 +208,26 @@ public class NotificationService {
             }
         }
         notificationRepository.saveAll(notifications);
+    }
+
+    public void createRequestFriendNotification(Long userId, Long friendId) {
+        User user = userRepository.findById(friendId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Friend friend = friendRepository.findByUserIdAndFriendIdAndStatus(userId, friendId, FriendStatus.PENDING)
+                .orElseThrow(() -> new ResourceNotFoundException("Friend not found"));
+
+        Notification notification = Notification.builder()
+                .user(user)
+                .order(null)
+                .book(null)
+                .message(friend.getUser().getUsername() + " dã gửi lời mời kết bạn")
+                .read(false)
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .type(NotificationType.FRIEND)
+                .build();
+
+        notificationRepository.save(notification);
     }
 
     @Transactional
@@ -227,7 +250,7 @@ public class NotificationService {
     @Transactional
     public ApiResponse<String> deleteNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(()->new ResourceNotFoundException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
         notificationRepository.delete(notification);
         return ApiResponse.success("Notification deleted");
     }
