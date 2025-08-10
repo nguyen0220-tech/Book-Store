@@ -4,6 +4,5 @@ public enum EmotionStatus {
     LIKE,
     DISLIKE,
     LOVE,
-    WOW,
-    HAHA
+    WOW
 }

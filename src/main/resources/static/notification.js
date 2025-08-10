@@ -65,6 +65,9 @@ function fetchNotifications(page = 0) {
                         case "COUPON":
                             typeText = "🎟️ Thông báo coupon";
                             break;
+                        case "FRIEND":
+                            typeText = "👥 Lời mời kểt bạn";
+                            break;
                         case "SYSTEM":
                             typeText = "⚙️ Hệ thống";
                             break;

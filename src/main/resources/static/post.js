@@ -101,8 +101,14 @@ async function fetchPosts(page = 0, size = pageSize) {
                   <button class="save-edit-btn" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#007bff; color:#fff; border:none; border-radius:6px; cursor:pointer;">Lưu</button>
                   <button class="cancel-edit-btn" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#6c757d; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-left:5px;">Hủy</button>
                 </div>
+                
+                    <div class="comments-container" id="comments-${post.id}" style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 0.5rem;">
+        <em>Đang tải bình luận...</em>
+    </div>
             </div>`;
             postListDiv.insertAdjacentHTML('beforeend', postHtml);
+            fetchCommentsForPost(post.id);
+
         });
 
         attachEventListeners();
@@ -277,6 +283,41 @@ async function fetchUnreadNotificationCount() {
         console.error("Failed to fetch unread notifications:", err);
     }
 }
+
+async function fetchCommentsForPost(postId) {
+    const commentDiv = document.getElementById(`comments-${postId}`);
+    if (!commentDiv) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Không thể tải bình luận");
+
+        const result = await response.json();
+        const comments = result.data?.content || [];
+
+        if (comments.length === 0) {
+            commentDiv.innerHTML = "<em>Chưa có bình luận nào.</em>";
+            return;
+        }
+
+        commentDiv.innerHTML = comments.map(c => `
+            <div style="border-bottom: 1px solid #eee; padding: 4px 0;">
+                <strong>${c.username}</strong>: ${c.commentContent}
+                <br/>
+                <small style="color:gray;">${new Date(c.createdAt).toLocaleString()}</small>
+            </div>
+        `).join("");
+    } catch (err) {
+        console.error("Lỗi khi tải bình luận:", err);
+        commentDiv.innerHTML = `<p style="color:red;">Không thể tải bình luận.</p>`;
+    }
+}
+
 
 fetchUnreadNotificationCount();
 

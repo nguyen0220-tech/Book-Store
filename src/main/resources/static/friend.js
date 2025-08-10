@@ -45,7 +45,7 @@ async function sendFriendRequest(friendId) {
     if (result.success) {
         alert("✅ Đã gửi lời mời kết bạn!");
     } else {
-        alert("❌ Lỗi: " + result.message);
+        alert("Thông báo: " + result.message);
     }
 }
 

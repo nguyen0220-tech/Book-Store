@@ -32,13 +32,14 @@
 <main>
     <section class="card">
         <h2>🔍 Tìm kiếm sách</h2>
-        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;" />
+        <input id="searchKeyword" placeholder="Tác giả / Tiêu đề / Thể loại" style="width:300px;"/>
         <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
         <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
         <button onclick="searchByCategory()">Tìm theo Thể loại</button>
         <section class="card" style="margin-top: 1rem;">
             <h3>🕘 Lịch sử tìm kiếm gần đây</h3>
-            <div id="searchHistoryList" style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff; width: 300px;"></div>
+            <div id="searchHistoryList"
+                 style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff; width: 300px;"></div>
             <button id="clearSearchHistoryBtn" style="margin-top: 5px;">Xóa tất cả lịch sử tìm kiếm</button>
         </section>
     </section>
@@ -66,12 +67,12 @@
 
 <h1> Bài viết của người dùng</h1>
 <div id="userPostList" style="width: 100%; display: flex; justify-content: center;"></div>
-    <!-- Bài viết sẽ được load vào đây -->
+<!-- Bài viết sẽ được load vào đây -->
 </div>
 
 <div id="postPagination" style="margin-top: 10px;"></div>
 
-<script src="home.js"> </script>
+<script src="home.js"></script>
 
 </body>
 </html>

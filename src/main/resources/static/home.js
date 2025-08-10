@@ -667,10 +667,31 @@ function renderUserPosts(posts) {
                     <p>${post.content}</p>
                     ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; max-height: 300px; border-radius: 6px;" />` : ""}
                     <p><em>Chế độ: ${post.postShare === 'PUBLIC' ? 'Công khai' : post.postShare === 'FRIEND' ? 'Bạn bè' : 'Riêng tư'}</em></p>
+                    
+                    <!-- Cảm xúc -->
+                    <div id="emotions-${post.id}" style="margin-top:10px;"></div>
+
+                    <!-- Bình luận -->
+                    <div id="comments-${post.id}" style="margin-top: 10px; background-color: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
+                        <p><strong>Bình luận:</strong></p>
+                        <p>Đang tải bình luận...</p>
+                    </div>
+
+                    <!-- Form nhập bình luận -->
+                    <div style="margin-top: 10px;">
+                        <input id="comment-input-${post.id}" type="text" placeholder="Viết bình luận..." style="width: 80%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;" />
+                        <button onclick="submitComment(${post.id})" style="padding: 6px 10px; border-radius: 4px; background-color: #007bff; color: white; border: none;">Gửi</button>
+                    </div>
                 </div>
             `).join("")}
         </div>
     `;
+
+    // Gọi fetchComments & fetchPostEmotions sau khi đã render khung
+    posts.forEach(post => {
+        fetchComments(post.id);
+        fetchPostEmotions(post.id);
+    });
 }
 
 
@@ -687,6 +708,276 @@ function renderPostPagination(pageData) {
         buttonsHtml += `<button style="margin-right:5px; ${i === postCurrentPage ? "font-weight:bold;" : ""}" onclick="fetchUserPosts(${i})">${i+1}</button>`;
     }
     container.innerHTML = buttonsHtml;
+}
+
+async function fetchComments(postId) {
+    try {
+        const response = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Không thể tải bình luận");
+        }
+
+        const json = await response.json();
+        const comments = json.data.content || [];
+
+        renderComments(postId, comments);
+    } catch (error) {
+        console.error(error);
+        const commentContainer = document.getElementById(`comments-${postId}`);
+        if (commentContainer) {
+            commentContainer.innerHTML = `<p style="color:red;">Lỗi tải bình luận: ${error.message}</p>`;
+        }
+    }
+}
+
+function renderComments(postId, comments) {
+    const commentContainer = document.getElementById(`comments-${postId}`);
+    if (!commentContainer) return;
+
+    if (comments.length === 0) {
+        commentContainer.innerHTML = "<p>Chưa có bình luận nào.</p>";
+        return;
+    }
+
+    const token = localStorage.getItem("accessToken");
+    const payload = parseJwt(token);
+    const currentUserId = payload?.userId;
+
+    commentContainer.innerHTML = comments.map(comment => {
+        const canDelete = comment.userId === currentUserId || comment.postUserId === currentUserId;
+        return `
+            <div style="padding: 4px 8px; border-bottom: 1px solid #ddd;">
+                <strong>${comment.username}</strong>: ${comment.commentContent}
+                <br/>
+                <small style="color:gray;">${new Date(comment.createdAt).toLocaleString()}</small>
+                ${canDelete ? `
+                    <button onclick="deleteComment(${postId}, ${comment.id})"
+                        style="margin-left: 10px; color: red; border: none; background: none; cursor: pointer;">
+                        🗑️
+                    </button>` : ""}
+            </div>
+        `;
+    }).join("");
+}
+
+async function deleteComment(postId, commentId) {
+    if (!confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/comment/${commentId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            alert(result.message || "Xóa bình luận thất bại");
+            return;
+        }
+
+        fetchComments(postId); // Refresh lại danh sách comment
+    } catch (error) {
+        console.error("Lỗi khi xóa bình luận:", error);
+        alert("Lỗi xóa bình luận: " + error.message);
+    }
+}
+
+async function submitComment(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const content = input.value.trim();
+
+    if (!content) {
+        alert("Vui lòng nhập bình luận.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/comment`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                postId: postId,
+                comment: content
+            })
+        });
+
+        const result = await response.json(); // Đọc JSON dù là success hay error
+
+        if (!response.ok || !result.success) {
+            alert(result.message || "Không thể gửi bình luận");
+            return;
+        }
+
+        input.value = "";
+        fetchComments(postId);
+    } catch (error) {
+        console.error("Lỗi gửi bình luận:", error);
+        alert("Lỗi khi gửi bình luận: " + error.message);
+    }
+}
+
+// hàm load cảm xúc cho mỗi bài viết
+async function fetchPostEmotions(postId) {
+    try {
+        const res = await fetch(`${API_BASE}/posts/${postId}/emotions`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+        if (!res.ok) throw new Error("Không thể tải cảm xúc");
+        const json = await res.json();
+        renderPostEmotions(postId, json.data || []);
+    } catch (err) {
+        console.error(err);
+        document.getElementById(`emotions-${postId}`).innerHTML = `<p style="color:red;">Lỗi tải cảm xúc</p>`;
+    }
+}
+
+async function renderPostEmotions(postId, emotions) {
+    const container = document.getElementById(`emotions-${postId}`);
+    if (!container) return;
+
+    const emotionIcons = {
+        LIKE: "👍",
+        DISLIKE: "👎",
+        LOVE: "❤️",
+        WOW: "😮"
+    };
+
+    const payload = parseJwt(accessToken);
+    const currentUserId = payload?.id || payload?.userId;
+
+    // Gọi API filter để biết cảm xúc của mình
+    let myEmotion = null;
+    try {
+        const filterRes = await fetch(`${API_BASE}/posts/${postId}/emotions/filter`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+        const filterData = await filterRes.json();
+        myEmotion = filterData.data.find(e => e.userId === currentUserId);
+    } catch (e) {
+        console.error("Error fetching user emotion:", e);
+    }
+
+    // Render nút
+    container.innerHTML = Object.keys(emotionIcons).map(status => {
+        const count = emotions.find(e => e.emotionStatus === status)?.count || 0;
+        const isSelected = myEmotion && myEmotion.emotionStatus === status;
+
+        const buttonStyle = isSelected
+            ? "margin-right:5px; background-color: gold; color: black; border: none; border-radius: 4px;"
+            : "margin-right:5px; border-radius: 4px;";
+
+
+        return `<button onclick="toggleEmotion(${postId}, '${status}')" style="${buttonStyle}">
+                    ${emotionIcons[status]} ${count}
+                </button>`;
+    }).join("");
+}
+
+//DA XONG POST,PUT,DELETE
+async function toggleEmotion(postId, status) {
+    try {
+        // Lấy cảm xúc hiện tại sau mỗi thao tác thành công
+        async function getCurrentUserEmotion() {
+            const filterRes = await fetch(`${API_BASE}/posts/${postId}/emotions/filter`, {
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            if (!filterRes.ok) throw new Error("Không thể tải cảm xúc hiện tại");
+            const filterData = await filterRes.json();
+            console.log("Filter API data:", filterData.data);
+
+            // Sửa lấy đúng key 'id' trong payload token
+            const currentUserId = parseJwt(accessToken)?.id;
+            console.log("Current user id from token:", currentUserId);
+
+            const myEmotion = filterData.data.find(e => {
+                console.log("Checking emotion entry:", e);
+                return e.userId === currentUserId;
+            });
+
+            console.log("Current user emotion found:", myEmotion);
+            return myEmotion;
+        }
+
+        let myEmotion = await getCurrentUserEmotion();
+
+        console.log("Current user emotion:", myEmotion);
+        console.log("Clicked status:", status);
+
+        let method, url, body;
+
+        if (!myEmotion) {
+            method = "POST";
+            url = `${API_BASE}/posts/${postId}/emotions`;
+            body = { emotionStatus: status };
+        } else if (myEmotion.emotionStatus === status) {
+            method = "DELETE";
+            url = `${API_BASE}/posts/${postId}/emotions`;
+            body = null;
+        } else {
+            method = "PUT";
+            url = `${API_BASE}/posts/${postId}/emotions`;
+            body = { emotionStatus: status };
+        }
+
+        console.log("Sending request", method, url, body);
+
+        const fetchOptions = {
+            method,
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        };
+
+        if (method !== "DELETE") {
+            fetchOptions.headers["Content-Type"] = "application/json";
+            fetchOptions.body = JSON.stringify(body);
+        }
+
+        const res = await fetch(url, fetchOptions);
+
+        const result = await res.json();
+
+        if (!result.success) {
+            if (result.message === "Bạn đã thể hiện cảm xúc bài viết rồi" && method === "POST") {
+                console.log("Retrying update instead of create");
+                const retryRes = await fetch(url, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ emotionStatus: status })
+                });
+                const retryResult = await retryRes.json();
+                if (!retryResult.success) {
+                    alert(retryResult.message || "Lỗi khi cập nhật cảm xúc");
+                    return;
+                }
+                await fetchPostEmotions(postId);
+                return;
+            }
+            alert(result.message || "Lỗi khi xử lý cảm xúc");
+            return;
+        }
+
+        // Cập nhật lại cảm xúc sau khi thành công
+        await fetchPostEmotions(postId);
+
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi xử lý cảm xúc");
+    }
 }
 
 //khi app khoi dong
