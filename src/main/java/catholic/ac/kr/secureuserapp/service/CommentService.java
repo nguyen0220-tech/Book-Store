@@ -29,6 +29,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final FriendRepository friendRepository;
+    private final NotificationService notificationService;
 
     public ApiResponse<Page<CommentDTO>> getAllComments(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -53,6 +54,10 @@ public class CommentService {
                 Comment comment = initComment(userId, postId, content);
                 commentRepository.save(comment);
 
+                if (!userId.equals(post.getUser().getId())) {
+                    notificationService.createCommentPostNotification(userId, post.getUser().getId(), comment);
+                }
+
                 return ApiResponse.success("Comment created", CommentMapper.toCommentDTO(comment));
             }
             return ApiResponse.error("Các bạn không phải bạn bè nên không thể bình luận");
@@ -61,6 +66,8 @@ public class CommentService {
             Comment comment = initComment(userId, postId, content);
 
             commentRepository.save(comment);
+
+            notificationService.createCommentPostNotification(userId, post.getUser().getId(), comment);
 
             return ApiResponse.success("Comment created", CommentMapper.toCommentDTO(comment));
         }

@@ -230,6 +230,42 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    public void createCommentPostNotification(Long commenterId, Long postOwnerId, Comment comment) {
+        User postOwner = userRepository.findById(postOwnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post owner not found"));
+
+        Notification notification = Notification.builder()
+                .user(postOwner) // người nhận thông báo là chủ bài viết
+                .order(null)
+                .book(null)
+                .message(comment.getUser().getUsername()
+                        + " đã bình luận bài viết của bạn: "
+                        + comment.getCommentContent())
+                .read(false)
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .type(NotificationType.POST)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    public void createPostEmotionNotification(Long currentUserId, Long postOwnerId, PostEmotion postEmotion) {
+        User postOwner = userRepository.findById(postOwnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post owner not found"));
+
+        Notification notification = Notification.builder()
+                .user(postOwner)
+                .order(null)
+                .book(null)
+                .message(postEmotion.getUser().getUsername() + " đã " + postEmotion.getEmotionStatus() + " bài viết của bạn")
+                .read(false)
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .type(NotificationType.POST)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
     @Transactional
     public ApiResponse<String> markNotificationAsRead(Long userId, Long notificationId) {
         if (notificationRepository.markAsRead(userId, notificationId) == 0) {

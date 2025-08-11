@@ -27,6 +27,7 @@ public class PostEmotionService {
     private final PostEmotionRepository postEmotionRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final NotificationService notificationService;
 
     //    su dung GROUP BY
     public ApiResponse<List<PostEmotionCountDTO>> getPostEmotionAndCount(Long postId) {
@@ -63,6 +64,10 @@ public class PostEmotionService {
         postEmotion.setCreateAt(new Timestamp(System.currentTimeMillis()));
 
         postEmotionRepository.save(postEmotion);
+
+        if (!userId.equals(postEmotion.getPost().getUser().getId())) {
+            notificationService.createPostEmotionNotification(userId,postEmotion.getPost().getUser().getId(),postEmotion);
+        }
 
         PostEmotionDTO postEmotionDTO = PostEmotionMapper.toPostEmotionDTO(postEmotion);
 

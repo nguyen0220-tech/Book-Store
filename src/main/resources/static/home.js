@@ -856,33 +856,44 @@ async function renderPostEmotions(postId, emotions) {
     const payload = parseJwt(accessToken);
     const currentUserId = payload?.id || payload?.userId;
 
-    // Gọi API filter để biết cảm xúc của mình
+    // Lấy danh sách user cảm xúc từ API filter
+    let filterList = [];
     let myEmotion = null;
+
     try {
         const filterRes = await fetch(`${API_BASE}/posts/${postId}/emotions/filter`, {
             headers: { "Authorization": `Bearer ${accessToken}` }
         });
         const filterData = await filterRes.json();
-        myEmotion = filterData.data.find(e => e.userId === currentUserId);
+        filterList = filterData.data || [];
+        myEmotion = filterList.find(e => e.userId === currentUserId);
     } catch (e) {
         console.error("Error fetching user emotion:", e);
     }
 
-    // Render nút
+    // Render nút + danh sách người dùng
     container.innerHTML = Object.keys(emotionIcons).map(status => {
         const count = emotions.find(e => e.emotionStatus === status)?.count || 0;
         const isSelected = myEmotion && myEmotion.emotionStatus === status;
+
+        // Lấy danh sách tên user của cảm xúc này
+        const userNames = filterList
+            .filter(e => e.emotionStatus === status)
+            .map(e => e.username)
+            .join(", ");
 
         const buttonStyle = isSelected
             ? "margin-right:5px; background-color: gold; color: black; border: none; border-radius: 4px;"
             : "margin-right:5px; border-radius: 4px;";
 
-
-        return `<button onclick="toggleEmotion(${postId}, '${status}')" style="${buttonStyle}">
+        // Thêm tooltip hover để xem ai đã bấm
+        return `<button onclick="toggleEmotion(${postId}, '${status}')" style="${buttonStyle}" title="${userNames || 'Chưa ai'}">
                     ${emotionIcons[status]} ${count}
                 </button>`;
     }).join("");
 }
+
+
 
 //DA XONG POST,PUT,DELETE
 async function toggleEmotion(postId, status) {

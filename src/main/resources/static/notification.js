@@ -68,6 +68,9 @@ function fetchNotifications(page = 0) {
                         case "FRIEND":
                             typeText = "👥 Lời mời kểt bạn";
                             break;
+                        case "POST":
+                            typeText = "💭 Bình luận/Cảm xúc"
+                            break;
                         case "SYSTEM":
                             typeText = "⚙️ Hệ thống";
                             break;
