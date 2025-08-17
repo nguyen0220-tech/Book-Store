@@ -51,6 +51,7 @@ async function createPost() {
         alert("Lỗi kết nối server.");
     }
 }
+window.createPost=createPost
 
 async function fetchPosts(page = 0, size = pageSize) {
     if (isLoading) return;
@@ -232,6 +233,7 @@ function attachEventListeners() {
         };
     });
 }
+window.attachEventListeners=attachEventListeners
 
 function toggleEditForm(postItem, show) {
     const editForm = postItem.querySelector('.edit-form');

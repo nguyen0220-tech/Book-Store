@@ -29,6 +29,7 @@ async function searchUsers() {
         userListDiv.appendChild(div);
     });
 }
+window.searchUsers=searchUsers
 
 // Gửi lời mời kết bạn
 async function sendFriendRequest(friendId) {
@@ -48,6 +49,7 @@ async function sendFriendRequest(friendId) {
         alert("Thông báo: " + result.message);
     }
 }
+window.sendFriendRequest=sendFriendRequest
 
 // Tải danh sách bạn bè
 async function loadFriends() {
@@ -80,6 +82,7 @@ async function loadFriends() {
         friendListDiv.appendChild(div);
     });
 }
+window.loadFriends=loadFriends
 
 async function fetchPendingRequests(page = 0, size = 5) {
     try {
@@ -100,6 +103,7 @@ async function fetchPendingRequests(page = 0, size = 5) {
         console.error("Lỗi khi lấy lời mời:", error);
     }
 }
+window.fetchPendingRequests=fetchPendingRequests
 
 function showPendingRequests(requests) {
     const list = document.getElementById("pendingList");
@@ -135,6 +139,7 @@ async function acceptFriend(userId) {
         console.error("Lỗi khi chấp nhận lời mời:", error);
     }
 }
+window.acceptFriend=acceptFriend
 
 async function rejectFriend(userId) {
     try {
@@ -154,6 +159,7 @@ async function rejectFriend(userId) {
         console.error("Lỗi khi từ chối lời mời:", error);
     }
 }
+window.rejectFriend=rejectFriend
 
 async function deleteFriend(friendId) {
     if (!confirm("Bạn có chắc chắn muốn xóa bạn này không?")) return;
@@ -173,6 +179,7 @@ async function deleteFriend(friendId) {
         console.error("Lỗi khi xóa bạn:", error);
     }
 }
+window.deleteFriend=deleteFriend
 
 async function blockFriend(friendId) {
     if (!confirm("Bạn có chắc chắn muốn chặn người này không?")) return;
@@ -194,6 +201,7 @@ async function blockFriend(friendId) {
         console.error("Lỗi khi chặn bạn:", error);
     }
 }
+window.blockFriend=blockFriend
 
 async function loadBlockedFriends(page = 0, size = 10) {
     try {
@@ -254,6 +262,7 @@ async function unblockFriend(friendId) {
         console.error("Lỗi khi bỏ chặn bạn bè:", error);
     }
 }
+window.unblockFriend=unblockFriend
 
 async function fetchFriendCount() {
     const accessToken = localStorage.getItem("accessToken");

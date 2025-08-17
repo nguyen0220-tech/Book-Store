@@ -53,6 +53,7 @@ async function updateProfile() {
         showMessage("Lỗi khi cập nhật thông tin", true);
     }
 }
+window.updateProfile=updateProfile
 
 async function changePassword() {
     const request = {
@@ -82,37 +83,10 @@ async function changePassword() {
         showMessage("Lỗi khi đổi mật khẩu", true);
     }
 }
+window.changePassword=changePassword
 
 function showMessage(msg, isError = false) {
     const messageEl = document.getElementById("message");
     messageEl.innerText = msg;
     messageEl.className = isError ? "error" : "success";
 }
-
-function fetchUnreadCount() {
-    fetch(`${API_BASE}/notify/un-read`, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const count = data.data;
-                const badge = document.getElementById("unreadBadge");
-                if (count > 0) {
-                    badge.textContent = `(${count})`;
-                } else {
-                    badge.textContent = "";
-                }
-            }
-        })
-        .catch(err => {
-            console.error("Lỗi lấy số thông báo chưa đọc:", err);
-        });
-}
-
-// Gọi khi trang load xong
-document.addEventListener("DOMContentLoaded", () => {
-    fetchUnreadCount();
-});

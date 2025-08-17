@@ -149,6 +149,7 @@ async function addBook() {
         document.getElementById("addBookMessage").textContent = "Lỗi server: " + err.message;
     }
 }
+window.addBook=addBook
 
 function clearAddForm() {
     document.getElementById("addTitle").value = "";
@@ -179,6 +180,7 @@ async function deleteBook(id) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.deleteBook=deleteBook
 
 function editBook(id) {
     fetch(`${API_BASE}/book?page=0&size=100`, {
@@ -241,6 +243,7 @@ function editBook(id) {
         })
         .catch(err => alert("Lỗi server: " + err.message));
 }
+window.editBook=editBook
 
 async function searchBooksByTitle(page = 0) {
     const title = document.getElementById("searchTitleInput").value.trim();
@@ -272,5 +275,6 @@ async function searchBooksByTitle(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.searchBooksByTitle=searchBooksByTitle
 
 loadAllBooks();

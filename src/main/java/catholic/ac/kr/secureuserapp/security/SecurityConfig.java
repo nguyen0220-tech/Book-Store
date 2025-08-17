@@ -83,6 +83,7 @@ public class SecurityConfig {
                                 "/*.js",              // js
                                 "/*.png", "/*.jpg", "/*.svg",  // ảnh
                                 "/favicon.ico",
+                                "/icon/**",
                                 "/ws/**"
                         )
                         .permitAll()         // cho phép không login/signup/verify...

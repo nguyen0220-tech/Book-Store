@@ -34,7 +34,6 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     }
 });
 
-// =================== API Functions ===================
 async function fetchAllUsers() {
     const res = await fetch(`${API_BASE}/user/users`, {
         headers: { "Authorization": `Bearer ${accessToken}` }
@@ -42,6 +41,7 @@ async function fetchAllUsers() {
     const result = await res.json();
     showUsers(result.data || []);
 }
+window.fetchAllUsers=fetchAllUsers
 
 async function searchByName() {
     const keyword = document.getElementById("nameKeyword").value;
@@ -51,6 +51,7 @@ async function searchByName() {
     const result = await res.json();
     showUsers(result.data.content || []);
 }
+window.searchByName=searchByName
 
 async function filterByRole() {
     const role = document.getElementById("roleKeyword").value;
@@ -60,6 +61,7 @@ async function filterByRole() {
     const result = await res.json();
     showUsers(result.data.content || []);
 }
+window.filterByRole=filterByRole
 
 async function getById() {
     const id = document.getElementById("userId").value;
@@ -70,6 +72,7 @@ async function getById() {
     if (result.data) showUsers([result.data]);
     else document.getElementById("userResult").innerHTML = "<p>Không tìm thấy người dùng</p>";
 }
+window.getById=getById
 
 async function deleteUser(id) {
     if (!confirm(`Xoá user ID: ${id}?`)) return;
@@ -84,6 +87,7 @@ async function deleteUser(id) {
     alert(result.message || "Đã xoá");
     fetchAllUsers(); // refresh list
 }
+window.deleteUser=deleteUser
 
 async function addUser() {
     const username = document.getElementById("addUsername").value;
@@ -112,6 +116,7 @@ async function addUser() {
         document.getElementById("addUserMessage").textContent = result.message || "Lỗi khi thêm người dùng";
     }
 }
+window.addUser=addUser
 
 async function editUser(id, oldUsername, oldRoles) {
     const newUsername = prompt("Nhập username mới:", oldUsername);
@@ -144,7 +149,7 @@ async function editUser(id, oldUsername, oldRoles) {
         alert("Lỗi server: " + err.message);
     }
 }
-
+window.editUser=editUser
 
 // =================== Display ===================
 function showUsers(users) {

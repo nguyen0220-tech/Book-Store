@@ -11,6 +11,7 @@ function handleStatusFilter() {
     currentStatus = status;
     loadOrders(0);
 }
+window.handleStatusFilter=handleStatusFilter
 
 async function loadOrders(page = 0) {
     let url = `${API_BASE}/order/admin/all?page=${page}&size=${pageSize}`;
@@ -76,13 +77,14 @@ async function loadOrders(page = 0) {
         alert("Lỗi: " + err.message);
     }
 }
+window.loadOrders=loadOrders
 
 function handleSortChange() {
     const sortValue = document.getElementById("sortSelect").value;
     currentSort = sortValue;
     loadOrders(0); // Reset về trang đầu khi đổi sort
 }
-
+window.handleSortChange=handleSortChange
 
 function renderPagination(totalPages, current) {
     const paginationDiv = document.getElementById("pagination");
@@ -143,5 +145,6 @@ async function updateStatus(orderId, newStatus) {
         alert("Lỗi: " + err.message);
     }
 }
+window.updateStatus=updateStatus
 
 window.onload = () => loadOrders(0);

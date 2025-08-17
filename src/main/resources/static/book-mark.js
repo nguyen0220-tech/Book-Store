@@ -82,7 +82,7 @@ async function addToCart(bookId) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ bookId, quantity })
+            body: JSON.stringify({bookId, quantity})
         });
 
         const result = await res.json();
@@ -96,6 +96,7 @@ async function addToCart(bookId) {
     }
 }
 
+window.addToCart = addToCart
 
 async function removeBookmark(bookId) {
     if (!confirm("Bạn chắc chắn muốn xoá sách này khỏi danh sách yêu thích?")) return;
@@ -103,7 +104,7 @@ async function removeBookmark(bookId) {
     try {
         const res = await fetch(`${API_BASE}/book-mark/remove?bookId=${bookId}`, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
 
         const result = await res.json();
@@ -118,3 +119,4 @@ async function removeBookmark(bookId) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.removeBookmark=removeBookmark

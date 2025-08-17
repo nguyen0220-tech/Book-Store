@@ -35,3 +35,4 @@ async function sendSystemNotification() {
         document.getElementById("result").innerText = `❌ Lỗi kết nối đến server.`;
     }
 }
+window.sendSystemNotification=sendSystemNotification

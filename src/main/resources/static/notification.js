@@ -100,6 +100,7 @@ function fetchNotifications(page = 0) {
             }
         });
 }
+window.fetchNotifications=fetchNotifications
 
 // Phân trang
 function renderPaginationButtons() {

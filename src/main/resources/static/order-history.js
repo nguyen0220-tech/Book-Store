@@ -36,6 +36,7 @@ async function fetchOrderHistory(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.fetchOrderHistory=fetchOrderHistory
 
 function renderPagination(totalPages, currentPage) {
     const paginationDiv = document.getElementById("pagination");
@@ -78,6 +79,7 @@ async function deleteOrder(orderId) {
         alert("Lỗi khi xoá đơn hàng: " + err.message);
     }
 }
+window.deleteOrder=deleteOrder
 
 
 function renderOrders(orders) {
@@ -173,6 +175,7 @@ async function submitReview(bookId, orderId) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.submitReview=submitReview
 
 function formatDate(timestamp) {
     const date = new Date(timestamp);
@@ -202,3 +205,4 @@ async function downloadInvoice(orderId) {
         alert("Lỗi khi tải hoá đơn: " + err.message);
     }
 }
+window.downloadInvoice=downloadInvoice

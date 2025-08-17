@@ -100,6 +100,7 @@ async function updateQuantity(bookId, quantity) {
         alert("Lỗi: " + err.message);
     }
 }
+window.updateQuantity=updateQuantity
 
 async function removeItem(bookId) {
     try {
@@ -119,6 +120,7 @@ async function removeItem(bookId) {
         alert("Lỗi: " + err.message);
     }
 }
+window.removeItem=removeItem
 
 async function clearCart() {
     if (!confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) return;
@@ -134,6 +136,7 @@ async function clearCart() {
         alert(result.message || "Xóa thất bại");
     }
 }
+window.clearCart=clearCart
 
 async function placeOrder() {
     if (!accessToken) return alert("Vui lòng đăng nhập");
@@ -177,5 +180,6 @@ async function placeOrder() {
         alert("⚠️ Lỗi server: " + err.message);
     }
 }
+window.placeOrder=placeOrder
 
 window.onload = loadCart;

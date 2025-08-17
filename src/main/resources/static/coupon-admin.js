@@ -39,7 +39,6 @@ async function loadCoupons() {
     }
 }
 
-
 async function submitCoupon() {
     const request = {
         couponCode: document.getElementById("couponCode").value.trim(),
@@ -80,6 +79,7 @@ async function submitCoupon() {
         alert(data.message || "Thao tác thất bại");
     }
 }
+window.submitCoupon=submitCoupon
 
 async function deleteCoupon(code) {
     if (!confirm(`Xoá coupon "${code}"?`)) return;
@@ -95,6 +95,7 @@ async function deleteCoupon(code) {
         alert(data.message || "Không thể xoá");
     }
 }
+window.deleteCoupon=deleteCoupon
 
 async function editCoupon(code) {
     const res = await fetch(`${API_BASE}/coupon/code/${code}`, {
@@ -122,6 +123,7 @@ async function editCoupon(code) {
         alert(data.message || "Không thể tải dữ liệu coupon");
     }
 }
+window.editCoupon=editCoupon
 
 function toggleDiscountType() {
     const isPercent = document.getElementById("percentDiscount").checked;

@@ -46,5 +46,6 @@ async function claimCoupon() {
         loadMyCoupons();
     } else alert(data.message || "Nhận thất bại");
 }
+window.claimCoupon=claimCoupon
 
 window.onload = loadMyCoupons;

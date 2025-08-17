@@ -67,8 +67,9 @@ public class CommentService {
 
             commentRepository.save(comment);
 
-            notificationService.createCommentPostNotification(userId, post.getUser().getId(), comment);
-
+            if (!userId.equals(post.getUser().getId())) {
+                notificationService.createCommentPostNotification(userId, post.getUser().getId(), comment);
+            }
             return ApiResponse.success("Comment created", CommentMapper.toCommentDTO(comment));
         }
         return null;
