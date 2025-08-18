@@ -14,7 +14,6 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 //=========Sinh và xác minh JWT============
 @Component // Đánh dấu class này là một bean của Spring
@@ -27,7 +26,7 @@ public class JwtUtil {
     }
 
     public String generateAccessToken (String username, Map<String, Object> claims) {
-        return generateToken(username,claims,Duration.ofMinutes(15));
+        return generateToken(username,claims,Duration.ofMinutes(1));
     }
 
     //  Hàm này dùng để tạo token JWT từ username khi khi đăng nhập thành công

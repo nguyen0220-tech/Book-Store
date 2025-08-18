@@ -464,7 +464,7 @@ async function toggleReviews(bookId) {
         container.style.display = "none";
     }
 }
-
+window.toggleReviews=toggleReviews
 
 async function addToCart(bookId) {
     if (!accessToken) return alert("Vui lòng đăng nhập");
