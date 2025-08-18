@@ -16,22 +16,80 @@
 <body>
 
 <header>
-    <h1> 📚 Book Store</h1>
-    <nav>
-        <a href="user.html">Quản lý Người dùng</a>
-        <a href="book.html">Quản lý kho Sách</a>
-        <a href="order-manager.html">Quản lý đơn hàng</a>
-        <a href="coupon-admin.html">Quản lý Coupon</a>
-        <a href="system-notification.html">Gửi thông báo toàn hệ thống</a>
-
-    </nav>
-    <a href="post.html" class="cart-link">🏠 Trang cá nhân</a>
-    <a href="book-mark.html" class="cart-link">❤️ Sách Yêu Thích</a>
-    <a href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
-    <a href="chat.html" class="cart-link">Chat với admin</a>
-    <button id="logoutBtn">Logout</button>
+    <h1>📚 Book Store</h1>
+    <div class="nav-links">
+        <a href="post.html" class="cart-link">🏠 Trang cá nhân</a>
+        <a href="book-mark.html" class="cart-link">❤️ Sách Yêu Thích</a>
+        <a href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
+        <a href="admin.html" class="cart-link">Admin Manager</a>
+        <button id="logoutBtn">Logout</button>
+    </div>
     <p id="logoutMessage" class="error"></p>
+
+    <style>
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-links a.cart-link {
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            background-color: #0056b3;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a.cart-link:hover {
+            background-color: #003d80;
+        }
+
+        .nav-links button#logoutBtn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #dc3545;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links button#logoutBtn:hover {
+            background-color: #a71d2a;
+        }
+
+        /* Responsive nhỏ hơn 768px */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                width: 100%;
+            }
+        }
+    </style>
 </header>
+
 
 <main>
     <section class="card">

@@ -17,4 +17,6 @@ public class UserDTO {
     private String username;
 
     private Set<RoleDTO> roles;
+
+    private boolean enabled;
 }

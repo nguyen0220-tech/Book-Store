@@ -51,6 +51,8 @@ async function loadAllBooks(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
+window.loadAllBooks=loadAllBooks
+window.currentPage=currentPage
 
 function renderPagination(loadFn = loadAllBooks) {
     const container = document.getElementById("paginationControls");

@@ -155,17 +155,49 @@ window.editUser=editUser
 function showUsers(users) {
     const html = users.map((u, index) => {
         const roles = u.roles.map(r => r.name).join(", ");
+        const lockBtnLabel = u.enabled ? "🔒 Khoá" : "🔓 Mở khoá";
+
         return `
         <div style="border:1px solid #ccc; padding:10px; margin:10px;">
             <b>STT:</b> ${index + 1}<br/>
             <b>Username:</b> ${u.username}<br/>
             <b>Roles:</b> ${roles}<br/>
             <b>Id:</b> ${u.id}<br/>
+            <b>Enabled:</b> ${u.enabled}<br/>
             <button onclick="deleteUser(${u.id})">❌ Xoá</button>
             <button onclick="editUser(${u.id}, '${u.username}', '${roles}')">✏️ Cập nhật</button>
+            <button onclick="toggleUserLock(${u.id}, ${u.enabled})">${lockBtnLabel}</button>
         </div>
         `;
     }).join("");
 
     document.getElementById("userResult").innerHTML = html || "<p>Không có kết quả</p>";
 }
+
+async function toggleUserLock(userId, currentEnabled) {
+    let url;
+    if (currentEnabled) {
+        url = `${API_BASE}/user/lock/${userId}`;
+    } else {
+        url = `${API_BASE}/user/un-lock/${userId}`; // lưu ý backend là "un-lock"
+    }
+
+    try {
+        const res = await fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const data = await res.json();
+
+        alert(data.message || "Đã xảy ra lỗi");
+
+        if (data.success) {
+            fetchAllUsers();
+        }
+
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
+}
+window.toggleUserLock = toggleUserLock;

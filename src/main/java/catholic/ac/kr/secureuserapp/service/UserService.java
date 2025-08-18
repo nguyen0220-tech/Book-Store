@@ -216,4 +216,41 @@ public class UserService {
 
         return ApiResponse.success("Password reset successfully");
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<UserDTO> lockUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Set<Role> roles = user.getRoles();
+
+        boolean isAdmin = roles.stream()
+                        .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            return ApiResponse.error("Không thể khóa admin !!!");
+        }
+
+        user.setEnabled(false);
+
+        userRepository.save(user);
+
+        UserDTO userDTO = userMapper.toDTO(user);
+
+        return ApiResponse.success("User locked successfully", userDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<UserDTO> unLockUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setEnabled(true);
+
+        userRepository.save(user);
+
+        UserDTO userDTO = userMapper.toDTO(user);
+
+        return ApiResponse.success("User unlocked successfully", userDTO);
+    }
 }

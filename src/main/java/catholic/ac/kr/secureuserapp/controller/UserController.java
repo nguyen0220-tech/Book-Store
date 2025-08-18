@@ -85,4 +85,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> findPassword(@RequestParam String username) {
         return ResponseEntity.ok(userService.findPasswordByUsername(username));
     }
+
+    @PutMapping("lock/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> lockUser(@PathVariable long id) {
+        return ResponseEntity.ok(userService.lockUser(id));
+    }
+
+    @PutMapping("un-lock/{id}")
+    public ResponseEntity<ApiResponse<UserDTO>> unLockUser(@PathVariable long id) {
+        return ResponseEntity.ok(userService.unLockUser(id));
+    }
 }

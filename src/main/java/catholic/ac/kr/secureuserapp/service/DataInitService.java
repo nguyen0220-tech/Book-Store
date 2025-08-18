@@ -64,6 +64,8 @@ public class DataInitService {
         categories.add("Kinh dị");
         categories.add("Hài hước");
         categories.add("Giả tưởng");
+        categories.add("Thiếu nhi");
+        categories.add("Khoa học-Công nghệ");
 
         for (String category : categories) {
             categoryRepository.findByName(category)

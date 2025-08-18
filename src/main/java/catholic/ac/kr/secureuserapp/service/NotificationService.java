@@ -221,7 +221,7 @@ public class NotificationService {
                 .user(user)
                 .order(null)
                 .book(null)
-                .message(friend.getUser().getUsername() + " dã gửi lời mời kết bạn")
+                .message(friend.getUser().getUsername() + " đã gửi lời mời kết bạn")
                 .read(false)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .type(NotificationType.FRIEND)
