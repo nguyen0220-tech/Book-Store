@@ -9,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login | BookStore</title>
     <link rel="stylesheet" href="style.css"/>
-
 </head>
 <body>
 
@@ -23,6 +22,11 @@
     <p class="error" id="loginMessage"></p>
 </form>
 
+<!-- Nút login bằng Google -->
+<div id="oauthLogin" style="margin-top: 1rem;">
+    <button id="googleLogin" type="button">Login with Google</button>
+</div>
+
 <!-- SIGNUP FORM -->
 <form id="signupForm">
     <input type="text" id="signupEmail" placeholder="Email" required>
@@ -34,11 +38,13 @@
 <p class="toggle" id="toggleForm">Don't have an account? Sign Up</p>
 
 <script type="module" src="/auth-utils.js"></script>
+
 <script type="module">
     const loginForm = document.getElementById("loginForm");
     const signupForm = document.getElementById("signupForm");
     const toggleBtn = document.getElementById("toggleForm");
     const formTitle = document.getElementById("formTitle");
+    const googleLogin = document.getElementById("googleLogin");
 
     // Toggle between login/signup
     toggleBtn.addEventListener("click", () => {
@@ -52,6 +58,7 @@
     });
 
     const API_BASE = window.location.origin;
+
 
     // LOGIN
     loginForm.addEventListener("submit", async (e) => {
@@ -102,6 +109,28 @@
             document.getElementById("signupMessage").textContent = "Server error: " + err.message;
         }
     });
+
+    // GOOGLE LOGIN - da login thanh cong nhung chua the refresh token
+    googleLogin.addEventListener("click", () => {
+        const popup = window.open(`${API_BASE}/oauth2/authorization/google`, "googleLogin", "width=500,height=600");
+    });
+
+    window.addEventListener("message", (event) => {
+        if (event.origin !== window.location.origin) return;
+        const result = event.data;
+
+        if (result && result.success) {
+            const { accessToken, refreshToken, userId } = result.data;
+
+            if (accessToken) localStorage.setItem("accessToken", accessToken);
+            if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+            if (userId) localStorage.setItem("userId", userId);
+
+            window.location.href = "/home.html";
+        }
+    });
+
+
 </script>
 </body>
 </html>

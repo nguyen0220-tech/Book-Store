@@ -3,6 +3,8 @@ package catholic.ac.kr.secureuserapp.security;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +20,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity //kích hoạt cơ chế kiểm tra phân quyền ngay tại method
@@ -27,6 +32,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserRepository userRepository;
+    private final OAuth2LoginSuccessHandler loginSuccessHandler;
 
     //1. Bean mã hóa mật khẩu dùng cho toàn app
     @Bean
@@ -76,6 +82,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
+                                "public",
                                 "/user/find-pass",
                                 "/auth/**",           // cho phép toàn bộ API auth
                                 "/*.html",            // tất cả file .html trong static/
@@ -90,8 +97,27 @@ public class SecurityConfig {
                         .requestMatchers("/chat/**").authenticated()
                         .anyRequest().authenticated()  // các request còn lại cần token JWT hợp lệ
                 )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jsonAuthEntryPoint()))
+                .oauth2Login(oAuth2Login -> {
+                    oAuth2Login.successHandler(loginSuccessHandler);
+                })
                 .authenticationProvider(authenticationProvider())                            // cung cấp cách xác thực người dùng
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)  // Thêm filter kiểm tra JWT trước khi đến filter mặc định
                 .build();
+    }
+
+    /*
+    Bean này sẽ được Spring Security dùng làm AuthenticationEntryPoint, tức là “cửa ra” khi authentication thất bại (ví dụ token hết hạn hoặc không gửi token).
+    AuthenticationEntryPoint là interface của Spring Security, có nhiệm vụ xử lý khi người dùng chưa xác thực (unauthenticated) cố truy cập vào resource cần login
+     */
+    @Bean
+    public AuthenticationEntryPoint jsonAuthEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(
+                    Map.of("success", false, "message", "Unauthorized")
+            ));
+        };
     }
 }
