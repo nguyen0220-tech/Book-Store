@@ -95,4 +95,5 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDTO>> unLockUser(@PathVariable long id) {
         return ResponseEntity.ok(userService.unLockUser(id));
     }
+
 }

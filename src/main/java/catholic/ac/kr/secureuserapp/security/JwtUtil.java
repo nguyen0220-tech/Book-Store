@@ -26,7 +26,7 @@ public class JwtUtil {
     }
 
     public String generateAccessToken (String username, Map<String, Object> claims) {
-        return generateToken(username,claims,Duration.ofMinutes(1));
+        return generateToken(username,claims,Duration.ofMinutes(15));
     }
 
     //  Hàm này dùng để tạo token JWT từ username khi khi đăng nhập thành công

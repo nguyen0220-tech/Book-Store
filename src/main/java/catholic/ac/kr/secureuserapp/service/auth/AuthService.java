@@ -2,15 +2,10 @@ package catholic.ac.kr.secureuserapp.service.auth;
 
 import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
+import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
-import catholic.ac.kr.secureuserapp.model.entity.RefreshToken;
-import catholic.ac.kr.secureuserapp.model.entity.Role;
-import catholic.ac.kr.secureuserapp.model.entity.User;
-import catholic.ac.kr.secureuserapp.model.entity.VerificationToken;
-import catholic.ac.kr.secureuserapp.repository.RefreshTokenRepository;
-import catholic.ac.kr.secureuserapp.repository.RoleRepository;
-import catholic.ac.kr.secureuserapp.repository.UserRepository;
-import catholic.ac.kr.secureuserapp.repository.VerificationTokenRepository;
+import catholic.ac.kr.secureuserapp.model.entity.*;
+import catholic.ac.kr.secureuserapp.repository.*;
 import catholic.ac.kr.secureuserapp.security.JwtUtil;
 import catholic.ac.kr.secureuserapp.security.token.TokenService;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
@@ -47,6 +42,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
 
     public ApiResponse<UserDTO> signUp(SignupRequest request) {
@@ -203,4 +199,87 @@ public class AuthService {
 
         return ApiResponse.success("Refreshed token", tokenResponse);
     }
+
+    public ApiResponse<UserDTO> findUserNameByPhone(String phoneNumber) {
+        User user = userRepository.findByPhone(phoneNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng hoặc tài khoản chưa được liên kết với số điện thoại "));
+
+        UserDTO userDTO = userMapper.toDTO(user);
+
+        userDTO.setUsername(maskEmail(user.getUsername()));
+
+        return ApiResponse.success("Đã tìm thấy tài khoản", userDTO);
+    }
+
+    public ApiResponse<String> forgetPassword(String username) {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isEmpty()) {
+            return ApiResponse.success("Nếu tài khoản tồn tại, hệ thống sẽ gửi email khôi phục.");
+        }
+
+        User user = optionalUser.get();
+
+        // Tìm token
+        Optional<VerificationToken> tokenOpt = verificationTokenRepository.findByUser(user);
+
+        // Nếu token hết hạn → xóa
+        tokenOpt.ifPresent(t -> {
+            if (t.getExpiryTime().isBefore(LocalDateTime.now())) {
+                verificationTokenRepository.delete(t);
+            }
+        });
+
+        // Kiểm tra lại token còn tồn tại không
+        boolean tokenExists = verificationTokenRepository.existsByUser(user);
+        if (tokenExists) {
+            return ApiResponse.success("Đã gửi link cập nhật mật khẩu tới email, vui lòng kiểm tra lại email.");
+        }
+
+        // Gửi mail tạo token mới
+        tokenService.sendResetPassword(user);
+
+        String maskEmail = maskEmail(user.getUsername());
+
+        return ApiResponse.success("Đã gửi link cập nhật tới email. Vui lòng kiểm tra: " + maskEmail);
+    }
+
+
+
+    private String maskEmail(String email) {
+        int atIndex = email.indexOf("@");
+
+        if (atIndex <= 2)
+            return "***@" + email.substring(atIndex);
+
+        String prefix = email.substring(0, 2);
+        String domain = email.substring(atIndex + 1);
+        String maskDomain = domain.substring(0, 2) + "***";
+
+        return prefix + "***@" + maskDomain;
+    }
+
+    public ApiResponse<String> resetPassword(String token,
+                                             String newPassword,
+                                             String confirmPassword) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
+        if (verificationToken == null || verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+            return ApiResponse.error("Token already expired/Token không hợp lệ hoặc đã hết hạn");
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            return ApiResponse.error("Nhập mật khẩu xác nhận không khớp");
+        }
+
+        User user = verificationToken.getUser();
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(verificationToken);
+
+        return ApiResponse.success("Đã thay đổi mật khẩu thành công");
+    }
+
 }

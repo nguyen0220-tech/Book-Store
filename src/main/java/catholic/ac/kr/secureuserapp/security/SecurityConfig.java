@@ -85,6 +85,7 @@ public class SecurityConfig {
                                 "public",
                                 "/user/find-pass",
                                 "/auth/**",           // cho phép toàn bộ API auth
+                                "/user/find-username",
                                 "/*.html",            // tất cả file .html trong static/
                                 "/*.css",             // css
                                 "/*.js",              // js

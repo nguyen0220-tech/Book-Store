@@ -23,4 +23,5 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     Optional<User> findByUsername(@NotBlank(message = "Tên không được để trống") String username);
 
+    Optional<User> findByPhone(String phone);
 }

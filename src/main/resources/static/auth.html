@@ -24,8 +24,29 @@
 
 <!-- Nút login bằng Google -->
 <div id="oauthLogin" style="margin-top: 1rem;">
-    <button id="googleLogin" type="button">Login with Google</button>
+    <button id="googleLogin" type="button">Đăng nhập bằng Google</button>
 </div>
+<!-- Toggle tìm username -->
+<p class="toggle" id="toggleFindUsername">Bạn quên tài khoản ?</p>
+
+<!-- FORM Find Username -->
+<form id="findUsernameForm">
+    <h3>Tìm tài khoản</h3>
+    <input type="text" id="phoneNumber" placeholder="Nhập số điện thoại" required>
+    <button type="submit">Tìm</button>
+    <p class="info" id="findUsernameMessage"></p>
+</form>
+
+<!-- Toggle reset password -->
+<p class="toggle" id="toggleForgetPass">Bạn quên mật khẩu ?</p>
+
+<!-- FORM Forget Password -->
+<form id="forgetPassForm">
+    <h3>Tìm mật khẩu</h3>
+    <input type="text" id="forgetPassUsername" placeholder="Nhập email" required>
+    <button type="submit">Gửi email</button>
+    <p class="info" id="forgetPassMessage"></p>
+</form>
 
 <!-- SIGNUP FORM -->
 <form id="signupForm">
@@ -35,7 +56,7 @@
     <p class="error" id="signupMessage"></p>
 </form>
 
-<p class="toggle" id="toggleForm">Don't have an account? Sign Up</p>
+<p class="toggle" id="toggleForm">Nếu bạn chưa có tài khoản, vui lòng đăng kí</p>
 
 <script type="module" src="/auth-utils.js"></script>
 
@@ -129,7 +150,88 @@
             window.location.href = "/home.html";
         }
     });
+    const findUsernameForm = document.getElementById("findUsernameForm");
+    const toggleFindUsername = document.getElementById("toggleFindUsername");
 
+    // Toggle hiển thị Find Username form
+    toggleFindUsername.addEventListener("click", () => {
+        loginForm.classList.remove("active");
+        signupForm.classList.remove("active");
+        findUsernameForm.classList.add("active");
+        formTitle.textContent = "Find Username";
+    });
+
+    // Submit Find Username
+    findUsernameForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const phoneNumber = document.getElementById("phoneNumber").value;
+        const messageEl = document.getElementById("findUsernameMessage");
+
+        messageEl.textContent = "Searching...";
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/find-username`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ phoneNumber })
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success && result.data) {
+                messageEl.textContent = `Your username is: ${result.data.username}`;
+            } else {
+                messageEl.textContent = result.message || "Username not found";
+            }
+        } catch (err) {
+            messageEl.textContent = "Server error: " + err.message;
+        }
+    });
+
+
+    const forgetPassForm = document.getElementById("forgetPassForm");
+    const toggleForgetPass = document.getElementById("toggleForgetPass");
+
+    // Toggle hiển thị Forget Password form
+    toggleForgetPass.addEventListener("click", () => {
+        loginForm.classList.remove("active");
+        signupForm.classList.remove("active");
+        findUsernameForm.classList.remove("active");
+        forgetPassForm.classList.add("active");
+        formTitle.textContent = "Reset Password";
+    });
+
+    // Submit Forget Password (gửi link)
+    forgetPassForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("forgetPassUsername").value;
+        const messageEl = document.getElementById("forgetPassMessage");
+
+        messageEl.textContent = "Sending reset link...";
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/forget-pass`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ username })
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                messageEl.classList.remove("error");
+                messageEl.classList.add("info");
+                // Nếu data null thì dùng message
+                messageEl.textContent = result.data || result.message;
+            } else {
+                messageEl.classList.remove("info");
+                messageEl.classList.add("error");
+                messageEl.textContent = result.message || "Failed to send reset link";
+            }
+
+
+        } catch (err) {
+            messageEl.textContent = "Server error: " + err.message;
+        }
+    });
 
 </script>
 </body>

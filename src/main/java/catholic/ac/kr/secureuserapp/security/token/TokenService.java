@@ -44,4 +44,16 @@ public class TokenService {
                 "Click để kích hoạt tài khoản: " + verifyLink
         );
     }
+
+    public void sendResetPassword(User user) {
+        String token = createVerificationToken(user);
+
+        String verifyLink = baseUrl + "/auth/verify-reset-pass?token=" + token;
+
+        emailService.sendSimpleMail(
+                user.getUsername(),
+                "Cập nhật mật khẩu",
+                "Click để đổi mật khẩu: " + verifyLink
+        );
+    }
 }
