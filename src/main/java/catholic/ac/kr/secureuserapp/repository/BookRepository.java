@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.repository;
 
+import catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO;
 import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.springframework.data.domain.Page;
@@ -45,4 +46,14 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                 ORDER BY b.createdAt DESC
             """)
     List<TopBookDTO> findTop5NewBooks(Pageable pageable);
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO(
+            b.id, b.title, b.stock, b.imgUrl)
+            FROM Book b
+            WHERE b.stock <= 50
+            GROUP BY b.id, b.title, b.stock, b.imgUrl
+            ORDER BY b.stock DESC
+            """)
+    Page<BookStockMax50DTO> findBooksByStockMax50(Pageable pageable);
 }

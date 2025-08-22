@@ -1,9 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CreateBookRequest;
-import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
+import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +72,13 @@ public class BookController {
     @GetMapping("top-new")
     public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopNewBooks(){
         return ResponseEntity.ok(bookService.getTopNewBooks());
+    }
+
+    @GetMapping("stock-max50")
+    public ResponseEntity<ApiResponse<Page<BookStockMax50DTO>>> getBooksStockMax50(
+            @RequestParam int page,
+            @RequestParam int size){
+        return ResponseEntity.ok(bookService.getBooksStockMax50(page,size));
     }
 
     @PostMapping("add")

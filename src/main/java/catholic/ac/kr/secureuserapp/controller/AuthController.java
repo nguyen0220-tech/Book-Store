@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+
+    @Value("${app.verification.base-url}")
+    private String baseUrl;
 
     @PostMapping("signup")
     public ResponseEntity<ApiResponse<?>> signup(@Valid @RequestBody SignupRequest request) {
@@ -48,13 +52,13 @@ public class AuthController {
 
         try {
             return ResponseEntity.ok(authService.refresh(refreshTokenStr));
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @PostMapping("find-username")
-    public ResponseEntity<ApiResponse<UserDTO>> findUserByPhone(@RequestBody FindUserRequest request){
+    public ResponseEntity<ApiResponse<UserDTO>> findUserByPhone(@RequestBody FindUserRequest request) {
         return ResponseEntity.ok(authService.findUserNameByPhone(request.getPhoneNumber()));
     }
 
@@ -71,7 +75,7 @@ public class AuthController {
     @GetMapping("verify-reset-pass")
     public void verifyTokenAndRedirect(@RequestParam String token, HttpServletResponse response) throws IOException {
         // Redirect sang FE reset-password.html kèm token
-        response.sendRedirect("http://localhost:8080/auth-reset-password.html?token=" + token);
+        response.sendRedirect(baseUrl + "/auth-reset-password.html?token=" + token);
     }
 
     @PostMapping("reset-pass")

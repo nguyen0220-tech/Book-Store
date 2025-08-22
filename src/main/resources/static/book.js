@@ -3,6 +3,9 @@ const accessToken = localStorage.getItem("accessToken");
 let currentPage = 0;
 const pageSize = 5;
 let totalPages = 0;
+let lowStockCurrentPage = 0;
+let lowStockTotalPages = 0;
+
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -279,4 +282,77 @@ async function searchBooksByTitle(page = 0) {
 }
 window.searchBooksByTitle=searchBooksByTitle
 
+async function loadLowStockBooks(page = 0) {
+    try {
+        const url = new URL(`${API_BASE}/book/stock-max50`);
+        url.searchParams.append("page", page);
+        url.searchParams.append("size", pageSize);
+
+        const res = await fetch(url, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const data = result.data;
+            showLowStockBooks(data.content || []);
+            lowStockTotalPages = data.totalPages;
+            lowStockCurrentPage = data.number;
+            renderLowStockPagination();
+        } else {
+            alert(result.message || "Lỗi khi tải kho sách tồn thấp");
+        }
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
+}
+window.loadLowStockBooks = loadLowStockBooks;
+
+function showLowStockBooks(books) {
+    const tbody = document.querySelector("#lowStockTable tbody");
+    tbody.innerHTML = "";
+
+    if (books.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='4'>Không có sách nào</td></tr>";
+        return;
+    }
+
+    books.forEach(b => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${b.bookId}</td>
+            <td>${b.title}</td>
+            <td style="color:${b.stock < 20 ? 'red' : 'orange'}; font-weight:bold;">${b.stock}</td>
+            <td><img src="${b.imgUrl}" alt="${b.title}" /></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderLowStockPagination() {
+    const container = document.getElementById("lowStockPagination");
+    container.innerHTML = "";
+
+    const prev = document.createElement("button");
+    prev.textContent = "« Prev";
+    prev.disabled = lowStockCurrentPage === 0;
+    prev.onclick = () => loadLowStockBooks(lowStockCurrentPage - 1);
+    container.appendChild(prev);
+
+    for (let i = 0; i < lowStockTotalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        if (i === lowStockCurrentPage) btn.classList.add("active");
+        btn.onclick = () => loadLowStockBooks(i);
+        container.appendChild(btn);
+    }
+
+    const next = document.createElement("button");
+    next.textContent = "Next »";
+    next.disabled = lowStockCurrentPage === lowStockTotalPages - 1;
+    next.onclick = () => loadLowStockBooks(lowStockCurrentPage + 1);
+    container.appendChild(next);
+}
+
 loadAllBooks();
+loadLowStockBooks(0)
