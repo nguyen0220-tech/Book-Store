@@ -237,6 +237,7 @@ function editBook(id) {
                         if (res.success) {
                             alert("Cập nhật sách thành công");
                             loadAllBooks(currentPage);
+                            loadLowStockBooks(lowStockCurrentPage);
                         } else {
                             alert(res.message || "Lỗi khi cập nhật sách");
                         }
@@ -313,7 +314,7 @@ function showLowStockBooks(books) {
     tbody.innerHTML = "";
 
     if (books.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='4'>Không có sách nào</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='5'>Không có sách nào</td></tr>";
         return;
     }
 
@@ -322,12 +323,17 @@ function showLowStockBooks(books) {
         tr.innerHTML = `
             <td>${b.bookId}</td>
             <td>${b.title}</td>
+            <td>${b.author}</td>
             <td style="color:${b.stock < 20 ? 'red' : 'orange'}; font-weight:bold;">${b.stock}</td>
             <td><img src="${b.imgUrl}" alt="${b.title}" /></td>
+            <td>
+                <button onclick="editBook(${b.bookId})">Sửa</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 }
+
 
 function renderLowStockPagination() {
     const container = document.getElementById("lowStockPagination");

@@ -47,6 +47,7 @@ async function loadOrders(page = 0) {
                 row.innerHTML = `
                     <td>${order.orderId}</td>
                     <td>${order.userId}</td>
+                    <td>${order.orderUsername}</td>
                     <td>${order.totalPrice}₩</td>
                     <td>${order.totalDiscount || 0}₩</td>
                     <td>${order.couponCode || '-'}</td>

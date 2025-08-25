@@ -15,6 +15,8 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(Long userId,Pageable pageable);
 
+    List<Order> findListByUserId(Long userId);
+
     Page<Order> findAll(Pageable pageable);
 
     @Query(value = "SELECT o FROM Order o WHERE o.status = :status")

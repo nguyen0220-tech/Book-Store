@@ -3,9 +3,7 @@ package catholic.ac.kr.secureuserapp.service;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.BookMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
-import catholic.ac.kr.secureuserapp.model.entity.Book;
-import catholic.ac.kr.secureuserapp.model.entity.BookMark;
-import catholic.ac.kr.secureuserapp.model.entity.Category;
+import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.BookMarkRepository;
 import catholic.ac.kr.secureuserapp.repository.BookRepository;
 import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
@@ -17,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -84,6 +82,36 @@ public class BookService {
         return ApiResponse.success("Random books", bookDTOS);
     }
 
+    public ApiResponse<Page<SuggestBooksFromFriendDTO>> getSuggestBooksFromFriend(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<SuggestBooksFromFriendDTO> pageResult = bookRepository.findSuggestBooksFromFriends(userId, pageable);
+
+        //Phân trang -> lọc:
+//        // 1. Lấy danh sách book user đã mua
+//        List<Book> paidBooks = bookRepository.findBooksPaidByUserId(userId);
+//
+//        Set<Long> paidBookIds = paidBooks.stream()
+//                .map(Book::getId)
+//                .collect(Collectors.toSet());
+//
+//        if (paidBookIds.isEmpty()) {
+//            return ApiResponse.success("Suggest books from friends", pageResult);
+//        }
+//
+//        // 2. Lọc danh sách gợi ý từ bạn bè (loại bỏ sách đã mua)
+//        List<SuggestBooksFromFriendDTO> filteredList = pageResult.getContent().stream()
+//                .filter(dto -> !paidBookIds.contains(dto.id()))
+//                .collect(Collectors.toList());
+//
+//        Page<SuggestBooksFromFriendDTO> mergedPage = new PageImpl<>(
+//                filteredList,
+//                pageResult.getPageable(),
+//                pageResult.getTotalElements() - paidBookIds.size());
+
+        return ApiResponse.success("Suggest books from friends", pageResult);
+    }
+
     public ApiResponse<List<TopBookDTO>> getTopBooks() {
         List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0, 5));
         return ApiResponse.success("Top books", topBookDTOS);
@@ -96,7 +124,7 @@ public class BookService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<BookStockMax50DTO>> getBooksStockMax50(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by("stock").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("stock").descending());
 
         Page<BookStockMax50DTO> books = bookRepository.findBooksByStockMax50(pageable);
 

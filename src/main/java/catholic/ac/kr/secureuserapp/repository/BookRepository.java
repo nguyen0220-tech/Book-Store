@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.repository;
 
 import catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO;
+import catholic.ac.kr.secureuserapp.model.dto.SuggestBooksFromFriendDTO;
 import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.springframework.data.domain.Page;
@@ -49,11 +50,27 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("""
             SELECT new catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO(
-            b.id, b.title, b.stock, b.imgUrl)
+            b.id, b.title,b.author, b.stock, b.imgUrl)
             FROM Book b
             WHERE b.stock <= 50
-            GROUP BY b.id, b.title, b.stock, b.imgUrl
+            GROUP BY b.id, b.title, b.stock, b.imgUrl,b.author
             ORDER BY b.stock DESC
             """)
     Page<BookStockMax50DTO> findBooksByStockMax50(Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT new catholic.ac.kr.secureuserapp.model.dto.SuggestBooksFromFriendDTO(
+            b.id,b.title,b.author,b.price,b.salePrice,b.imgUrl,f.user.username )
+            FROM Book b
+            JOIN OrderItem oi ON b.id = oi.book.id
+            JOIN Order o ON oi.order.id = o.id
+            JOIN User u ON o.user.id = u.id
+            JOIN Friend f ON u.id = f.user.id
+            WHERE f.friend.id = :userId AND f.status = 'FRIEND'
+            AND b.id NOT IN (SELECT b.id FROM Book b
+                        JOIN OrderItem oi ON b.id = oi.book.id
+                        JOIN Order o ON oi.order.id = o.id
+                        WHERE o.user.id = :userId)
+            """)
+    Page<SuggestBooksFromFriendDTO> findSuggestBooksFromFriends(@Param("userId") Long userId,Pageable pageable);
 }

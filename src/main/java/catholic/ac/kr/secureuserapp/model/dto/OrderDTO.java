@@ -14,6 +14,8 @@ public class OrderDTO {
 
     private long userId;
 
+    private String orderUsername;
+
     private double totalPrice;
 
     private BigDecimal totalDiscount;

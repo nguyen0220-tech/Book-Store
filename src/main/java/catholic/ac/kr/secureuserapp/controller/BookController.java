@@ -1,11 +1,13 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,6 +64,15 @@ public class BookController {
             @RequestParam int size
     ){
         return ResponseEntity.ok(bookService.getRandomBooks(page, size));
+    }
+
+    @GetMapping("suggest-from-friend")
+    public ResponseEntity<ApiResponse<Page<SuggestBooksFromFriendDTO>>> getSuggestBooksFromFriend(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size
+            ){
+        return ResponseEntity.ok(bookService.getSuggestBooksFromFriend(userDetails.getUser().getId(), page,size));
     }
 
     @GetMapping("top-book")

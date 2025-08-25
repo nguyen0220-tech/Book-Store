@@ -526,6 +526,123 @@ function goToPage(page) {
     searchBooks(currentSearchType, currentKeyword, page);
 }
 
+let friendSuggestCurrentPage = 0;
+let friendSuggestTotalPages = 0;
+
+async function loadFriendSuggestBooks(page = 0) {
+    try {
+        const url = new URL(`${API_BASE}/book/suggest-from-friend`);
+        url.searchParams.append("page", page);
+        url.searchParams.append("size", 5);
+
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const data = result.data;
+            renderFriendSuggestBooks(data.content || []);
+            friendSuggestCurrentPage = data.number;
+            friendSuggestTotalPages = data.totalPages;
+            renderFriendSuggestPagination();
+        } else {
+            alert(result.message || "Không thể tải gợi ý sách từ bạn bè");
+        }
+    } catch (err) {
+        alert("Lỗi server: " + err.message);
+    }
+}
+window.loadFriendSuggestBooks = loadFriendSuggestBooks;
+
+function renderFriendSuggestBooks(books) {
+    const container = document.getElementById("friendSuggestBooks");
+    container.innerHTML = "";
+
+    if (!books || books.length === 0) {
+        container.innerHTML = "<i>Không có gợi ý sách nào từ bạn bè</i>";
+        return;
+    }
+
+    books.forEach(b => {
+        const div = document.createElement("div");
+        div.classList.add("book-item");
+
+        // Tính hiển thị giá: nếu có salePrice > 0, show giá sale + gạch ngang giá cũ
+        let priceHtml = "";
+        if (b.salePrice && b.salePrice > 0) {
+            priceHtml = `<div>💵 <span style="text-decoration: line-through; color:#888;">${b.price} đ</span> <span style="color:red; font-weight:bold;">${b.salePrice} đ</span></div>`;
+        } else {
+            priceHtml = `<div>💵 ${b.price ? b.price + " đ" : "Liên hệ"}</div>`;
+        }
+
+        div.innerHTML = `
+            <img src="${b.imgUrl || '/default-book.png'}" alt="${b.title}" style="width:60px;height:80px;object-fit:cover;">
+            <div>
+                <div><b>${b.title}</b></div>
+                <div>✍️ ${b.author || "Không rõ"}</div>
+                ${priceHtml}
+                <div>👤 Gợi ý từ: <b>${b.friendName || "Bạn bè"}</b></div>
+                <button class="add-to-cart-btn" data-book-id="${b.id}">🛒 Thêm vào giỏ</button>
+            </div>
+        `;
+
+        container.appendChild(div);
+
+        // Event listener nút thêm vào giỏ
+        const addBtn = div.querySelector(".add-to-cart-btn");
+        addBtn.addEventListener("click", async () => {
+            try {
+                const res = await fetch(`${API_BASE}/cart/items`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({
+                        bookId: b.id,
+                        quantity: 1
+                    })
+                });
+
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    alert("Đã thêm vào giỏ hàng 🎉");
+                } else {
+                    alert(result.message || "Không thể thêm vào giỏ hàng");
+                }
+            } catch (err) {
+                alert("Lỗi server: " + err.message);
+            }
+        });
+    });
+}
+
+function renderFriendSuggestPagination() {
+    const container = document.getElementById("friendSuggestPagination");
+    container.innerHTML = "";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "« Prev";
+    prevBtn.disabled = friendSuggestCurrentPage === 0;
+    prevBtn.onclick = () => loadFriendSuggestBooks(friendSuggestCurrentPage - 1);
+    container.appendChild(prevBtn);
+
+    for (let i = 0; i < friendSuggestTotalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i + 1;
+        if (i === friendSuggestCurrentPage) btn.classList.add("active");
+        btn.onclick = () => loadFriendSuggestBooks(i);
+        container.appendChild(btn);
+    }
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next »";
+    nextBtn.disabled = friendSuggestCurrentPage === friendSuggestTotalPages - 1;
+    nextBtn.onclick = () => loadFriendSuggestBooks(friendSuggestCurrentPage + 1);
+    container.appendChild(nextBtn);
+}
+
 async function fetchTopNewBooks() {
     try {
         const res = await fetch(`${API_BASE}/book/top-new`, {
@@ -1007,6 +1124,7 @@ window.onload = async () => {
    await loadSearchHistory()
     await fetchBookMarks();
     await fetchRandomBooks();
+    await loadFriendSuggestBooks(0)
     await fetchTopBooks()
     await fetchTopNewBooks()
     await fetchUserPosts(0)

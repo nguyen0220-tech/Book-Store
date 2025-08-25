@@ -75,6 +75,12 @@ public class NotificationService {
 
         OrderStatus status = order.getStatus();
 
+        List<OrderItem> orderItems = order.getOrderItems();
+
+        List<String> productName = orderItems.stream()
+                .map(proName -> proName.getBook().getTitle())
+                .toList();
+
         boolean alreadyNotified = notificationRepository.exitsByOrderAndMessage(order, generateMessage(status));
 
 
@@ -84,7 +90,7 @@ public class NotificationService {
             notification.setUser(user);
             notification.setOrder(order);
             notification.setBook(null);
-            notification.setMessage(generateMessage(status));
+            notification.setMessage(productName+" "+generateMessage(status));
             notification.setRead(false);
             notification.setCreatedAt(new Timestamp(System.currentTimeMillis()));
             notification.setType(NotificationType.ORDER);

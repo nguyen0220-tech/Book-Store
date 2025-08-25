@@ -14,6 +14,8 @@ import catholic.ac.kr.secureuserapp.repository.FriendRepository;
 import catholic.ac.kr.secureuserapp.repository.PostRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ public class CommentService {
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
 
+    @Cacheable(value = "commentCache",key = "#postId")
     public ApiResponse<Page<CommentDTO>> getAllComments(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
@@ -40,6 +43,7 @@ public class CommentService {
         return ApiResponse.success("All comments", commentDTOS);
     }
 
+    @CacheEvict(value = "commentCache",allEntries = true)
     public ApiResponse<CommentDTO> createComment(Long userId, Long postId, String content) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
@@ -90,6 +94,7 @@ public class CommentService {
                 .build();
     }
 
+    @CacheEvict(value = "commentCache",allEntries = true)
     public ApiResponse<String> deleteComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findByIdAndPostId(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));

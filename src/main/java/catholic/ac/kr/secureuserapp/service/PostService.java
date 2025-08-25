@@ -11,6 +11,8 @@ import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.PostRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @Cacheable(value = "postCache", key = "#userId")
     public ApiResponse<Page<PostDTO>> getAllPostsByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
         Page<Post> posts = postRepository.findByUserId(userId, pageable);
@@ -34,6 +37,7 @@ public class PostService {
         return ApiResponse.success("posts", postDTOS);
     }
 
+    @Cacheable(value = "postCache", key = "{#page, #size}")
     public ApiResponse<Page<PostDTO>> getAllPosts(int page,int size ) {
         Pageable pageable = PageRequest.of(page, size,Sort.by("postDate").descending());
         Page<Post> posts = postRepository.findAll(pageable);
@@ -43,6 +47,7 @@ public class PostService {
         return ApiResponse.success("All posts", postDTOS);
     }
 
+    @CacheEvict(value = "postCache", allEntries = true)
     public ApiResponse<PostDTO> createPost(Long userId, PostRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));
@@ -61,6 +66,7 @@ public class PostService {
         return ApiResponse.success("post", savedPostDTO);
     }
 
+    @CacheEvict(value = "postCache", allEntries = true)
     public ApiResponse<PostDTO> updatePost(Long userId,Long postId,PostRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));
@@ -77,6 +83,7 @@ public class PostService {
         return ApiResponse.success("updated post", savedPostDTO);
     }
 
+    @CacheEvict(value = "postCache", allEntries = true)
     public ApiResponse<String> deletePost(Long userId,Long postId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));

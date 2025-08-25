@@ -17,6 +17,7 @@ public interface OrderMapper {
     @Mapping(source = "user.id",target = "userId")
     @Mapping(source = "createdAt", target = "orderDate")
     @Mapping(source = "id",target = "orderId")
+    @Mapping(source = "user.username",target = "orderUsername")
     @Mapping(source = "status", target = "orderStatus")
     @Mapping(source = "orderItems", target = "items")
     @Mapping(source = "coupon.couponCode",target = "couponCode") //Order có: Coupon coupon, Coupon có String couponCode;
