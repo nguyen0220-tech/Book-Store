@@ -7,6 +7,21 @@ let currentKeyword = "";
 let totalPages = 0;
 let bookmarkedBookIds = [];
 
+// Nếu chưa đăng nhập
+if (!accessToken) {
+    document.getElementById("logoutBtn").style.display = "none";
+    document.getElementById("profileBtn").style.display = "none";
+    document.getElementById("book-markBtn").style.display = "none";
+    document.getElementById("cartBtn").style.display = "none";
+    document.getElementById("adminBtn").style.display = "none";
+    document.getElementById("loginBtn").style.display = "inline-block";
+    document.getElementById("searchHistorySection").style.display = "none";
+} else {
+    document.getElementById("logoutBtn").style.display = "inline-block";
+    document.getElementById("loginBtn").style.display = "none";
+}
+
+// Xử lý nút Logout
 document.getElementById("logoutBtn").addEventListener("click", async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
@@ -24,13 +39,18 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
             localStorage.removeItem("accessToken");
             localStorage.removeItem("refreshToken");
             localStorage.removeItem("userId");
-            window.location.href = "/auth.html";
+            window.location.href = "/home.html";
         } else {
             document.getElementById("logoutMessage").textContent = result.message || "Logout thất bại!";
         }
     } catch (err) {
         document.getElementById("logoutMessage").textContent = "Lỗi server: " + err.message;
     }
+});
+
+// Xử lý nút Login
+document.getElementById("loginBtn").addEventListener("click", () => {
+    window.location.href = "/auth.html";
 });
 
 //giai ma TOKEN
@@ -45,6 +65,8 @@ function parseJwt(token) {
 }
 
 async function fetchBookMarks() {
+    if (!accessToken)
+        return
     try {
         const res = await fetch(`${API_BASE}/book-mark`, {
             headers: {Authorization: `Bearer ${accessToken}`}
@@ -97,7 +119,8 @@ async function searchByAuthor() {
     await searchBooks("by-author", keyword);
     await saveSearchHistory("by-author", keyword);
 }
-window.searchByAuthor=searchByAuthor
+
+window.searchByAuthor = searchByAuthor
 
 async function searchByTitle() {
     const keyword = document.getElementById("searchKeyword").value.trim();
@@ -106,7 +129,8 @@ async function searchByTitle() {
     await searchBooks("by-title", keyword);
     await saveSearchHistory("by-title", keyword);
 }
-window.searchByTitle=searchByTitle
+
+window.searchByTitle = searchByTitle
 
 async function searchByCategory() {
     const keyword = document.getElementById("searchKeyword").value.trim();
@@ -115,7 +139,7 @@ async function searchByCategory() {
     await searchBooks("by-category", keyword);
     await saveSearchHistory("by-category", keyword);
 }
-window.searchByCategory=searchByCategory
+window.searchByCategory = searchByCategory
 
 // --- Search History ---
 const searchHistoryListEl = document.getElementById("searchHistoryList");
@@ -123,9 +147,11 @@ const clearSearchHistoryBtn = document.getElementById("clearSearchHistoryBtn");
 
 // Lấy danh sách lịch sử tìm kiếm từ server và hiển thị
 async function loadSearchHistory() {
+    if (!accessToken)
+        return
     try {
         const res = await fetch(`${API_BASE}/search-history`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -216,10 +242,14 @@ function formatTime(isoString) {
 
 function translateSearchType(type) {
     switch (type?.toUpperCase()) {
-        case "AUTHOR": return "Tác giả";
-        case "TITLE": return "Tiêu đề";
-        case "CATEGORY": return "Thể loại";
-        default: return type;
+        case "AUTHOR":
+            return "Tác giả";
+        case "TITLE":
+            return "Tiêu đề";
+        case "CATEGORY":
+            return "Thể loại";
+        default:
+            return type;
     }
 }
 
@@ -262,7 +292,8 @@ async function saveSearchHistory(type, keyword) {
         console.error("Lỗi khi lưu lịch sử tìm kiếm:", err.message);
     }
 }
-window.saveSearchHistory=saveSearchHistory
+
+window.saveSearchHistory = saveSearchHistory
 
 async function deleteSearchHistory(keyword) {
     if (!confirm(`Bạn có chắc muốn xóa lịch sử tìm kiếm: "${keyword}"?`)) return;
@@ -273,7 +304,7 @@ async function deleteSearchHistory(keyword) {
 
         const res = await fetch(url, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -285,7 +316,7 @@ async function deleteSearchHistory(keyword) {
         alert("Lỗi khi xóa lịch sử tìm kiếm: " + err.message);
     }
 }
-window.deleteSearchHistory=deleteSearchHistory
+window.deleteSearchHistory = deleteSearchHistory
 
 clearSearchHistoryBtn.addEventListener("click", async () => {
     if (!confirm("Bạn có chắc muốn xóa toàn bộ lịch sử tìm kiếm?")) return;
@@ -293,7 +324,7 @@ clearSearchHistoryBtn.addEventListener("click", async () => {
     try {
         const res = await fetch(`${API_BASE}/search-history/delete-all`, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -399,6 +430,12 @@ function getCurrentBooks() {
 }
 
 async function toggleBookmark(bookId) {
+    if (!accessToken) {
+        alert("Vui lòng đăng nhập để sử dụng tính năng này");
+        window.location.href = "/auth.html";
+        return;
+    }
+
     const isBookmarked = bookmarkedBookIds.includes(bookId);
     const method = isBookmarked ? 'DELETE' : 'POST';
     const url = `${API_BASE}/book-mark/${isBookmarked ? 'remove' : 'add'}?bookId=${bookId}`;
@@ -425,7 +462,8 @@ async function toggleBookmark(bookId) {
         alert("Lỗi server: " + err.message);
     }
 }
-window.toggleBookmark=toggleBookmark
+
+window.toggleBookmark = toggleBookmark
 
 async function toggleReviews(bookId) {
     const container = document.getElementById(`reviews-${bookId}`);
@@ -464,10 +502,15 @@ async function toggleReviews(bookId) {
         container.style.display = "none";
     }
 }
-window.toggleReviews=toggleReviews
+
+window.toggleReviews = toggleReviews
 
 async function addToCart(bookId) {
-    if (!accessToken) return alert("Vui lòng đăng nhập");
+    if (!accessToken) {
+        alert("Vui lòng đăng nhập");
+        return window.location.href = "/auth.html";
+
+    }
 
     const qtyInput = document.getElementById(`qty-${bookId}`);
     const quantity = parseInt(qtyInput.value);
@@ -503,7 +546,8 @@ async function addToCart(bookId) {
         alert("Lỗi: " + err.message);
     }
 }
-window.addToCart=addToCart
+
+window.addToCart = addToCart
 
 function renderPagination() {
     const container = document.getElementById("paginationControls");
@@ -530,13 +574,18 @@ let friendSuggestCurrentPage = 0;
 let friendSuggestTotalPages = 0;
 
 async function loadFriendSuggestBooks(page = 0) {
+    const container = document.getElementById("friendSuggestBooks");
+    if (!accessToken) {
+        container.innerHTML = "<i>🔑 Đăng nhập để sử dụng tính năng này</i>";
+        return;
+    }
     try {
         const url = new URL(`${API_BASE}/book/suggest-from-friend`);
         url.searchParams.append("page", page);
         url.searchParams.append("size", 5);
 
         const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
 
         const result = await res.json();
@@ -646,7 +695,7 @@ function renderFriendSuggestPagination() {
 async function fetchTopNewBooks() {
     try {
         const res = await fetch(`${API_BASE}/book/top-new`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
 
@@ -681,7 +730,7 @@ async function fetchTopNewBooks() {
 async function fetchTopBooks() {
     try {
         const res = await fetch(`${API_BASE}/book/top-book`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: {Authorization: `Bearer ${accessToken}`}
         });
         const result = await res.json();
 
@@ -717,7 +766,10 @@ async function fetchTopBooks() {
 }
 
 async function addTopToCart(bookId, type) {
-    if (!accessToken) return alert("Vui lòng đăng nhập");
+    if (!accessToken) {
+        alert("Vui lòng đăng nhập");
+        return window.location.href = "/auth.html";
+    }
 
     const qtyInput = document.getElementById(`qty-${type}-${bookId}`);
     const quantity = parseInt(qtyInput.value);
@@ -734,7 +786,7 @@ async function addTopToCart(bookId, type) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ bookId, quantity })
+            body: JSON.stringify({bookId, quantity})
         });
         const result = await res.json();
         if (res.ok && result.success) {
@@ -746,7 +798,7 @@ async function addTopToCart(bookId, type) {
         alert("Lỗi: " + err.message);
     }
 }
-window.addTopToCart=addTopToCart
+window.addTopToCart = addTopToCart
 
 let postCurrentPage = 0;
 const postPageSize = 5;
@@ -776,7 +828,8 @@ async function fetchUserPosts(page = 0, size = postPageSize) {
         document.getElementById("userPostList").innerHTML = `<p style="color:red;">Lỗi tải bài viết: ${error.message}</p>`;
     }
 }
-window.fetchUserPosts=fetchUserPosts
+
+window.fetchUserPosts = fetchUserPosts
 
 function renderUserPosts(posts) {
     const container = document.getElementById("userPostList");
@@ -830,8 +883,8 @@ function renderPostPagination(pageData) {
     }
 
     let buttonsHtml = "";
-    for(let i=0; i<totalPages; i++) {
-        buttonsHtml += `<button style="margin-right:5px; ${i === postCurrentPage ? "font-weight:bold;" : ""}" onclick="fetchUserPosts(${i})">${i+1}</button>`;
+    for (let i = 0; i < totalPages; i++) {
+        buttonsHtml += `<button style="margin-right:5px; ${i === postCurrentPage ? "font-weight:bold;" : ""}" onclick="fetchUserPosts(${i})">${i + 1}</button>`;
     }
     container.innerHTML = buttonsHtml;
 }
@@ -892,6 +945,11 @@ function renderComments(postId, comments) {
 }
 
 async function deleteComment(postId, commentId) {
+    if (!accessToken) {
+        alert("Vui lòng đăng nhập để sử dụng tính năng này");
+        return;
+    }
+
     if (!confirm("Bạn có chắc muốn xóa bình luận này không?")) return;
 
     try {
@@ -915,9 +973,15 @@ async function deleteComment(postId, commentId) {
         alert("Lỗi xóa bình luận: " + error.message);
     }
 }
-window.deleteComment=deleteComment
+
+window.deleteComment = deleteComment
 
 async function submitComment(postId) {
+    if (!accessToken) {
+        alert("Vui lòng đăng nhập để sử dụng tính năng này");
+        window.location.href = "/auth.html";
+        return;
+    }
     const input = document.getElementById(`comment-input-${postId}`);
     const content = input.value.trim();
 
@@ -953,13 +1017,13 @@ async function submitComment(postId) {
         alert("Lỗi khi gửi bình luận: " + error.message);
     }
 }
-window.submitComment=submitComment
+window.submitComment = submitComment
 
 // hàm load cảm xúc cho mỗi bài viết
 async function fetchPostEmotions(postId) {
     try {
         const res = await fetch(`${API_BASE}/posts/${postId}/emotions`, {
-            headers: { "Authorization": `Bearer ${accessToken}` }
+            headers: {"Authorization": `Bearer ${accessToken}`}
         });
         if (!res.ok) throw new Error("Không thể tải cảm xúc");
         const json = await res.json();
@@ -969,7 +1033,8 @@ async function fetchPostEmotions(postId) {
         document.getElementById(`emotions-${postId}`).innerHTML = `<p style="color:red;">Lỗi tải cảm xúc</p>`;
     }
 }
-window.fetchPostEmotions=fetchPostEmotions
+
+window.fetchPostEmotions = fetchPostEmotions
 
 async function renderPostEmotions(postId, emotions) {
     const container = document.getElementById(`emotions-${postId}`);
@@ -991,7 +1056,7 @@ async function renderPostEmotions(postId, emotions) {
 
     try {
         const filterRes = await fetch(`${API_BASE}/posts/${postId}/emotions/filter`, {
-            headers: { "Authorization": `Bearer ${accessToken}` }
+            headers: {"Authorization": `Bearer ${accessToken}`}
         });
         const filterData = await filterRes.json();
         filterList = filterData.data || [];
@@ -1021,14 +1086,14 @@ async function renderPostEmotions(postId, emotions) {
                 </button>`;
     }).join("");
 }
-window.renderPostEmotions=renderPostEmotions
+window.renderPostEmotions = renderPostEmotions
 
 async function toggleEmotion(postId, status) {
     try {
         // Lấy cảm xúc hiện tại sau mỗi thao tác thành công
         async function getCurrentUserEmotion() {
             const filterRes = await fetch(`${API_BASE}/posts/${postId}/emotions/filter`, {
-                headers: { "Authorization": `Bearer ${accessToken}` }
+                headers: {"Authorization": `Bearer ${accessToken}`}
             });
             if (!filterRes.ok) throw new Error("Không thể tải cảm xúc hiện tại");
             const filterData = await filterRes.json();
@@ -1054,10 +1119,16 @@ async function toggleEmotion(postId, status) {
 
         let method, url, body;
 
+        if (!accessToken) {
+            alert("Vui lòng đăng nhập để sử dụng tính năng này");
+            window.location.href = "/auth.html";
+            return;
+        }
+
         if (!myEmotion) {
             method = "POST";
             url = `${API_BASE}/posts/${postId}/emotions`;
-            body = { emotionStatus: status };
+            body = {emotionStatus: status};
         } else if (myEmotion.emotionStatus === status) {
             method = "DELETE";
             url = `${API_BASE}/posts/${postId}/emotions`;
@@ -1065,7 +1136,7 @@ async function toggleEmotion(postId, status) {
         } else {
             method = "PUT";
             url = `${API_BASE}/posts/${postId}/emotions`;
-            body = { emotionStatus: status };
+            body = {emotionStatus: status};
         }
 
         console.log("Sending request", method, url, body);
@@ -1095,7 +1166,7 @@ async function toggleEmotion(postId, status) {
                         "Authorization": `Bearer ${accessToken}`,
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ emotionStatus: status })
+                    body: JSON.stringify({emotionStatus: status})
                 });
                 const retryResult = await retryRes.json();
                 if (!retryResult.success) {
@@ -1117,11 +1188,12 @@ async function toggleEmotion(postId, status) {
         alert("Lỗi xử lý cảm xúc");
     }
 }
-window.toggleEmotion=toggleEmotion
+
+window.toggleEmotion = toggleEmotion
 
 //khi app khoi dong
 window.onload = async () => {
-   await loadSearchHistory()
+    await loadSearchHistory()
     await fetchBookMarks();
     await fetchRandomBooks();
     await loadFriendSuggestBooks(0)

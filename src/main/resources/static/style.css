@@ -92,7 +92,7 @@ button:focus {
 }
 
 /* Nút logout */
-#logoutBtn {
+#logoutBtn, #loginBtn {
     position: fixed;
     top: 16px;
     right: 20px;
@@ -103,7 +103,7 @@ button:focus {
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-#logoutBtn:hover {
+#logoutBtn:hover, #loginBtn:hover {
     background-color: #c0392b;
 }
 

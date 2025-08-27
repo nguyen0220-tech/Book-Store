@@ -85,11 +85,12 @@
     </h1>
 
     <div class="nav-links">
-        <a href="post.html" class="cart-link">🏠 Trang cá nhân</a>
-        <a href="book-mark.html" class="cart-link">❤️ Sách Yêu Thích</a>
-        <a href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
-        <a href="admin.html" class="cart-link">Admin Manager</a>
+        <a id="profileBtn" href="post.html" class="cart-link">🏠 Trang cá nhân</a>
+        <a id="book-markBtn" href="book-mark.html" class="cart-link">❤️ Sách Yêu Thích</a>
+        <a id="cartBtn" href="cart.html" class="cart-link">🛒 Xem giỏ hàng</a>
+        <a id="adminBtn" href="admin.html" class="cart-link">Admin Manager</a>
         <button id="logoutBtn">Logout</button>
+        <button id="loginBtn" style="display:none;">Login</button>
     </div>
     <p id="logoutMessage" class="error"></p>
 
@@ -165,7 +166,8 @@
         <button onclick="searchByAuthor()">Tìm theo Tác giả</button>
         <button onclick="searchByTitle()">Tìm theo Tiêu đề</button>
         <button onclick="searchByCategory()">Tìm theo Thể loại</button>
-        <section class="card" style="margin-top: 1rem;">
+
+        <section id="searchHistorySection" class="card" style="margin-top: 1rem;">
             <h3>🕘 Lịch sử tìm kiếm gần đây</h3>
             <div id="searchHistoryList"
                  style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #fff; width: 300px;"></div>

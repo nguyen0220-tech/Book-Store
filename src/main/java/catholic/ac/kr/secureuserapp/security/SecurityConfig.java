@@ -85,6 +85,18 @@ public class SecurityConfig {
                                 "public",
                                 "/user/find-pass",
                                 "/auth/**",           // cho phép toàn bộ API auth
+                                "/book/random",
+                                "book/by-author",
+                                "book/by-title",
+                                "book/by-category",
+                                "/book/top-book",
+                                "/book/top-new",
+                                "book/{bookId}",
+                                "/post/all",
+                                "/comment",
+                                "/posts/{postId}/emotions",
+                                "posts/{postId}/emotions/filter",
+                                "review/book",
                                 "/user/find-username",
                                 "/*.html",            // tất cả file .html trong static/
                                 "/*.css",             // css
