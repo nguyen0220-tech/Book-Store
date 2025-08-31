@@ -143,6 +143,16 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+        if (phoneExists && !user.getPhone().equals(request.getPhone())) {
+            throw new AlreadyExistsException(request.getPhone() + " đã liên kết với tài khoản khác");
+        }
+
+        boolean vailPhoneNumber = checkNumberPhoneUpdate(request.getPhone());
+        if (!vailPhoneNumber) {
+            return ApiResponse.error("Số điện thoại không hợp lệ");
+        }
+
         user.setFullName(request.getFullName());
         user.setLiking(request.getLiking());
         user.setAddress(request.getAddress());
@@ -154,6 +164,19 @@ public class UserService {
         UserProfileDTO userProfileDTO = userMapper.toUserProfileDTO(user);
 
         return ApiResponse.success("Updated user profile", userProfileDTO);
+    }
+
+    private boolean checkNumberPhoneUpdate(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return false;
+        }
+
+        for (Character c : phoneNumber.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Transactional
@@ -201,8 +224,8 @@ public class UserService {
 
         String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
         SecureRandom random = new SecureRandom();
-        String randomNewPassword = IntStream.range(0,5)
-                .mapToObj( c -> String.valueOf(chars.charAt(random.nextInt(chars.length()))))
+        String randomNewPassword = IntStream.range(0, 5)
+                .mapToObj(c -> String.valueOf(chars.charAt(random.nextInt(chars.length()))))
                 .collect(Collectors.joining());
 
         user.setPassword(passwordEncoder.encode(randomNewPassword));
@@ -211,7 +234,7 @@ public class UserService {
         emailService.sendSimpleMail(
                 user.getUsername(),
                 "Khôi phục mật khẩu",
-                "Mật khẩu mới của bạn là: "+randomNewPassword
+                "Mật khẩu mới của bạn là: " + randomNewPassword
         );
 
         return ApiResponse.success("Password reset successfully");
@@ -225,7 +248,7 @@ public class UserService {
         Set<Role> roles = user.getRoles();
 
         boolean isAdmin = roles.stream()
-                        .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
 
         if (isAdmin) {
             return ApiResponse.error("Không thể khóa admin !!!");

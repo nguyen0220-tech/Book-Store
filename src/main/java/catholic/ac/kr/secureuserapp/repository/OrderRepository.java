@@ -15,7 +15,6 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(Long userId,Pageable pageable);
 
-    List<Order> findListByUserId(Long userId);
 
     Page<Order> findAll(Pageable pageable);
 
@@ -29,4 +28,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             SELECT o FROM Order o WHERE o.id = :orderId AND o.user.username = :username
             """)
     Order getOrderByIdAndUser(Long orderId, String username);
+
+    int countByConfirmed(boolean confirmed);
 }

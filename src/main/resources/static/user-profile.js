@@ -16,6 +16,10 @@ window.onload = async () => {
             document.getElementById("phone").value = user.phone || "";
             document.getElementById("sex").value = user.sex || "UNKNOWN";
 
+            // Hiển thị ngày/tháng/năm sinh
+            document.getElementById("yob").value = user.yearOfBirth || "";
+            document.getElementById("mob").value = user.monthOfBirth || "";
+            document.getElementById("dob").value = user.dayOfBirth || "";
         }
     } catch (err) {
         showMessage("Không thể tải thông tin người dùng", true);
@@ -31,7 +35,6 @@ async function updateProfile() {
         sex: document.getElementById("sex").value
     };
 
-
     try {
         const res = await fetch(`${API_BASE}/user/my-profile/update`, {
             method: "PUT",
@@ -42,12 +45,14 @@ async function updateProfile() {
             body: JSON.stringify(request)
         });
 
-
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
             showMessage("Cập nhật thông tin thành công!");
+        } else if (data.errors) {
+            const errorMessages = Object.values(data.errors).join("\n");
+            showMessage(errorMessages, true);
         } else {
-            showMessage(data.message, true);
+            showMessage(data.message || "Cập nhật thất bại", true);
         }
     } catch (err) {
         showMessage("Lỗi khi cập nhật thông tin", true);

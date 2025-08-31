@@ -33,7 +33,7 @@ public class Coupon {
 
     private LocalDateTime expired;
 
-    private boolean usage;
+    private boolean usage; //dùng nhiều lần ?
 
     private int maxUsage;
 

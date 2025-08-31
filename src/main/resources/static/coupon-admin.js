@@ -10,17 +10,67 @@ async function loadCoupons() {
     const data = await res.json();
 
     if (data.success) {
-        const list = data.data.map(c => {
+        const list = data.data
+            .map(c => {
+                const discountText = c.percentDiscount
+                    ? `${c.discountPercent}%`
+                    : `${c.discountAmount?.toLocaleString() || 0}₩`;
+
+                const expiredDate = c.expired?.split("T")[0] || "Không rõ";
+                const activeText = c.active
+                    ? `<span style="color:green">✅ Active</span>`
+                    : `<span style="color:red">❌ Chưa kích hoạt/Hết hạn</span>`;
+
+                return `
+                    <div style="border-bottom: 1px solid #ccc; padding: 0.5rem 0;">
+                        <b>🎁 ${c.couponCode}</b> - <span>${discountText}</span> ${activeText}<br/>
+                        💰 Tối thiểu: ${c.minimumAmount?.toLocaleString() || 0}₩ |
+                        🔁 Dùng nhiều lần: ${c.usage ? "✅" : "❌"} |
+                        📊 Đã dùng: <b>${c.usageCount}/${c.maxUsage}</b> |
+                        🕒 Hết hạn: ${expiredDate}<br/>
+                        📝 <i>${c.description || "Không có mô tả"}</i>
+                        <div class="actions" style="margin-top: 0.3rem;">
+                            <button onclick="editCoupon('${c.couponCode}')">✏️ Sửa</button>
+                            <button onclick="deleteCoupon('${c.couponCode}')">❌ Xoá</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+        document.getElementById("couponList").innerHTML = list || "<p>Không có coupon nào</p>";
+    } else {
+        alert(data.message || "Không thể tải danh sách coupon");
+    }
+}
+window.loadCoupons=loadCoupons
+
+async function searchCoupon() {
+    const code = document.getElementById("searchCouponCode").value.trim();
+    if (!code) {
+        alert("Vui lòng nhập mã coupon cần tìm");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/coupon/code/${code}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            const c = data.data;
             const discountText = c.percentDiscount
                 ? `${c.discountPercent}%`
-                : `${c.discountAmount.toLocaleString()}₩`;
-
+                : `${c.discountAmount?.toLocaleString() || 0}₩`;
             const expiredDate = c.expired?.split("T")[0] || "Không rõ";
+            const activeText = c.active
+                ? `<span style="color:green">✅ Active</span>`
+                : `<span style="color:red">❌ Chưa kích hoạt/Hết hạn</span>`;
 
-            return `
+            document.getElementById("couponList").innerHTML = `
                 <div style="border-bottom: 1px solid #ccc; padding: 0.5rem 0;">
-                    <b>🎁 ${c.couponCode}</b> - <span>${discountText}</span><br/>
-                    💰 Tối thiểu: ${c.minimumAmount.toLocaleString()}₩ |
+                    <b>🎁 ${c.couponCode}</b> - <span>${discountText}</span> ${activeText}<br/>
+                    💰 Tối thiểu: ${c.minimumAmount?.toLocaleString() || 0}₩ |
                     🔁 Dùng nhiều lần: ${c.usage ? "✅" : "❌"} |
                     📊 Đã dùng: <b>${c.usageCount}/${c.maxUsage}</b> |
                     🕒 Hết hạn: ${expiredDate}<br/>
@@ -31,13 +81,16 @@ async function loadCoupons() {
                     </div>
                 </div>
             `;
-        }).join("");
-
-        document.getElementById("couponList").innerHTML = list;
-    } else {
-        alert(data.message || "Không thể tải danh sách coupon");
+        } else {
+            document.getElementById("couponList").innerHTML = "<p>Không tìm thấy coupon nào</p>";
+            alert(data.message || "Không tìm thấy coupon");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Có lỗi xảy ra khi tìm coupon");
     }
 }
+window.searchCoupon = searchCoupon;
 
 async function submitCoupon() {
     const request = {
@@ -131,9 +184,58 @@ function toggleDiscountType() {
     document.getElementById("percentDiscountGroup").style.display = isPercent ? "block" : "none";
 }
 
+async function filterCoupons() {
+    const filterValue = document.getElementById("filterActive").value;
+    if (filterValue === "") {
+        loadCoupons(); // nếu chọn "Tất cả" thì load lại bình thường
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/coupon/filter?active=${filterValue}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            const list = data.data.map(c => {
+                const discountText = c.percentDiscount
+                    ? `${c.discountPercent}%`
+                    : `${c.discountAmount?.toLocaleString() || 0}₩`;
+                const expiredDate = c.expired?.split("T")[0] || "Không rõ";
+                const activeText = c.active
+                    ? `<span style="color:green">✅ Active</span>`
+                    : `<span style="color:red">❌ Chưa kích hoạt/Hết hạn</span>`;
+
+                return `
+                    <div style="border-bottom: 1px solid #ccc; padding: 0.5rem 0;">
+                        <b>🎁 ${c.couponCode}</b> - <span>${discountText}</span> ${activeText}<br/>
+                        💰 Tối thiểu: ${c.minimumAmount?.toLocaleString() || 0}₩ |
+                        🔁 Dùng nhiều lần: ${c.usage ? "✅" : "❌"} |
+                        📊 Đã dùng: <b>${c.usageCount}/${c.maxUsage}</b> |
+                        🕒 Hết hạn: ${expiredDate}<br/>
+                        📝 <i>${c.description || "Không có mô tả"}</i>
+                        <div class="actions" style="margin-top: 0.3rem;">
+                            <button onclick="editCoupon('${c.couponCode}')">✏️ Sửa</button>
+                            <button onclick="deleteCoupon('${c.couponCode}')">❌ Xoá</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            document.getElementById("couponList").innerHTML = list || "<p>Không có coupon nào</p>";
+        } else {
+            document.getElementById("couponList").innerHTML = "<p>Không tìm thấy coupon nào</p>";
+            alert(data.message || "Không tìm thấy coupon");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Có lỗi xảy ra khi lọc coupon");
+    }
+}
+window.filterCoupons = filterCoupons;
+
 window.onload = () => {
     loadCoupons();
     toggleDiscountType(); // đảm bảo hiển thị đúng khi reload
 };
-
-

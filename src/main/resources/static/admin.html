@@ -83,7 +83,19 @@
 <div class="sidebar">
     <a href="user.html" class="active"><span class="icon">👤</span> Quản lý Người dùng</a>
     <a href="book.html"><span class="icon">📚</span> Quản lý kho Sách</a>
-    <a href="order-manager.html"><span class="icon">📝</span> Quản lý đơn hàng</a>
+    <a href="order-manager.html">
+        <span class="icon">📝</span> Quản lý đơn hàng
+        <span id="countOrdersBadge" style="
+            background-color:red;
+            color:white;
+            border-radius:50%;
+            padding:2px 7px;
+            font-size:12px;
+            margin-left:5px;
+            font-weight:bold;
+            display:inline-block;
+        ">0</span>
+    </a>
     <a href="coupon-admin.html"><span class="icon">🎟️</span> Quản lý Coupon</a>
     <a href="system-notification.html"><span class="icon">📣</span> Gửi thông báo</a>
 </div>
@@ -94,6 +106,33 @@
     <h1>Chào mừng Admin!</h1>
     <p>Chọn mục bên trái để quản lý hệ thống.</p>
 </div>
+
+<script type="module">
+    const API_BASE = window.location.origin;
+    const accessToken = localStorage.getItem("accessToken");
+
+    async function updateOrderCountBadge() {
+        try {
+            const res = await fetch(`${API_BASE}/order/count-not-confirmed`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                const badge = document.getElementById("countOrdersBadge");
+                badge.textContent = data.data;
+                badge.style.display = data.data > 0 ? "inline-block" : "none";
+            }
+
+        } catch (err) {
+            console.error("Lỗi khi gọi API order/count-not-confirmed:", err);
+        }
+    }
+
+    // Gọi khi load page
+    window.onload = () => {
+        updateOrderCountBadge();
+    };
+</script>
 
 </body>
 </html>

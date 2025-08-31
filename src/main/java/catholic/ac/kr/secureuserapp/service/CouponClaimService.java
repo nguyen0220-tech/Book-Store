@@ -30,11 +30,11 @@ public class CouponClaimService {
             return ApiResponse.error("Coupon expired");
         }
 
-        if (coupon.getUsers().contains(user)){
+        else if (coupon.getUsers().contains(user)){
             return ApiResponse.error("Coupon already claimed");
         }
 
-        if (coupon.getUsageCount() >= coupon.getMaxUsage()){
+        else if (coupon.getUsageCount() >= coupon.getMaxUsage()){
             return ApiResponse.error("Coupon exceeded max usage");
         }
 

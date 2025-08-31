@@ -32,6 +32,26 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     }
 });
 
+async function loadBookCount() {
+    try {
+        const res = await fetch(`${API_BASE}/book/count`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+            document.getElementById("bookCount").textContent =
+                `Tổng số sách: ${result.data}`;
+        } else {
+            document.getElementById("bookCount").textContent =
+                result.message || "Không thể lấy số lượng sách";
+        }
+    } catch (err) {
+        document.getElementById("bookCount").textContent =
+            "Lỗi server: " + err.message;
+    }
+}
+
+
 async function loadAllBooks(page = 0) {
     try {
         const url = new URL(`${API_BASE}/book`);
@@ -360,5 +380,6 @@ function renderLowStockPagination() {
     container.appendChild(next);
 }
 
+loadBookCount()
 loadAllBooks();
 loadLowStockBooks(0)

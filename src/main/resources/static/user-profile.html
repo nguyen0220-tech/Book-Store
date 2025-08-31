@@ -81,6 +81,32 @@
             text-align: center;
         }
 
+        .birth-container {
+            margin-top: 0.8rem;
+        }
+
+        .birth-container label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .birth-inputs {
+            display: flex;
+            gap: 8px; /* khoảng cách giữa các input */
+        }
+
+        .birth-inputs input {
+            flex: 1; /* chia đều không gian */
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+
         .error {
             color: red;
         }
@@ -124,6 +150,16 @@
             <option value="FEMALE">Nữ</option>
             <option value="UNKNOWN">Khác / Không rõ</option>
         </select>
+
+        <div class="birth-container">
+            <label>Ngày sinh:</label>
+            <div class="birth-inputs">
+                <input type="text" id="yob" placeholder="YYYY" disabled>
+                <input type="text" id="mob" placeholder="MM" disabled>
+                <input type="text" id="dob" placeholder="DD" disabled>
+            </div>
+        </div>
+
 
         <button onclick="updateProfile()">💾 Cập nhật thông tin</button>
     </div>

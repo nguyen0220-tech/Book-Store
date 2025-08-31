@@ -36,6 +36,11 @@ public class CouponController {
         return ResponseEntity.ok(couponService.getCouponByUserId(user.getUser().getId()));
     }
 
+    @GetMapping("filter")
+    public ResponseEntity<ApiResponse<List<CouponDTO>>> getAndFilterCoupons(@RequestParam boolean active){
+        return ResponseEntity.ok(couponService.getAndFilterCoupons(active));
+    }
+
     @PostMapping("add")
     public ResponseEntity<ApiResponse<CouponDTO>> createCoupon(@RequestBody CouponRequest request) {
         return ResponseEntity.ok(couponService.createCoupon(request));

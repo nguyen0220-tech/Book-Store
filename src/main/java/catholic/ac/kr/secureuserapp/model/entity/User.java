@@ -40,6 +40,12 @@ public class User {
 //    @Column(nullable = false)
     private String fullName;
 
+    private String yearOfBirth;
+
+    private String monthOfBirth;
+
+    private String dayOfBirth;
+
     private String address;
 
     private String phone;

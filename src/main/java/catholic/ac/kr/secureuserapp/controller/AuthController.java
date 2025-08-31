@@ -29,8 +29,16 @@ public class AuthController {
     }
 
     @GetMapping("verify")
-    public ResponseEntity<ApiResponse<?>> verifyEmail(@RequestParam String token) {
-        return ResponseEntity.ok(authService.verifyEmail(token));
+    public ResponseEntity<Boolean> verifyEmail(@RequestParam String token,
+                                               HttpServletResponse response) throws IOException {
+
+        boolean success = authService.verifyEmail(token);
+        if (success) {
+            response.sendRedirect(baseUrl + "/verify-user.html?success="+ true);
+        } else {
+            response.sendRedirect(baseUrl + "/verify-user.html?success="+false);
+        }
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("login")

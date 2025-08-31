@@ -33,4 +33,6 @@ public class OrderDTO {
     private String recipientPhone;
 
     private String couponCode;
+
+    private boolean confirmed;
 }

@@ -149,6 +149,22 @@
     <button type="submit">💾 Lưu Coupon</button>
 </form>
 
+<div class="form-group">
+    <label for="searchCouponCode">Tìm Coupon theo mã</label>
+    <input id="searchCouponCode" placeholder="Nhập mã coupon cần tìm..." />
+    <button type="button" onclick="searchCoupon()">🔍 Tìm</button>
+</div>
+
+<div class="form-group">
+    <label for="filterActive">Lọc theo trạng thái</label>
+    <select id="filterActive" onchange="filterCoupons()">
+        <option value="">-- Tất cả --</option>
+        <option value="true">✅ Active</option>
+        <option value="false">❌ Inactive</option>
+    </select>
+    <button type="button" onclick="loadCoupons()">🔄 Tải lại tất cả</button>
+</div>
+
 <h3>📋 Danh sách Coupon</h3>
 <div id="couponList"></div>
 <script type="module" src="/auth-utils.js"></script>

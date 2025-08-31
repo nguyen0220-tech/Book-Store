@@ -60,7 +60,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("""
             SELECT DISTINCT new catholic.ac.kr.secureuserapp.model.dto.SuggestBooksFromFriendDTO(
-            b.id,b.title,b.author,b.price,b.salePrice,b.imgUrl,f.user.username )
+            b.id,b.title,b.author,b.price,b.salePrice,b.imgUrl,f.user.fullName )
             FROM Book b
             JOIN OrderItem oi ON b.id = oi.book.id
             JOIN Order o ON oi.order.id = o.id

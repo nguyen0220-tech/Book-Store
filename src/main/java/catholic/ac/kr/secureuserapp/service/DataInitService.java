@@ -1,9 +1,11 @@
 package catholic.ac.kr.secureuserapp.service;
 
 import catholic.ac.kr.secureuserapp.model.entity.Category;
+import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
+import catholic.ac.kr.secureuserapp.repository.CouponRepository;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -11,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +27,7 @@ public class DataInitService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CategoryRepository categoryRepository;
+    private final CouponRepository couponRepository;
 
     @PostConstruct
     //@PostConstruct: Phương thức addUserWithRoleAdmin() sẽ được gọi tự động sau khi tất cả các phụ thuộc được inject vào bean.
@@ -74,6 +79,25 @@ public class DataInitService {
                         return categoryRepository.save(Category.builder().name(category).build());
                     });
         }
+
+    }
+
+    @PostConstruct
+    public void initWelcomeCoupon(){
+        Coupon coupon = new Coupon();
+        coupon.setCouponCode("WC_STORE");
+        coupon.setPercentDiscount(true);
+        coupon.setDiscountPercent(BigDecimal.valueOf(20));
+        coupon.setMinimumAmount(BigDecimal.valueOf(1));
+        coupon.setActive(true);
+        coupon.setDescription("Welcome to Book Store");
+        coupon.setExpired(LocalDateTime.now().plusYears(5));
+        coupon.setUsage(false);
+        coupon.setMaxUsage(1000000);
+        coupon.setUsageCount(0);
+        couponRepository.findByCouponCode("WC_STORE")
+                .orElseGet(()-> couponRepository.save(coupon));
+
 
     }
 }

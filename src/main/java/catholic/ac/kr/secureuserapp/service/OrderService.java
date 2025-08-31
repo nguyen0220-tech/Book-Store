@@ -87,6 +87,7 @@ public class OrderService {
         order.setShippingAddress(request.getShippingAddress());
         order.setRecipientName(request.getRecipientName());
         order.setRecipientPhone(request.getRecipientPhone());
+        order.setConfirmed(false);
 
         if (coupon != null) {
             order.setCoupon(coupon);
@@ -149,6 +150,9 @@ public class OrderService {
 
         coupon.setUsageCount(coupon.getUsageCount() + 1);
         couponRepository.save(coupon);
+
+        if (discount.compareTo(total) > 0)
+            return total.subtract(total);
 
         return total.subtract(discount);
     }
@@ -221,10 +225,18 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(status);
+        order.setConfirmed(true);
         orderRepository.save(order);
         notificationService.createNotification(order.getUser().getId(), orderId); //gửi thông báo khi cập nhật status cua đơn hàng
 
         return ApiResponse.success("Updated order status successfully", orderMapper.toOrderDTO(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Integer> countOrdersNotConfirmed() {
+        int count = orderRepository.countByConfirmed(false);
+
+        return ApiResponse.success("success", count);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

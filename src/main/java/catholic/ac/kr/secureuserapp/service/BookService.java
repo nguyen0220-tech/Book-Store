@@ -37,7 +37,7 @@ public class BookService {
     }
 
     public ApiResponse<Page<BookDTO>> getAllBooks(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size,Sort.by("createdAt").descending());
         Page<Book> books = bookRepository.findAll(pageable);
         Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
 
@@ -184,6 +184,12 @@ public class BookService {
 
         BookDTO updatedBookDTO = bookMapper.bookToBookDTO(savedBook);
         return ApiResponse.success("Book updated", updatedBookDTO);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Integer> countBooks() {
+        int count = bookRepository.countAllBooks();
+        return ApiResponse.success("Count of books", count);
     }
 
     @Transactional

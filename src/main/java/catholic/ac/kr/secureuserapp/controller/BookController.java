@@ -102,6 +102,11 @@ public class BookController {
         return ResponseEntity.ok(bookService.updateBook(id, bookDTO));
     }
 
+    @GetMapping("count")
+    public ResponseEntity<ApiResponse<Integer>> getCountOfBooks() {
+        return ResponseEntity.ok(bookService.countBooks());
+    }
+
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<String>> deleteBook(@PathVariable("id") Long id){
         return ResponseEntity.ok(bookService.deleteBook(id));

@@ -19,4 +19,5 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.coupon.couponCode = :couponCode AND o.user.id = :userId")
     int countUsageCouponByUserId(@Param("couponCode") String couponCode, @Param("userId") Long userId);
 
+    List<Coupon> findAndFilterByActive(boolean active);
 }

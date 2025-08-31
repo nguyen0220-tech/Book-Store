@@ -88,6 +88,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.updateOrderStatus(orderId, status));
     }
 
+    @GetMapping("count-not-confirmed")
+    public ResponseEntity<ApiResponse<Integer>> getCountOrdersNotConfirmed(){
+        return ResponseEntity.ok(orderService.countOrdersNotConfirmed());
+    }
+
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<String>> deleteOrderHistory(@PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.deleteOrderById(id));

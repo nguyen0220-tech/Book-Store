@@ -15,10 +15,12 @@ if (!accessToken) {
     document.getElementById("cartBtn").style.display = "none";
     document.getElementById("adminBtn").style.display = "none";
     document.getElementById("loginBtn").style.display = "inline-block";
+    document.getElementById("signupBtn").style.display = "inline-block";
     document.getElementById("searchHistorySection").style.display = "none";
 } else {
     document.getElementById("logoutBtn").style.display = "inline-block";
     document.getElementById("loginBtn").style.display = "none";
+    document.getElementById("signupBtn").style.display = "none";
 }
 
 // Xử lý nút Logout
@@ -50,6 +52,11 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
 
 // Xử lý nút Login
 document.getElementById("loginBtn").addEventListener("click", () => {
+    window.location.href = "/auth.html";
+});
+
+// Xử lý nút Signup
+document.getElementById("signupBtn").addEventListener("click", async () => {
     window.location.href = "/auth.html";
 });
 
@@ -139,6 +146,7 @@ async function searchByCategory() {
     await searchBooks("by-category", keyword);
     await saveSearchHistory("by-category", keyword);
 }
+
 window.searchByCategory = searchByCategory
 
 // --- Search History ---
@@ -316,6 +324,7 @@ async function deleteSearchHistory(keyword) {
         alert("Lỗi khi xóa lịch sử tìm kiếm: " + err.message);
     }
 }
+
 window.deleteSearchHistory = deleteSearchHistory
 
 clearSearchHistoryBtn.addEventListener("click", async () => {
@@ -602,6 +611,7 @@ async function loadFriendSuggestBooks(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
+
 window.loadFriendSuggestBooks = loadFriendSuggestBooks;
 
 function renderFriendSuggestBooks(books) {
@@ -631,7 +641,7 @@ function renderFriendSuggestBooks(books) {
                 <div><b>${b.title}</b></div>
                 <div>✍️ ${b.author || "Không rõ"}</div>
                 ${priceHtml}
-                <div>👤 Gợi ý từ: <b>${b.friendName || "Bạn bè"}</b></div>
+                <div>👤 Gợi ý từ: <b>${b.friendName}</b></div>
                 <button class="add-to-cart-btn" data-book-id="${b.id}">🛒 Thêm vào giỏ</button>
             </div>
         `;
@@ -798,6 +808,7 @@ async function addTopToCart(bookId, type) {
         alert("Lỗi: " + err.message);
     }
 }
+
 window.addTopToCart = addTopToCart
 
 let postCurrentPage = 0;
@@ -1017,6 +1028,7 @@ async function submitComment(postId) {
         alert("Lỗi khi gửi bình luận: " + error.message);
     }
 }
+
 window.submitComment = submitComment
 
 // hàm load cảm xúc cho mỗi bài viết
@@ -1086,6 +1098,7 @@ async function renderPostEmotions(postId, emotions) {
                 </button>`;
     }).join("");
 }
+
 window.renderPostEmotions = renderPostEmotions
 
 async function toggleEmotion(postId, status) {

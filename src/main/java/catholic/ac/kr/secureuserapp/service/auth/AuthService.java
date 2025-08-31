@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service.auth;
 
+import catholic.ac.kr.secureuserapp.Status.NotificationType;
 import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +45,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final CouponRepository couponRepository;
+    private final NotificationRepository notificationRepository;
 
 
     public ApiResponse<UserDTO> signUp(SignupRequest request) {
@@ -54,6 +58,12 @@ public class AuthService {
             throw new AlreadyExistsException("User already exists");
         }
 
+        boolean phoneExists = userRepository.existsByPhone(request.getPhone());
+
+        if (phoneExists) {
+            throw new AlreadyExistsException("Phone already exists");
+        }
+
         // Tạo ROLE_USER mặc định khi đăng kí (Tìm role USER từ DB)
         Role defaultRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ROLE_USER trong DB"));
@@ -62,7 +72,12 @@ public class AuthService {
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
                 .roles(Set.of(defaultRole))
+                .phone(request.getPhone())
+                .yearOfBirth(request.getYearOfBirth())
+                .monthOfBirth(request.getMonthOfBirth())
+                .dayOfBirth(request.getDayOfBirth())
                 .build();
 
         userRepository.save(user); //phải lưu vào DB trước rồi mới có thể tạo token gán vào
@@ -71,19 +86,42 @@ public class AuthService {
         return ApiResponse.success("Sent email to " + user.getUsername() + " successfully");
     }
 
-    public ApiResponse<UserDTO> verifyEmail(String token) {
+    public boolean verifyEmail(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
         if (verificationToken == null || verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            return ApiResponse.error("Token already expired/Token không hợp lệ hoặc đã hết hạn");
+            return false;
         }
 
         User user = verificationToken.getUser();
         user.setEnabled(true);
         userRepository.save(user);
 
-        verificationTokenRepository.delete(verificationToken);//sau khi xac thuc token thi xoa
+        verificationTokenRepository.delete(verificationToken);
 
-        return ApiResponse.success(user.getUsername() + " verified successfully");
+        Coupon coupon = couponRepository.findByCouponCode("WC_STORE")
+                .orElse(null);
+        if (coupon != null) {
+            coupon.getUsers().add(user);
+            couponRepository.save(coupon);
+
+            //chua fix duoc loi khi nguoi dung khac tao thi nguoi  dung truoc se tu dong bi ghi de -> mat coupon
+            Notification notification = Notification.builder()
+                    .user(user)
+                    .book(null)
+                    .order(null)
+                    .message("Chào mừng "+user.getFullName()+" đến với Book Store. " +
+                            "Chúng tôi gửi bạn Coupon khi lần đầu mua sắm tại Book Store. " +
+                            "Để kiểm tra hãy truy cập: Trang cá nhân -> Coupon " +
+                            "Thank you.")
+                    .read(false)
+                    .createdAt(new Timestamp(System.currentTimeMillis()))
+                    .type(NotificationType.COUPON)
+                    .build();
+
+            notificationRepository.save(notification);
+        }
+
+        return true;
     }
 
     public ApiResponse<TokenResponse> login(LoginRequest request, HttpServletRequest httpRequest) {
@@ -243,7 +281,6 @@ public class AuthService {
 
         return ApiResponse.success("Đã gửi link cập nhật tới email. Vui lòng kiểm tra: " + maskEmail);
     }
-
 
 
     private String maskEmail(String email) {

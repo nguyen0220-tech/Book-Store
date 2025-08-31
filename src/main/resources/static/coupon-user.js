@@ -8,11 +8,17 @@ async function loadMyCoupons() {
     const data = await res.json();
 
     if (data.success) {
-        document.getElementById("myCoupons").innerHTML = data.data.map(c => {
+        const activeCoupons = data.data.filter(c => c.active);
+
+        if (activeCoupons.length === 0) {
+            document.getElementById("myCoupons").innerHTML = "<p>Không có coupon khả dụng</p>";
+            return;
+        }
+
+        document.getElementById("myCoupons").innerHTML = activeCoupons.map(c => {
             const discountText = c.percentDiscount
                 ? `🔻 ${c.discountPercent}%`
                 : `💸 ${c.discountAmount}₩`;
-;
 
             const expiredDate = c.expired?.split("T")[0] || "Không rõ";
 
@@ -29,6 +35,7 @@ async function loadMyCoupons() {
         document.getElementById("myCoupons").innerHTML = "<p>Không thể tải coupon</p>";
     }
 }
+
 
 async function claimCoupon() {
     const request = { couponCode: document.getElementById("claimCode").value };

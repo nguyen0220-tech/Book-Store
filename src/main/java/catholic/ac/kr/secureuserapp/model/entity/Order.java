@@ -53,4 +53,7 @@ public class Order {
 
     @Column(nullable = false)
     private String recipientPhone;
+
+    @Column(nullable = false, columnDefinition = "boolean default false") //tạo bảng mới, nếu không truyền giá trị thì mặc định DB sẽ set false
+    private boolean confirmed;
 }

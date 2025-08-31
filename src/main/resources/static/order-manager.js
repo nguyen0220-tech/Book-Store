@@ -56,6 +56,7 @@ async function loadOrders(page = 0) {
                     <td>${order.recipientName || ''}</td>
                     <td>${order.recipientPhone || ''}</td>
                     <td>${order.shippingAddress || ''}</td>
+                    <td>${order.confirmed ? "✅ Đã xác nhận" : "❌ Chưa xác nhận"}<td>
                     <td>
                         <select onchange="updateStatus(${order.orderId}, this.value)">
                             <option value="PENDING" ${order.orderStatus === 'PENDING' ? 'selected' : ''}>Đang xử lý</option>

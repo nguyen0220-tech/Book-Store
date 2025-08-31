@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.schedule;
 
 import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 import catholic.ac.kr.secureuserapp.repository.CouponRepository;
+import catholic.ac.kr.secureuserapp.service.CouponService;
 import catholic.ac.kr.secureuserapp.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,11 +13,12 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CouponCleanupTask {
+public class ScheduledHandler {
     private final CouponRepository couponRepository;
     private final NotificationService notificationService;
+    private final CouponService couponService;
 
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 37 5 * * *")
     public void cleanExpiredCoupons() {
         List<Coupon> expiredCoupons = couponRepository.findAll().stream()
                 .filter(coupon -> coupon.getExpired().isBefore(LocalDateTime.now()))
@@ -32,4 +34,7 @@ public class CouponCleanupTask {
     public void notificationExpiredCoupons() {
         notificationService.createCouponExpiredNotification();
     }
+
+    @Scheduled(cron ="0 01 16 * * *" )
+    public void giveCouponBirthDate(){couponService.giveCouponToUserBirthDate();}
 }
