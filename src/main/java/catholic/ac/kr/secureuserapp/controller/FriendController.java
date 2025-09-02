@@ -3,6 +3,7 @@ package catholic.ac.kr.secureuserapp.controller;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.FriendDTO;
 import catholic.ac.kr.secureuserapp.model.dto.FriendRequest;
+import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.FriendService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("friend")
@@ -39,6 +42,11 @@ public class FriendController {
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity.ok(friendService.getBlockingFriend(userDetails.getUser().getId(), page, size));
+    }
+
+    @GetMapping("to-give")
+    public ResponseEntity<ApiResponse<List<ToGiveFriendDTO>>> getToGiveFriend(@AuthenticationPrincipal MyUserDetails userDetails){
+        return ResponseEntity.ok(friendService.getToGiveFriends(userDetails.getUser().getId()));
     }
 
     @PostMapping
@@ -74,5 +82,10 @@ public class FriendController {
     @GetMapping("count")
     public ResponseEntity<ApiResponse<Integer>> countFriends(@AuthenticationPrincipal MyUserDetails userDetails) {
         return ResponseEntity.ok(friendService.countFriends(userDetails.getUser().getId()));
+    }
+
+    @GetMapping("count-pending")
+    public ResponseEntity<ApiResponse<Integer>> getRequestFriends(@AuthenticationPrincipal MyUserDetails userDetails) {
+        return ResponseEntity.ok(friendService.countRequestFriends(userDetails.getUser().getId()));
     }
 }

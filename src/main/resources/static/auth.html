@@ -126,6 +126,9 @@
         const monthOfBirth = document.getElementById("signupMonth").value;
         const dayOfBirth = document.getElementById("signupDay").value;
 
+        const messageEl = document.getElementById("signupMessage");
+        messageEl.textContent = "Processing...";
+
         try {
             const res = await fetch(`${API_BASE}/auth/signup`, {
                 method: "POST",
@@ -140,18 +143,31 @@
                     dayOfBirth
                 })
             });
-            const result = await res.json();
+
+            let result = {};
+            try {
+                result = await res.json();
+            } catch (err) {
+                messageEl.textContent = "Unexpected server response";
+                return;
+            }
+
             if (res.ok && result.success) {
-                alert("Signup successful! Please verify in email: " + username);
+                alert(result.message || "Signup successful! Please check your email: " + username);
                 toggleBtn.click();
             } else {
-                document.getElementById("signupMessage").textContent =
-                    result.message || "Signup failed";
+                if (result.errors) {
+                    const errorMessages = Object.values(result.errors).join(",\n");
+                    messageEl.textContent = errorMessages;
+                } else {
+                    messageEl.textContent = result.message || `Signup failed (HTTP ${res.status})`;
+                }
             }
         } catch (err) {
-            document.getElementById("signupMessage").textContent = "Server error: " + err.message;
+            messageEl.textContent = "Server error: " + err.message;
         }
     });
+
 
     // GOOGLE LOGIN - da login thanh cong nhung chua the refresh token
     googleLogin.addEventListener("click", () => {

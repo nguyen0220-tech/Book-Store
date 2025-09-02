@@ -59,7 +59,7 @@ public class UserService {
     public ApiResponse<Page<UserDTO>> findAllUsersByNamePaging(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         Page<User> users = userRepository.searchByName(keyword, pageable);
-        Page<UserDTO> result = userMapper.toDTO(users); // dùng MapStruct
+        Page<UserDTO> result = userMapper.toDTO(users);
 
         return ApiResponse.success("Users found with name: " + keyword, result);
     }

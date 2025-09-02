@@ -9,7 +9,7 @@ public class FriendMapper {
 
         friendDTO.setId(friend.getId());
         friendDTO.setUserId(friend.getUser().getId());
-        friendDTO.setUsername(friend.getUser().getUsername());
+        friendDTO.setUsername(friend.getUser().getFullName());
         friendDTO.setFriendId(friend.getFriend().getId());
         friendDTO.setFriendName(friend.getFriend().getFullName());
         friendDTO.setStatus(String.valueOf(friend.getStatus()));

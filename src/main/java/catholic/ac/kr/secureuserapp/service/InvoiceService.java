@@ -28,6 +28,7 @@ public class InvoiceService {
         document.add(new Paragraph("INVOICE - BOOKSTORE", boldFont));
         document.add(new Paragraph("Num: " + order.getId()));
         document.add(new Paragraph("Order date :" + order.getCreatedAt()));
+
         //kiểm tra giới tính khách hàng
         Sex sex = order.getUser().getSex();
         if (sex == Sex.MALE) {
@@ -36,7 +37,11 @@ public class InvoiceService {
             document.add(new Paragraph("Customer: Mrs." + order.getUser().getUsername()));
         } else
             document.add(new Paragraph("Customer: " + order.getUser().getUsername()));
+
+        document.add(new Paragraph("Recipient Name:  " + order.getRecipientName()));
+        document.add(new Paragraph("Recipient Phone:  " + maskInfo(order.getRecipientPhone())));
         document.add(new Paragraph("Discount as Coupon:" + order.getTotalDiscount() + "won"));
+        document.add(new Paragraph("Address: " + order.getShippingAddress()));
         document.add(new Paragraph(" "));
 
         PdfPTable table = getPdfPTable(order);
@@ -49,13 +54,25 @@ public class InvoiceService {
         return outputStream.toByteArray();
     }
 
+    private String maskInfo(String info) {
+        StringBuilder maskedInfo = new StringBuilder();
+        for (int i = 0; i < info.length(); i++) {
+            if (i <= 3 || i >= info.length() - 3)
+                maskedInfo.append("*");
+
+            else
+                maskedInfo.append(info.charAt(i));
+        }
+
+        return maskedInfo.toString();
+    }
+
     private static PdfPTable getPdfPTable(Order order) {
         PdfPTable table = new PdfPTable(4); //so cột
         table.addCell("Name");
         table.addCell("Price");
         table.addCell("Quantity");
         table.addCell("Price x Quantity");
-
 
         for (OrderItem item : order.getOrderItems()) {
             table.addCell(item.getBook().getTitle());

@@ -46,10 +46,4 @@ public class Coupon {
             inverseJoinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id")
     )
     Set<User> users;
-
-//    kiểm tra logic business trong Service như:
-//            → expired.isBefore(now)	Đã hết hạn chưa
-//→ usageCount < maxUsage	Đủ lượt chưa
-//→ user có nằm trong coupon.users không (nếu cần)
-//→ Nếu percentDiscount == true thì discountPercent phải hợp lệ (0–100)
 }

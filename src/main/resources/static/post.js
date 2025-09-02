@@ -286,6 +286,24 @@ async function fetchUnreadNotificationCount() {
     }
 }
 
+async function fetchFriendRequestCount() {
+    try {
+        const result = await fetch(`${API_BASE}/friend/count-pending`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        }).then(r => r.json());
+
+        if (result.success) {
+            const count = result.data;
+            const span = document.getElementById("friendRequestCount");
+            span.textContent = count > 0 ? `(${count})` : '';
+        }
+    } catch (err) {
+        console.error("Lỗi khi lấy số lượng lời mời kết bạn:", err);
+    }
+}
+
 async function fetchCommentsForPost(postId) {
     const commentDiv = document.getElementById(`comments-${postId}`);
     if (!commentDiv) return;
@@ -322,6 +340,7 @@ async function fetchCommentsForPost(postId) {
 
 
 fetchUnreadNotificationCount();
+fetchFriendRequestCount();
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts(currentPage);

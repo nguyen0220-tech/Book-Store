@@ -24,7 +24,7 @@ async function searchUsers() {
         const div = document.createElement("div");
         div.innerHTML = `
             <p><strong>${user.username}</strong></p>
-            <button onclick="sendFriendRequest(${user.id})">Thêm bạn</button>
+            <button onclick="sendFriendRequest(${user.id})">➕</button>
         `;
         userListDiv.appendChild(div);
     });

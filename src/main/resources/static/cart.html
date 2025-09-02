@@ -24,8 +24,14 @@
 <input type="text" id="recipientName" placeholder="Tên người nhận" required />
 <input type="text" id="recipientPhone" placeholder="Số điện thoại" required />
 <input type="text" id="shippingAddress" placeholder="Địa chỉ giao hàng" required />
+<input type="text" id="note" placeholder="Ghi chú" />
 <input type="text" id="couponCode" placeholder="Nhập mã coupon (nếu có)" />
 <button onclick="placeOrder()">🧾 Đặt hàng</button>
+<select id="friendSelect" onchange="fillFriendInfo(this.value)">
+    <option value="">-- Gửi quà cho bạn bè --</option>
+</select>
+
+
 <script type="module" src="/auth-utils.js"></script>
 <script  type="module" src="cart.js"></script>
 

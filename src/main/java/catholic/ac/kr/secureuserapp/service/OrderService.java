@@ -77,7 +77,16 @@ public class OrderService {
             finalTotal = applyCoupon(total, coupon, userId);
         }
 
-        //create order
+        boolean checkRecipientPhone = checkNumberPhoneOrder(request.getRecipientPhone());
+        if (!checkRecipientPhone) {
+            return ApiResponse.error("Số điện thoại không hợp lệ");
+        }
+
+        boolean checkRecipientName = checkRecipientName(request.getRecipientName());
+        if (!checkRecipientName) {
+            return ApiResponse.error("Tên không hợp lệ");
+        }
+
         Order order = new Order();
         order.setUser(cart.getUser());
         order.setCreatedAt(new Timestamp(System.currentTimeMillis()));
@@ -87,6 +96,7 @@ public class OrderService {
         order.setShippingAddress(request.getShippingAddress());
         order.setRecipientName(request.getRecipientName());
         order.setRecipientPhone(request.getRecipientPhone());
+        order.setNote(request.getNote());
         order.setConfirmed(false);
 
         if (coupon != null) {
@@ -119,9 +129,35 @@ public class OrderService {
         orderRepository.save(order);
         notificationService.createNotification(order.getUser().getId(), order.getId()); //gửi thông báo PENDING khi đặt hàng thành công
 
-        cartItemRepository.deleteAll(cartItems); //clear caer
+        cartItemRepository.deleteAll(cartItems);
 
         return ApiResponse.success("Order successfully", orderMapper.toOrderDTO(order));
+    }
+
+    private boolean checkNumberPhoneOrder(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return false;
+        }
+
+        for (Character c : phoneNumber.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkRecipientName(String name) {
+        if (name == null || name.isEmpty()) {
+            return false;
+        }
+
+        for (Character c : name.toCharArray()) {
+            if (!(Character.isAlphabetic(c) || Character.isSpaceChar(c))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private BigDecimal applyCoupon(BigDecimal total, Coupon coupon, Long userId) {

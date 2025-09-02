@@ -25,6 +25,14 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllPostsByUserId(userDetails.getUser().getId(), page, size));
     }
 
+    @GetMapping("deleted")
+    public ResponseEntity<ApiResponse<Page<PostDTO>>> getAllPostsDeletedByUserId(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size){
+        return ResponseEntity.ok(postService.getPostsDeletedStillRestorableByUserId(userDetails.getUser().getId(), page, size));
+    }
+
     @GetMapping("all")
     public ResponseEntity<ApiResponse<Page<PostDTO>>> getAllPosts(
             @RequestParam int page,
@@ -50,5 +58,12 @@ public class PostController {
     @DeleteMapping("{postId}")
     public ResponseEntity<ApiResponse<String>> deletePost(@AuthenticationPrincipal MyUserDetails userDetails,@PathVariable Long postId){
         return ResponseEntity.ok(postService.deletePost(userDetails.getUser().getId(),postId));
+    }
+
+    @PutMapping("{postId}/restore")
+    public ResponseEntity<ApiResponse<String>> restorePost(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PathVariable Long postId){
+        return ResponseEntity.ok(postService.restorePost(userDetails.getUser().getId(),postId));
     }
 }

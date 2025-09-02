@@ -34,5 +34,7 @@ public class OrderDTO {
 
     private String couponCode;
 
+    private String note;
+
     private boolean confirmed;
 }

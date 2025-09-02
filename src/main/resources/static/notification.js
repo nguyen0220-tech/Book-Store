@@ -2,7 +2,7 @@ const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
 
 let currentPage = 0;
-const pageSize = 5;
+const pageSize = 10;
 let totalPages = 0;
 
 const unreadCountSpan = document.getElementById("unreadCount");

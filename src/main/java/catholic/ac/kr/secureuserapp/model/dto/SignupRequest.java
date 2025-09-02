@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.model.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,11 @@ public class SignupRequest {
     private String password;
 
     @NotBlank(message = "Tên không được để trống")
+    @Pattern(regexp = "^[A-Za-z ]+$", message = "Tên không hợp lệ")
     private String fullName;
 
     @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^[0-9]+$",message = "Số điện thoại không hợp lệ")
     private String phone;
 
     @NotBlank(message = "Vui lòng nhập năm sinh")

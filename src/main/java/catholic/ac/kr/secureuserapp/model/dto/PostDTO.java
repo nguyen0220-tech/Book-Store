@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter @Setter
 public class PostDTO {
@@ -13,4 +14,6 @@ public class PostDTO {
     private String postShare;
     private Timestamp postDate;
     private String imageUrl;
+    private boolean deleted;
+    private LocalDateTime expiryRestore;
 }

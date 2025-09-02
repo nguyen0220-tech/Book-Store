@@ -61,7 +61,6 @@ async function loadCart() {
     </table>
 `;
 
-
             document.getElementById("cartContainer").innerHTML = html;
             document.getElementById("totalPrice").textContent =
                 "Tổng tiền: " + result.data.totalPrice + "₩";
@@ -144,6 +143,7 @@ async function placeOrder() {
     const recipientName = document.getElementById("recipientName").value.trim();
     const recipientPhone = document.getElementById("recipientPhone").value.trim();
     const shippingAddress = document.getElementById("shippingAddress").value.trim();
+    const note = document.getElementById("note").value.trim();
     const couponCode = document.getElementById("couponCode").value.trim();
 
     if (!recipientName || !recipientPhone || !shippingAddress) {
@@ -155,6 +155,7 @@ async function placeOrder() {
         recipientName,
         recipientPhone,
         shippingAddress,
+        note,
         couponCode
     };
 
@@ -182,4 +183,47 @@ async function placeOrder() {
 }
 window.placeOrder=placeOrder
 
-window.onload = loadCart;
+async function loadFriends() {
+    try {
+        const res = await fetch(`${API_BASE}/friend/to-give`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const friends = result.data || [];
+            const select = document.getElementById("friendSelect");
+
+            friends.forEach((f, idx) => {
+                const opt = document.createElement("option");
+                opt.value = idx; // lưu index để dễ lấy object
+                opt.textContent = `${f.recipientName} (${f.friendPhone})`;
+                select.appendChild(opt);
+            });
+
+            window.friendsData = friends;
+
+        } else {
+            console.warn("Không có bạn bè để tặng quà");
+        }
+
+    } catch (err) {
+        console.error("Lỗi khi load bạn bè:", err);
+    }
+}
+
+function fillFriendInfo(index) {
+    if (index === "") return; // không chọn gì
+    const friend = window.friendsData[index];
+    if (friend) {
+        document.getElementById("recipientName").value = friend.recipientName || "";
+        document.getElementById("recipientPhone").value = friend.friendPhone || "";
+        document.getElementById("shippingAddress").value = friend.friendAddress || "";
+    }
+}
+window.fillFriendInfo=fillFriendInfo
+
+window.onload = async () => {
+    await loadCart();
+    await loadFriends();
+};

@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.FriendMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.FriendDTO;
+import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Friend;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.FriendRepository;
@@ -55,6 +56,12 @@ public class FriendService {
 
     }
 
+    public ApiResponse<List<ToGiveFriendDTO>> getToGiveFriends(Long userId) {
+        List<ToGiveFriendDTO> list = friendRepository.findToGiveFriends(userId);
+
+        return ApiResponse.success("All to give friends", list);
+    }
+
     public ApiResponse<FriendDTO> addFriend(Long userId, Long friendId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -69,6 +76,7 @@ public class FriendService {
         boolean isFriend = friendRepository.existsByUserIdAndFriendIdAndStatus(user.getId(), friend.getId(),FriendStatus.FRIEND);
         boolean isPending = friendRepository.existsByUserIdAndFriendIdAndStatus(user.getId(), friend.getId(),FriendStatus.PENDING);
         boolean isBlocking = friendRepository.existsByUserIdAndFriendIdAndStatus(user.getId(), friend.getId(),FriendStatus.BLOCKED);
+        boolean isBlockedFrom = friendRepository.existsByUserIdAndFriendIdAndStatus(user.getId(), friend.getId(),FriendStatus.BLOCKED_FROM);
 
         if (isFriend) {
             return ApiResponse.error("Friend already exists/các bạn đã la bạn bè");
@@ -80,6 +88,10 @@ public class FriendService {
 
         if (isBlocking) {
             return ApiResponse.error("Blocking friend/không thể kết bạn vì người này có trong danh sách bị chặn");
+        }
+
+        if (isBlockedFrom) {
+            return ApiResponse.error("không thể kết bạn vì người này đã chặn bạn");
         }
 
         Friend addFriend = Friend.builder()
@@ -130,29 +142,42 @@ public class FriendService {
 
     @Transactional
     public ApiResponse<String> deleteFriend(Long userId, Long friendId) {
-        List<Friend> friend = friendRepository.findByUserIdAndFriendIdAndStatusFRIEND(userId,friendId,FriendStatus.FRIEND);
+        List<Friend> friend = friendRepository.findByUserIdAndFriendIdAndStatusTwoWay(userId,friendId,FriendStatus.FRIEND);
 
         friendRepository.deleteAll(friend);
 
-        return ApiResponse.success("friend deleted successfully");
+        return ApiResponse.error("friend deleted");
     }
 
     public ApiResponse<String> blockFriend(Long userId, Long friendId ) {
-        List<Friend> friend = friendRepository.findByUserIdAndFriendIdAndStatusFRIEND(userId, friendId,FriendStatus.FRIEND);
+        List<Friend> friend = friendRepository.findByUserIdAndFriendIdAndStatusOneWay(userId, friendId,FriendStatus.FRIEND);
 
         for (Friend f : friend) {
             f.setStatus(FriendStatus.BLOCKED);
             friendRepository.save(f);
         }
 
-        return ApiResponse.success("blocked friend");
+        List<Friend> friendBlockFrom = friendRepository.findByUserIdAndFriendIdAndStatusOneWay(friendId,userId,FriendStatus.FRIEND);
 
+        for (Friend f : friendBlockFrom) {
+            f.setStatus(FriendStatus.BLOCKED_FROM);
+            friendRepository.save(f);
+        }
+
+        return ApiResponse.success("blocked friend");
     }
 
     public ApiResponse<String> unBlockFriend(Long userId, Long friendId) {
-        List<Friend> blockingFriend = friendRepository.findByUserIdAndFriendIdAndStatusBLOCKED(userId,friendId,FriendStatus.BLOCKED);
+        List<Friend> blockingFriend = friendRepository.findByUserIdAndFriendIdAndStatusOneWay(userId,friendId,FriendStatus.BLOCKED);
 
         for (Friend f : blockingFriend) {
+            f.setStatus(FriendStatus.CANCELLED);
+            friendRepository.save(f);
+        }
+
+        List<Friend> blockedFromFriend = friendRepository.findByUserIdAndFriendIdAndStatusOneWay(friendId,userId,FriendStatus.BLOCKED_FROM);
+
+        for (Friend f : blockedFromFriend) {
             f.setStatus(FriendStatus.CANCELLED);
             friendRepository.save(f);
         }
@@ -167,5 +192,14 @@ public class FriendService {
         }
 
         return ApiResponse.success("friends count" , count);
+    }
+
+    public ApiResponse<Integer> countRequestFriends(Long userId) {
+        int count = friendRepository.countRequestFriendByUserId(userId);
+        if (count == 0) {
+            return ApiResponse.success("no friends request");
+        }
+
+        return ApiResponse.success("friends request count" , count);
     }
 }

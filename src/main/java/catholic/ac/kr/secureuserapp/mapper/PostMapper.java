@@ -13,6 +13,8 @@ public class PostMapper {
         postDTO.setPostShare(String.valueOf(post.getPostShare()));
         postDTO.setPostDate(post.getPostDate());
         postDTO.setImageUrl(post.getImageUrl());
+        postDTO.setDeleted(post.isDeleted());
+        postDTO.setExpiryRestore(post.getExpiryRestore());
 
         return postDTO;
     }

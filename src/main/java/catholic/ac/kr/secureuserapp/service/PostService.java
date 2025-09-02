@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -30,17 +31,27 @@ public class PostService {
     @Cacheable(value = "postCache", key = "#userId")
     public ApiResponse<Page<PostDTO>> getAllPostsByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
-        Page<Post> posts = postRepository.findByUserId(userId, pageable);
+        Page<Post> posts = postRepository.findByUserIdAndDeleted(userId, false, pageable);
 
         Page<PostDTO> postDTOS = posts.map(PostMapper::toPostDTO);
 
         return ApiResponse.success("posts", postDTOS);
+
+    }
+
+    public ApiResponse<Page<PostDTO>> getPostsDeletedStillRestorableByUserId(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
+        Page<Post> posts = postRepository.findPostsStillRestorableByUserId(userId, LocalDateTime.now(), pageable);
+
+        Page<PostDTO> postDTOS = posts.map(PostMapper::toPostDTO);
+
+        return ApiResponse.success("List posts deleted", postDTOS);
     }
 
     @Cacheable(value = "postCache", key = "{#page, #size}")
-    public ApiResponse<Page<PostDTO>> getAllPosts(int page,int size ) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by("postDate").descending());
-        Page<Post> posts = postRepository.findAll(pageable);
+    public ApiResponse<Page<PostDTO>> getAllPosts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
+        Page<Post> posts = postRepository.findPostsByDeleted(false, pageable);
 
         Page<PostDTO> postDTOS = posts.map(PostMapper::toPostDTO);
 
@@ -50,7 +61,7 @@ public class PostService {
     @CacheEvict(value = "postCache", allEntries = true)
     public ApiResponse<PostDTO> createPost(Long userId, PostRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Post post = new Post();
         post.setUser(user);
@@ -58,6 +69,7 @@ public class PostService {
         post.setPostDate(new Timestamp(System.currentTimeMillis()));
         post.setPostShare(PostShare.valueOf(request.getPostShare()));
         post.setImageUrl(request.getImageUrl());
+        post.setDeleted(false);
 
         postRepository.save(post);
 
@@ -67,12 +79,12 @@ public class PostService {
     }
 
     @CacheEvict(value = "postCache", allEntries = true)
-    public ApiResponse<PostDTO> updatePost(Long userId,Long postId,PostRequest request) {
+    public ApiResponse<PostDTO> updatePost(Long userId, Long postId, PostRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Post post = postRepository.findByUserIdAndPostId(user.getId(),postId)
-                .orElseThrow(()-> new ResourceNotFoundException("Post not found"));
+        Post post = postRepository.findByUserIdAndPostId(user.getId(), postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         post.setContent(request.getContent());
         post.setPostShare(PostShare.valueOf(request.getPostShare()));
@@ -84,15 +96,35 @@ public class PostService {
     }
 
     @CacheEvict(value = "postCache", allEntries = true)
-    public ApiResponse<String> deletePost(Long userId,Long postId) {
+    public ApiResponse<String> deletePost(Long userId, Long postId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Post post = postRepository.findByUserIdAndPostId(user.getId(),postId)
-                .orElseThrow(()-> new ResourceNotFoundException("Post not found"));
+        Post post = postRepository.findByUserIdAndPostId(user.getId(), postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-        postRepository.delete(post);
+        post.setDeleted(true);
+        post.setExpiryRestore(LocalDateTime.now().plusDays(3));
+        postRepository.save(post);
 
         return ApiResponse.success("deleted post");
+    }
+
+    @CacheEvict(value = "postCache", allEntries = true)
+    public ApiResponse<String> restorePost(Long userId, Long postId) {
+        Post post = postRepository.findPostByUserIdAndPostId(userId, postId);
+
+        if (post != null && post.getExpiryRestore() != null
+                && post.getExpiryRestore().isAfter(LocalDateTime.now())) {
+
+            post.setDeleted(false);
+            post.setExpiryRestore(null);
+            postRepository.save(post);
+
+            return ApiResponse.success("restored post");
+        }
+
+        return ApiResponse.error("Post not found or restore expired");
+
     }
 }

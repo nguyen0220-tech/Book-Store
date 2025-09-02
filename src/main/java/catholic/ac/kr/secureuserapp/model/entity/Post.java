@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,11 @@ public class Post {
     private Timestamp postDate;
 
     private String imageUrl;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted;
+
+    private LocalDateTime expiryRestore;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
