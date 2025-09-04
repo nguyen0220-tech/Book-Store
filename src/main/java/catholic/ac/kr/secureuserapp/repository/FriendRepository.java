@@ -35,7 +35,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             SELECT f FROM Friend f
             WHERE f.user.id=:userId AND f.friend.id = :friendId AND f.status = :status
             """)
-    List<Friend> findByUserIdAndFriendIdAndStatusOneWay(@Param("userId") Long userId, @Param("friendId") Long friendId, @Param("status") FriendStatus status);
+    Optional<Friend> findByUserIdAndFriendIdAndStatusOneWay(@Param("userId") Long userId, @Param("friendId") Long friendId, @Param("status") FriendStatus status);
 
     Page<Friend> findByUserIdAndStatus(Long userId, FriendStatus status, Pageable pageable);
 

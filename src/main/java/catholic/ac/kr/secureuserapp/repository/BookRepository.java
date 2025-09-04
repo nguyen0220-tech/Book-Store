@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.repository;
 
+import catholic.ac.kr.secureuserapp.model.dto.BookPaidMany;
 import catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO;
 import catholic.ac.kr.secureuserapp.model.dto.SuggestBooksFromFriendDTO;
 import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
@@ -73,4 +74,15 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                         WHERE o.user.id = :userId)
             """)
     Page<SuggestBooksFromFriendDTO> findSuggestBooksFromFriends(@Param("userId") Long userId,Pageable pageable);
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.BookPaidMany(
+            oi.book.id,oi.book.title,oi.book.price,oi.book.salePrice,SUM(oi.quantity),oi.book.imgUrl)
+            FROM OrderItem oi
+            WHERE oi.order.user.id = :userId
+            GROUP BY oi.book.id,oi.book.title,oi.book.price,oi.book.salePrice,oi.book.imgUrl
+            ORDER BY SUM(oi.quantity) DESC
+            LIMIT 5
+            """)
+    List<BookPaidMany> findBookPaidMany(@Param("userId") Long userId);
 }

@@ -112,6 +112,11 @@ public class BookService {
         return ApiResponse.success("Suggest books from friends", pageResult);
     }
 
+   public ApiResponse<List<BookPaidMany>> getBooksPaidMany(Long userId) {
+        List<BookPaidMany> list = bookRepository.findBookPaidMany(userId);
+        return ApiResponse.success("Books paid many", list);
+   }
+
     public ApiResponse<List<TopBookDTO>> getTopBooks() {
         List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0, 5));
         return ApiResponse.success("Top books", topBookDTOS);

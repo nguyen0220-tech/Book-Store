@@ -170,6 +170,93 @@
       font-weight: 600;
     }
 
+     .pagination {
+       display: flex;
+       justify-content: center;  /* căn giữa */
+       align-items: center;
+       gap: 6px; /* khoảng cách giữa các nút */
+       margin-top: 10px;
+       flex-wrap: wrap; /* nếu quá nhiều nút thì xuống dòng */
+     }
+
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #16a085;
+      background: white;
+      color: #16a085;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background: #16a085;
+      color: white;
+      font-weight: bold;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .sent-request-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 15px 0;
+      padding: 0;
+    }
+
+    .sent-request-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .sent-request-item strong {
+      font-size: 16px;
+      color: #333;
+    }
+
+    .sent-request-item button {
+      background: #ff4d4f;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sent-request-item button:hover {
+      background: #d9363e;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 15px;
+    }
+
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background: #007bff;
+      color: white;
+      font-weight: bold;
+    }
+
     /* Responsive */
     @media (max-width: 700px) {
       header { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -208,6 +295,10 @@
 
 <h2>Lời mời kết bạn</h2>
 <ul id="pendingList"></ul>
+
+<h2>Lời mời kết bạn đã gửi</h2>
+<div id="sentRequestList" class="sent-request-list"></div>
+<div id="sentRequestPagination" class="pagination"></div>
 
 <h2>Danh sách bạn bè bị chặn</h2>
 <div id="blockedFriendList"></div>

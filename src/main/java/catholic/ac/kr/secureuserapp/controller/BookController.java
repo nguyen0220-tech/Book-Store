@@ -75,6 +75,11 @@ public class BookController {
         return ResponseEntity.ok(bookService.getSuggestBooksFromFriend(userDetails.getUser().getId(), page,size));
     }
 
+    @GetMapping("paid-many")
+    public ResponseEntity<ApiResponse<List<BookPaidMany>>> getPaidManyBooks(@AuthenticationPrincipal MyUserDetails userDetails){
+        return ResponseEntity.ok(bookService.getBooksPaidMany(userDetails.getUser().getId()));
+    }
+
     @GetMapping("top-book")
     public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopBooks(){
         return ResponseEntity.ok(bookService.getTopBooks());

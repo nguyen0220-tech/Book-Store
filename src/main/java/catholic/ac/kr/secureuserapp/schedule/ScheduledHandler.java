@@ -4,6 +4,7 @@ import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 import catholic.ac.kr.secureuserapp.repository.CouponRepository;
 import catholic.ac.kr.secureuserapp.service.CouponService;
 import catholic.ac.kr.secureuserapp.service.NotificationService;
+import catholic.ac.kr.secureuserapp.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ public class ScheduledHandler {
     private final CouponRepository couponRepository;
     private final NotificationService notificationService;
     private final CouponService couponService;
+    private final RefreshTokenService refreshTokenService;
 
     @Scheduled(cron = "0 37 5 * * *")
     public void cleanExpiredCoupons() {
@@ -37,4 +39,7 @@ public class ScheduledHandler {
 
     @Scheduled(cron ="0 01 16 * * *" )
     public void giveCouponBirthDate(){couponService.giveCouponToUserBirthDate();}
+
+    @Scheduled(cron = "00 53 18 * * *")
+    public void clearTokensExpired(){refreshTokenService.clearTokenExpired();}
 }

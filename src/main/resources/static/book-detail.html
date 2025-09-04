@@ -92,6 +92,7 @@
 </div>
 
 <script type="module" src="/auth-utils.js"></script>
+<!-- Phần JS -->
 <script type="module">
     const API_BASE = window.location.origin;
     const accessToken = localStorage.getItem("accessToken");
@@ -120,7 +121,6 @@
     function showBookDetail(book) {
         const container = document.getElementById("bookDetailContainer");
 
-        // Nếu có salePrice và nhỏ hơn price
         let priceHtml;
         if (book.salePrice && book.salePrice < book.price) {
             priceHtml = `
@@ -133,6 +133,7 @@
             priceHtml = `<p class="price">${book.price.toLocaleString()} ₩</p>`;
         }
 
+        // Render chi tiết + input số lượng + nút thêm giỏ
         container.innerHTML = `
             <img src="${book.imgUrl || '/default-book.png'}" alt="${book.title}">
             <div class="book-info">
@@ -142,8 +143,44 @@
                 <p><b>Thể loại:</b> ${book.categoryName}</p>
                 <p><b>Mô tả:</b> ${book.description || "Chưa có mô tả"}</p>
                 <p class="stock">Kho: ${book.stock}</p>
+                <div style="margin-top:10px;">
+                    <label for="qty-detail">Số lượng:</label>
+                    <input type="number" id="qty-detail" value="1" min="1" max="${book.stock}" style="width:60px; margin-left:5px;">
+                    <button id="addCartBtn" style="margin-left:10px; padding:6px 12px; background:#3498db; color:white; border:none; border-radius:6px; cursor:pointer;">
+                        🛒 Thêm vào giỏ
+                    </button>
+                </div>
             </div>
         `;
+
+        document.getElementById("addCartBtn").addEventListener("click", () => {
+            const qty = parseInt(document.getElementById("qty-detail").value) || 1;
+            addToCart(book.id, qty);
+        });
+    }
+
+    // Hàm gọi API thêm vào giỏ
+    async function addToCart(bookId, quantity) {
+        try {
+            const response = await fetch(`${API_BASE}/cart/items`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ bookId, quantity })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message || "Đã thêm vào giỏ hàng!");
+            } else {
+                alert("Không thể thêm vào giỏ: " + result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi thêm vào giỏ hàng:", error);
+            alert("Có lỗi xảy ra khi thêm vào giỏ hàng!");
+        }
     }
 
     window.onload = () => {
@@ -155,5 +192,6 @@
         fetchBookDetail(bookId);
     }
 </script>
+
 </body>
 </html>

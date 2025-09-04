@@ -290,10 +290,112 @@ async function fetchFriendCount() {
         console.error("Lỗi khi lấy số lượng bạn bè:", error);
     }
 }
+
+let sentRequestPage = 0;
+const sentRequestSize = 5;
+let sentRequestTotalPages = 1;
+
+async function fetchSentRequests(page = 0, size = sentRequestSize) {
+    try {
+        const response = await fetch(`${API_BASE}/friend/send-request?page=${page}&size=${size}`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            sentRequestPage = page;
+            sentRequestTotalPages = result.data.totalPages;
+            showSentRequests(result.data.content);
+            updateSentRequestPagination();
+        } else {
+            alert("Không thể lấy danh sách lời mời đã gửi.");
+        }
+    } catch (error) {
+        console.error("Lỗi khi lấy lời mời đã gửi:", error);
+    }
+}
+window.fetchSentRequests = fetchSentRequests;
+
+function showSentRequests(requests) {
+    const list = document.getElementById("sentRequestList");
+    list.innerHTML = "";
+
+    if (requests.length === 0) {
+        list.innerHTML = "<p>Chưa gửi lời mời kết bạn nào.</p>";
+        return;
+    }
+
+    requests.forEach(req => {
+        const div = document.createElement("div");
+        div.classList.add("sent-request-item");
+        div.innerHTML = `
+            <strong>${req.friendName}</strong>
+            <button onclick="cancelSentRequest(${req.friendId})">❌ Hủy</button>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function updateSentRequestPagination() {
+    const container = document.getElementById("sentRequestPagination");
+    container.innerHTML = "";
+
+    const maxPagesToShow = 5;
+    let startPage = Math.max(0, sentRequestPage - 2);
+    let endPage = Math.min(sentRequestTotalPages - 1, sentRequestPage + 2);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+        if (startPage === 0) {
+            endPage = Math.min(sentRequestTotalPages - 1, startPage + maxPagesToShow - 1);
+        } else if (endPage === sentRequestTotalPages - 1) {
+            startPage = Math.max(0, endPage - maxPagesToShow + 1);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = (i + 1);
+        if (i === sentRequestPage) btn.classList.add("active");
+        btn.onclick = () => fetchSentRequests(i, sentRequestSize);
+        container.appendChild(btn);
+    }
+}
+
+async function cancelSentRequest(friendId) {
+    if (!confirm("Bạn có chắc chắn muốn hủy lời mời này không?")) return;
+
+    try {
+        const response = await fetch(`${API_BASE}/friend/cancel-request`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ friendId: friendId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+
+            fetchSentRequests(sentRequestPage, sentRequestSize);
+        } else {
+            alert(result.message || "Hủy lời mời thất bại!");
+        }
+    } catch (error) {
+        console.error("Lỗi khi hủy lời mời kết bạn:", error);
+        alert("Có lỗi xảy ra, vui lòng thử lại!");
+    }
+}
+window.cancelSentRequest = cancelSentRequest;
+
 window.addEventListener("DOMContentLoaded", () => {
     loadFriends()
     fetchFriendCount();
-    fetchPendingRequests(); // initial load
+    fetchPendingRequests();
     loadBlockedFriends()
+    fetchSentRequests()
 });
 

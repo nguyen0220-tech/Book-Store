@@ -88,4 +88,17 @@ public class FriendController {
     public ResponseEntity<ApiResponse<Integer>> getRequestFriends(@AuthenticationPrincipal MyUserDetails userDetails) {
         return ResponseEntity.ok(friendService.countRequestFriends(userDetails.getUser().getId()));
     }
+
+    @GetMapping("send-request")
+    public ResponseEntity<ApiResponse<Page<FriendDTO>>> getSendRequestFriends(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(friendService.getSendRequestFriend(userDetails.getUser().getId(), page, size));
+    }
+
+    @PutMapping("cancel-request")
+    public ResponseEntity<ApiResponse<String>> cancelRequestFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
+        return ResponseEntity.ok(friendService.cancelFriendRequest(userDetails.getUser().getId(), request.getFriendId()));
+    }
 }
