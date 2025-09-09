@@ -78,8 +78,19 @@ public class SecurityConfig {
         return http
                 .csrf(csrt -> csrt.disable())                      // Tắt CSRF (thường dùng với form login, ta dùng API nên tắt)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))             // Không dùng session (vì dùng JWT)
-                .authorizeHttpRequests(auth -> auth
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                /*
+                Spring Security mặc định chặn toàn bộ iframe để chống tấn công Clickjacking.
+                DENY: không cho hiển thị trong iframe ở bất cứ đâu.
+                SAMEORIGIN: cho hiển thị trong iframe nhưng chỉ khi cùng domain (localhost:8080 với localhost:8080 thì được).
+                ALLOW-FROM <url>: (đã deprecated) trước đây dùng để cho phép domain cụ thể.
+
+                Một website A có thể nhúng website B (của bạn) vào <iframe> rồi che một lớp trong suốt lên trên.
+                Người dùng tưởng đang bấm vào nút "OK" trên website A,
+                nhưng thực tế đang bấm vào nút "Thanh toán" của website B.
+                 */
+//                .headers(header -> header.frameOptions(frame -> frame.sameOrigin()))
+                .authorizeHttpRequests(auth -> auth // Không dùng session (vì dùng JWT)
                         .requestMatchers(
                                 "/",
                                 "public",
@@ -101,9 +112,11 @@ public class SecurityConfig {
                                 "/*.html",            // tất cả file .html trong static/
                                 "/*.css",             // css
                                 "/*.js",              // js
+                                "/*.mp3",
                                 "/*.png", "/*.jpg", "/*.svg",  // ảnh
                                 "/favicon.ico",
                                 "/icon/**",
+                                "/media/**",
                                 "/ws/**"
                         )
                         .permitAll()         // cho phép không login/signup/verify...
