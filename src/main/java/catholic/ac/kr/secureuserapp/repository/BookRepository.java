@@ -1,9 +1,6 @@
 package catholic.ac.kr.secureuserapp.repository;
 
-import catholic.ac.kr.secureuserapp.model.dto.BookPaidMany;
-import catholic.ac.kr.secureuserapp.model.dto.BookStockMax50DTO;
-import catholic.ac.kr.secureuserapp.model.dto.SuggestBooksFromFriendDTO;
-import catholic.ac.kr.secureuserapp.model.dto.TopBookDTO;
+import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -85,4 +82,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             LIMIT 5
             """)
     List<BookPaidMany> findBookPaidMany(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT b FROM Book b WHERE b.category.name = :category
+            """)
+    List<Book> findBooksSuggestByCategory(@Param("category")String category);
 }

@@ -30,4 +30,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Order getOrderByIdAndUser(Long orderId, String username);
 
     int countByConfirmed(boolean confirmed);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END
+            FROM Order o
+            WHERE o.coupon.couponCode = 'WC_STORE' AND o.user.id = :userId
+            """)
+    boolean existsCouponWelcome(@Param("userId") Long userId);
 }

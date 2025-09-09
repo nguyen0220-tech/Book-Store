@@ -40,14 +40,21 @@ public class InvoiceService {
 
         document.add(new Paragraph("Recipient Name:  " + order.getRecipientName()));
         document.add(new Paragraph("Recipient Phone:  " + maskInfo(order.getRecipientPhone())));
-        document.add(new Paragraph("Discount as Coupon:" + order.getTotalDiscount() + "won"));
         document.add(new Paragraph("Address: " + order.getShippingAddress()));
         document.add(new Paragraph(" "));
 
         PdfPTable table = getPdfPTable(order);
 
         document.add(table);
-        document.add(new Paragraph("Total: " + order.getTotalPrice() + "won"));
+        document.add(new Paragraph("---------------------------------------------------------------------------------"));
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (OrderItem item: order.getOrderItems()){
+            total = total.add(item.getPrice());
+        }
+        document.add(new Paragraph("Total amount: " + total + "won"));
+        document.add(new Paragraph("Discount as Coupon:" + order.getTotalDiscount() + "won"));
+        document.add(new Paragraph("Amount payable: " + order.getTotalPrice() + "won"));
 
         document.close();
 

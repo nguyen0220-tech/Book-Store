@@ -11,7 +11,8 @@ async function fetchPaidManyBooks() {
         const result = await response.json();
 
         if (result.success) {
-            showBooks(result.data, "paidManyBooks");
+            // Truyền showQuantity = true
+            showBooks(result.data, "paidManyBooks", false, true);
         } else {
             alert("Không thể lấy danh sách sách thường mua: " + result.message);
         }
@@ -42,7 +43,8 @@ async function fetchRandomBooks(page = 0, size = 5) {
         if (result.success) {
             const books = result.data.content; // lấy content từ Page<BookDTO>
             randomBooksTotalPages = result.data.totalPages;
-            showBooks(books, "random-book", true);
+            // Truyền showQuantity = false
+            showBooks(books, "random-book", true, false);
             randomBooksPage++;
         } else {
             alert("Không thể lấy sách ngẫu nhiên: " + result.message);
@@ -57,7 +59,8 @@ async function fetchRandomBooks(page = 0, size = 5) {
 
 // --- Hiển thị sách (dùng chung cho cả 2 loại) ---
 // append = true → thêm vào container thay vì xóa đi
-function showBooks(books, containerId, append = false) {
+// showQuantity = true → hiển thị số lượng đã mua
+function showBooks(books, containerId, append = false, showQuantity = false) {
     const container = document.getElementById(containerId);
     if (!append) container.innerHTML = "";
 
@@ -80,6 +83,9 @@ function showBooks(books, containerId, append = false) {
                 <span class="book-price">${salePrice ? salePrice : price} ₫</span>
                 ${salePrice ? `<span class="book-sale">${price} ₫</span>` : ""}
             </div>
+            ${showQuantity && book.quantity !== undefined
+            ? `<div class="book-quantity">Đã mua: ${book.quantity} quyển</div>`
+            : ""}
             <button class="add-cart-btn">🛒 Thêm vào giỏ hàng</button>
         `;
 

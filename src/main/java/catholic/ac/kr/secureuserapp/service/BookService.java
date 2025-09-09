@@ -4,9 +4,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.BookMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.entity.*;
-import catholic.ac.kr.secureuserapp.repository.BookMarkRepository;
-import catholic.ac.kr.secureuserapp.repository.BookRepository;
-import catholic.ac.kr.secureuserapp.repository.CategoryRepository;
+import catholic.ac.kr.secureuserapp.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -16,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +25,7 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final NotificationService notificationService;
     private final BookMarkRepository bookMarkRepository;
+    private final CartRepository cartRepository;
 
     public ApiResponse<BookDTO> getBookById(Long bookId) {
         Book book = bookRepository.findById(bookId)
@@ -115,6 +115,39 @@ public class BookService {
    public ApiResponse<List<BookPaidMany>> getBooksPaidMany(Long userId) {
         List<BookPaidMany> list = bookRepository.findBookPaidMany(userId);
         return ApiResponse.success("Books paid many", list);
+   }
+
+   public ApiResponse<List<SuggestBookFromCartDTO>> getSuggestBookFromCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        Set<Long> bookIdsInCart = cart.getItems().stream()
+                .map(item -> item.getBook().getId())
+                .collect(Collectors.toSet());
+
+       Set<String> categoryNames = cart.getItems().stream()
+               .map(item -> item.getBook().getCategory().getName())
+               .collect(Collectors.toSet());
+
+       Set<Long> added = new HashSet<>();
+       List<SuggestBookFromCartDTO> listSuggest = new ArrayList<>(); //danh sach de xuat cung the loai khi da loc nhung sach co trong cart hien tai
+
+       for (String categoryName : categoryNames) {
+           List<Book> bookList = bookRepository.findBooksSuggestByCategory(categoryName);
+           for (Book book : bookList) {
+               if (!bookIdsInCart.contains(book.getId()) && added.add(book.getId())) {
+                   listSuggest.add(new SuggestBookFromCartDTO(
+                           book.getId(),
+                           book.getTitle(),
+                           book.getPrice(),
+                           book.getSalePrice(),
+                           book.getImgUrl()
+                   ));
+               }
+           }
+       }
+
+        return ApiResponse.success("Suggest books from cart", listSuggest);
    }
 
     public ApiResponse<List<TopBookDTO>> getTopBooks() {

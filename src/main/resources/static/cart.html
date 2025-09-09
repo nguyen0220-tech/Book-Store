@@ -9,6 +9,35 @@
     <title>Giỏ hàng | BookStore</title>
     <link rel="stylesheet" href="style.css"/>
     <style>
+        .suggest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .suggest-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background: #fafafa;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            cursor: pointer; /* con trỏ thành bàn tay */
+        }
+
+        .suggest-card:hover {
+            transform: translateY(-5px) scale(1.03); /* nổi lên + phóng to nhẹ */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            background: #fff; /* sáng hơn một chút */
+        }
+
+
+        .suggest-card img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
 
     </style>
 </head>
@@ -19,21 +48,25 @@
 
 <div id="cartContainer"></div>
 <p class="total" id="totalPrice">Tổng tiền: 0₩</p>
+<p class="total"  id="pointBalance">⭐ Điểm hiện có: ...</p>
 <button onclick="clearCart()">🗑 Xóa toàn bộ giỏ</button>
 
-<input type="text" id="recipientName" placeholder="Tên người nhận" required />
-<input type="text" id="recipientPhone" placeholder="Số điện thoại" required />
-<input type="text" id="shippingAddress" placeholder="Địa chỉ giao hàng" required />
-<input type="text" id="note" placeholder="Ghi chú" />
-<input type="text" id="couponCode" placeholder="Nhập mã coupon (nếu có)" />
+<input type="text" id="recipientName" placeholder="Tên người nhận" required/>
+<input type="text" id="recipientPhone" placeholder="Số điện thoại" required/>
+<input type="text" id="shippingAddress" placeholder="Địa chỉ giao hàng" required/>
+<input type="text" id="note" placeholder="Ghi chú"/>
+<input type="text" id="couponCode" placeholder="Nhập mã coupon (nếu có)"/>
+<input type="text" id="usePoint" placeholder="Point"/>
 <button onclick="placeOrder()">🧾 Đặt hàng</button>
 <select id="friendSelect" onchange="fillFriendInfo(this.value)">
     <option value="">-- Gửi quà cho bạn bè --</option>
 </select>
 
+<h2>📚 Sách gợi ý cho bạn</h2>
+<div id="suggestContainer"></div>
 
 <script type="module" src="/auth-utils.js"></script>
-<script  type="module" src="cart.js"></script>
+<script type="module" src="cart.js"></script>
 
 </body>
 </html>

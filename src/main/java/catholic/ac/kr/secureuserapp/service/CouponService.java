@@ -11,6 +11,7 @@ import catholic.ac.kr.secureuserapp.model.entity.Notification;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.CouponRepository;
 import catholic.ac.kr.secureuserapp.repository.NotificationRepository;
+import catholic.ac.kr.secureuserapp.repository.OrderRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +37,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final UserRepository userRepository;
     private final NotificationRepository notificationRepository;
+    private final OrderRepository orderRepository;
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<CouponDTO>> getAllCoupons() {
@@ -75,6 +77,12 @@ public class CouponService {
             } else {
                 validCoupons.add(coupon);
             }
+        }
+
+        boolean exitsCouponWelcome = orderRepository.existsCouponWelcome(user.getId());
+
+        if (exitsCouponWelcome) {
+            validCoupons.removeIf(c -> "WC_STORE".equals(c.getCouponCode()));
         }
 
         List<CouponDTO> couponDTOS = CouponMapper.toCouponDTO(validCoupons);

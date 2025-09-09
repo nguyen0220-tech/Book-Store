@@ -20,6 +20,8 @@ public class OrderDTO {
 
     private BigDecimal totalDiscount;
 
+    private BigDecimal pointHoard;
+
     private Timestamp orderDate;
 
     private String orderStatus;

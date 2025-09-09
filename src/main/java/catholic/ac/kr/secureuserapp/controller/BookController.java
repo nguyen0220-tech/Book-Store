@@ -80,6 +80,11 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBooksPaidMany(userDetails.getUser().getId()));
     }
 
+    @GetMapping("suggest-from-cart")
+    public ResponseEntity<ApiResponse<List<SuggestBookFromCartDTO>>> getSuggestBookFromCart(@AuthenticationPrincipal MyUserDetails userDetails){
+        return ResponseEntity.ok(bookService.getSuggestBookFromCart(userDetails.getUser().getId()));
+    }
+
     @GetMapping("top-book")
     public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopBooks(){
         return ResponseEntity.ok(bookService.getTopBooks());

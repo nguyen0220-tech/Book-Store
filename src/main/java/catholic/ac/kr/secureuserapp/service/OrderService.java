@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final ReviewRepository reviewRepository;
     private final NotificationService notificationService;
+    private final PointRepository pointRepository;
 
     @Transactional
     public ApiResponse<OrderDTO> checkout(Long userId, OrderRequest request) {
@@ -48,17 +50,6 @@ public class OrderService {
         if (cartItems.isEmpty()) {
             return ApiResponse.error("Cart is empty");
         }
-
-        //total price
-//        BigDecimal total = BigDecimal.ZERO;
-//        for (CartItem item : cartItems) {
-//            if (item.getBook().getSalePrice() == null) {
-//                total = total.add(item.getBook().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-//            }
-//            if (item.getBook().getSalePrice() != null) {
-//                total = total.add(item.getBook().getSalePrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-//            }
-//        }
 
         BigDecimal total = cartItems.stream()
                 .map(item -> {
@@ -87,12 +78,35 @@ public class OrderService {
             return ApiResponse.error("Tên không hợp lệ");
         }
 
+        boolean checkUsePoint = checkUsePoint(request.getUsePoint() == null ?
+                null : request.getUsePoint().toString()); //true
+        if (!checkUsePoint) {
+            return ApiResponse.error("Point không hợp lệ");
+        }
+
+        Point point = pointRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Point not found"));
+
+        if (request.getUsePoint() != null && request.getUsePoint().compareTo(BigDecimal.ZERO) > 0) {
+            if (point.getPoint().compareTo(request.getUsePoint()) < 0) {
+                return ApiResponse.error("Không đủ point");
+            }
+
+            finalTotal = applyPoint(finalTotal, request.getUsePoint(), userId);
+
+            point.setPoint(point.getPoint().subtract(request.getUsePoint()));
+            point.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        }
+
+        BigDecimal pointHoard = finalTotal.multiply(BigDecimal.valueOf(0.01)); //cộng 1% giá trị đơn hàng vào điểm tích lũy
+
         Order order = new Order();
         order.setUser(cart.getUser());
         order.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         order.setStatus(OrderStatus.PENDING);
         order.setTotalPrice(finalTotal);
         order.setTotalDiscount(total.subtract(finalTotal));
+        order.setPointHoard(pointHoard);
         order.setShippingAddress(request.getShippingAddress());
         order.setRecipientName(request.getRecipientName());
         order.setRecipientPhone(request.getRecipientPhone());
@@ -131,6 +145,11 @@ public class OrderService {
 
         cartItemRepository.deleteAll(cartItems);
 
+        point.setPoint(point.getPoint().add(pointHoard));
+        point.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+        pointRepository.save(point);
+
         return ApiResponse.success("Order successfully", orderMapper.toOrderDTO(order));
     }
 
@@ -145,6 +164,14 @@ public class OrderService {
             }
         }
         return true;
+    }
+
+    //regex
+    private boolean checkUsePoint(String usePoint) {
+        if (usePoint == null || usePoint.isEmpty()) {
+            return true;
+        }
+        return usePoint.matches("\\d+");
     }
 
     private boolean checkRecipientName(String name) {
@@ -192,6 +219,22 @@ public class OrderService {
 
         return total.subtract(discount);
     }
+
+
+    private BigDecimal applyPoint(BigDecimal total, BigDecimal usePoint, Long userId) {
+        Optional<Point> point = pointRepository.findByUserId(userId);
+
+        if (point.isEmpty()) {
+            throw new RuntimeException("Chưa có point");
+        }
+
+        if (usePoint.compareTo(point.get().getPoint()) > 0) {
+            throw new RuntimeException("Không đủ point");
+        }
+
+        return total.subtract(usePoint);
+    }
+
 
     public ApiResponse<Page<OrderDTO>> getOrderByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());

@@ -145,6 +145,7 @@ async function placeOrder() {
     const shippingAddress = document.getElementById("shippingAddress").value.trim();
     const note = document.getElementById("note").value.trim();
     const couponCode = document.getElementById("couponCode").value.trim();
+    const usePoint = document.getElementById("usePoint").value.trim();
 
     if (!recipientName || !recipientPhone || !shippingAddress) {
         alert("❗ Vui lòng nhập đầy đủ thông tin giao hàng");
@@ -156,7 +157,8 @@ async function placeOrder() {
         recipientPhone,
         shippingAddress,
         note,
-        couponCode
+        couponCode,
+        usePoint
     };
 
     try {
@@ -223,7 +225,111 @@ function fillFriendInfo(index) {
 }
 window.fillFriendInfo=fillFriendInfo
 
+async function loadSuggestFromCart() {
+    try {
+        const res = await fetch(`${API_BASE}/book/suggest-from-cart`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const books = result.data || [];
+            if (books.length === 0) {
+                document.getElementById("suggestContainer").innerHTML =
+                    "<p>❌ Không có sách gợi ý</p>";
+                return;
+            }
+
+            const html = `
+                <div class="suggest-grid">
+                    ${books.map(b => `
+                        <div class="suggest-card">
+                            <img src="${b.imgUrl}" alt="${b.title}" />
+                            <h3>${b.title}</h3>
+                            <p>
+                                ${b.salePrice && b.salePrice < b.price
+                ? `<span style="text-decoration: line-through; color: gray;">
+                                           ${b.price.toLocaleString()}₩
+                                       </span>
+                                       <br/>
+                                       <span style="color: red; font-weight: bold;">
+                                           ${b.salePrice.toLocaleString()}₩
+                                       </span>`
+                : `${b.price.toLocaleString()}₩`
+            }
+                            </p>
+                            <button onclick="addToCart(${b.bookId})">🛒 Thêm vào giỏ</button>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+
+            document.getElementById("suggestContainer").innerHTML = html;
+
+        } else {
+            alert(result.message || "Không thể tải sách gợi ý");
+        }
+
+    } catch (err) {
+        alert("Lỗi server khi tải gợi ý: " + err.message);
+    }
+}
+
+async function addToCart(bookId, quantity = 1) {
+    try {
+        const res = await fetch(`${API_BASE}/cart/items`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                bookId,
+                quantity
+            })
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            alert("✅ " + result.message);
+            await loadCart();
+            await loadSuggestFromCart();
+        } else {
+            alert("❌ " + (result.message || "Thêm sách thất bại"));
+        }
+
+    } catch (err) {
+        alert("⚠️ Lỗi server: " + err.message);
+    }
+}
+window.addToCart = addToCart;
+
+async function loadPoint() {
+    try {
+        const res = await fetch(`${API_BASE}/points`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const point = result.data.point || 0;
+            document.getElementById("pointBalance").textContent =
+                `⭐ Điểm hiện có: ${point.toLocaleString()} P`;
+        } else {
+            document.getElementById("pointBalance").textContent = "⭐ Điểm hiện có: 0 P";
+        }
+
+    } catch (err) {
+        console.error("Lỗi khi load point:", err);
+        document.getElementById("pointBalance").textContent = "⭐ Điểm hiện có: 0 P";
+    }
+}
+
+
+
 window.onload = async () => {
     await loadCart();
     await loadFriends();
+    await loadSuggestFromCart();
+    await loadPoint();
 };

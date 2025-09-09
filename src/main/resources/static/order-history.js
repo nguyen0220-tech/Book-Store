@@ -102,6 +102,7 @@ function renderOrders(orders) {
                 🎁 Giảm giá: <span style="color: red;">- ${(order.totalDiscount || 0).toLocaleString()}₩</span><br/>
                 🎟️ Mã coupon: <b>${order.couponCode || "Không dùng"}</b><br/>
                 💳 Thanh toán: <b>${order.totalPrice.toLocaleString()}₩</b><br/>
+                ⭐ Điểm tích luỹ: <b>${(order.pointHoard || 0).toLocaleString()} P</b><br/>
                 📦 Trạng thái: ${order.orderStatus}<br/>
                 <button onclick="downloadInvoice(${order.orderId})"
                 style="margin-top: 10px; color: white; background-color: green; border: none; padding: 5px 10px; border-radius: 5px;">

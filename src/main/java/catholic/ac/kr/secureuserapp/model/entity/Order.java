@@ -35,6 +35,8 @@ public class Order {
 
     private BigDecimal totalDiscount;
 
+    private BigDecimal pointHoard; //điểm tích lũy
+
     @Enumerated(EnumType.STRING) // ánh xạ enum sang String trong DB
     @Column(nullable = false)
     private OrderStatus status;
