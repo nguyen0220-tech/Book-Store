@@ -36,7 +36,8 @@ async function fetchOrderHistory(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
-window.fetchOrderHistory=fetchOrderHistory
+
+window.fetchOrderHistory = fetchOrderHistory
 
 function renderPagination(totalPages, currentPage) {
     const paginationDiv = document.getElementById("pagination");
@@ -79,8 +80,8 @@ async function deleteOrder(orderId) {
         alert("Lỗi khi xoá đơn hàng: " + err.message);
     }
 }
-window.deleteOrder=deleteOrder
 
+window.deleteOrder = deleteOrder
 
 function renderOrders(orders) {
     const container = document.getElementById("orderList");
@@ -93,46 +94,58 @@ function renderOrders(orders) {
     let html = "";
 
     for (const order of orders) {
+        const hasDiscount = (order.totalDiscount || 0) > 0;
+
         html += `
         <div class="order-card">
             <div class="order-header">
                 🧾 Đơn hàng #${order.orderId}<br/>
                 ⏰ Ngày: ${formatDate(order.orderDate)}<br/>
-                💸 Tổng đơn (trước giảm): <s>${(order.totalPrice + (order.totalDiscount || 0)).toLocaleString()}₩</s><br/>
-                🎁 Giảm giá: <span style="color: red;">- ${(order.totalDiscount || 0).toLocaleString()}₩</span><br/>
+                ${order.totalDefaultPrice > order.totalPrice
+            ? `💸 Tổng đơn (trước giảm): <s>${(order.totalDefaultPrice).toLocaleString()}₩</s><br/>`
+            : ""}
+                ${hasDiscount
+            ? `🎁 Giảm giá (Coupon+Point): <span style="color: red;">- ${order.totalDiscount.toLocaleString()}₩</span><br/>`
+            : ""}
                 🎟️ Mã coupon: <b>${order.couponCode || "Không dùng"}</b><br/>
                 💳 Thanh toán: <b>${order.totalPrice.toLocaleString()}₩</b><br/>
+                🔻 Điểm đã sử dụng: <b style="color:red;">${(order.pointUsage || 0).toLocaleString()} P</b><br/>
                 ⭐ Điểm tích luỹ: <b>${(order.pointHoard || 0).toLocaleString()} P</b><br/>
                 📦 Trạng thái: ${order.orderStatus}<br/>
                 <button onclick="downloadInvoice(${order.orderId})"
-                style="margin-top: 10px; color: white; background-color: green; border: none; padding: 5px 10px; border-radius: 5px;">
-                📄 Xem hoá đơn PDF
-            </button>
+                    style="margin-top: 10px; color: white; background-color: green; border: none; padding: 5px 10px; border-radius: 5px;">
+                    📄 Xem hoá đơn PDF
+                </button>
                 <button onclick="deleteOrder(${order.orderId})" style="margin-top: 10px; color: white; background-color: red; border: none; padding: 5px 10px; border-radius: 5px;">❌ Xoá đơn</button>
             </div>
         `;
 
         for (const item of order.items) {
+            const hasSale = item.salePrice > 0 && item.salePrice < item.price;
+
             html += `
-        <div class="order-item">
-            📚 <b>${item.title}</b><br/>
-            <img src="${item.imgUrl}" style="max-width:60px;" /> x ${item.quantity} cuốn - Giá: ${item.price.toLocaleString()}₩
-    `;
+            <div class="order-item">
+                📚 <b>${item.title}</b><br/>
+                <img src="${item.imgUrl}" style="max-width:60px;" /> x ${item.quantity} cuốn - 
+                Giá: 
+                ${hasSale
+                ? `<s>${item.price.toLocaleString()}₩</s> <span style="color:red;">${item.salePrice.toLocaleString()}₩</span>`
+                : `${item.price.toLocaleString()}₩`}
+            `;
 
             if (!item.reviewed) {
                 html += `
-            <div style="margin-top: 10px;">
-                <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
-                <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
-            </div>
-        `;
+                <div style="margin-top: 10px;">
+                    <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
+                    <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
+                </div>
+                `;
             } else {
                 html += `<p style="color: green; margin-top: 10px;">✅ Bạn đã đánh giá sách này</p>`;
             }
 
             html += `</div>`; // close .order-item
         }
-
 
         html += `</div>`; // close order-card
     }
@@ -176,7 +189,8 @@ async function submitReview(bookId, orderId) {
         alert("Lỗi server: " + err.message);
     }
 }
-window.submitReview=submitReview
+
+window.submitReview = submitReview
 
 function formatDate(timestamp) {
     const date = new Date(timestamp);
@@ -206,4 +220,5 @@ async function downloadInvoice(orderId) {
         alert("Lỗi khi tải hoá đơn: " + err.message);
     }
 }
-window.downloadInvoice=downloadInvoice
+
+window.downloadInvoice = downloadInvoice

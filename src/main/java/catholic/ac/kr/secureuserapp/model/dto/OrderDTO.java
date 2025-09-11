@@ -16,11 +16,15 @@ public class OrderDTO {
 
     private String orderUsername;
 
-    private double totalPrice;
+    private BigDecimal totalDefaultPrice;
 
-    private BigDecimal totalDiscount;
+    private double totalPrice; //tong gia sau khi da giam gia
+
+    private BigDecimal totalDiscount; //tong giam gia
 
     private BigDecimal pointHoard;
+
+    private BigDecimal pointUsage;
 
     private Timestamp orderDate;
 

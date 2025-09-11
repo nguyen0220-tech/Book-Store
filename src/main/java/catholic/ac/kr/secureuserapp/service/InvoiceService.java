@@ -50,10 +50,10 @@ public class InvoiceService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItem item: order.getOrderItems()){
-            total = total.add(item.getPrice());
+            total = total.add(item.getBook().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         document.add(new Paragraph("Total amount: " + total + "won"));
-        document.add(new Paragraph("Discount as Coupon:" + order.getTotalDiscount() + "won"));
+        document.add(new Paragraph("Discount as Coupon/Point:" + order.getTotalDiscount() + "won"));
         document.add(new Paragraph("Amount payable: " + order.getTotalPrice() + "won"));
 
         document.close();
@@ -75,15 +75,21 @@ public class InvoiceService {
     }
 
     private static PdfPTable getPdfPTable(Order order) {
-        PdfPTable table = new PdfPTable(4); //so cột
+        PdfPTable table = new PdfPTable(5); //so cột
         table.addCell("Name");
         table.addCell("Price");
+        table.addCell("Sale Price");
         table.addCell("Quantity");
-        table.addCell("Price x Quantity");
+        table.addCell("Total Amount");
 
         for (OrderItem item : order.getOrderItems()) {
             table.addCell(item.getBook().getTitle());
-            table.addCell(item.getPrice().toString());
+            table.addCell(item.getBook().getPrice().toString());
+            if (item.getBook().getPrice().compareTo(item.getPrice()) == 0){
+                table.addCell("");
+            }
+            else
+                table.addCell(item.getPrice().toString());
             table.addCell(String.valueOf(item.getQuantity()));
             table.addCell((item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))).toString());
         }

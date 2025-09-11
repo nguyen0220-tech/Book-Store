@@ -47,8 +47,8 @@ public class CouponController {
     }
 
     @PutMapping("{code}")
-    public ResponseEntity<ApiResponse<CouponDTO>> updateCoupon(@PathVariable String code, @RequestBody CouponDTO couponDTO) {
-        return ResponseEntity.ok(couponService.updateCoupon(code, couponDTO));
+    public ResponseEntity<ApiResponse<CouponDTO>> updateCoupon(@PathVariable String code, @RequestBody CouponRequest request) {
+        return ResponseEntity.ok(couponService.updateCoupon(code, request));
     }
 
     @DeleteMapping("{code}")

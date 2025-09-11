@@ -9,14 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserId(Long userId,Pageable pageable);
 
-
-    Page<Order> findAll(Pageable pageable);
+//    Page<Order> findAll(Pageable pageable);
 
     @Query(value = "SELECT o FROM Order o WHERE o.status = :status")
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);

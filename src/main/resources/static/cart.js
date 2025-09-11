@@ -325,7 +325,70 @@ async function loadPoint() {
     }
 }
 
+let currentPointPage = 0;
+const pointPageSize = 5;
 
+async function loadPointHistory(page = 0, size = pointPageSize) {
+    try {
+        const res = await fetch(`${API_BASE}/points/history?page=${page}&size=${size}`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const history = result.data.content || [];
+            const totalPages = result.data.totalPages;
+            currentPointPage = result.data.number;
+
+            if (history.length === 0) {
+                document.getElementById("pointHistoryContainer").innerHTML =
+                    "<p>❌ Chưa có lịch sử point</p>";
+                document.getElementById("pointHistoryPagination").innerHTML = "";
+                return;
+            }
+
+            // Bảng hiển thị lịch sử
+            const html = `
+                <table border="1" cellspacing="0" cellpadding="5">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Điểm tích lũy</th>
+                            <th>Điểm sử dụng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${history.map(h => `
+                            <tr>
+                                <td>${new Date(h.updatedAt).toLocaleString()}</td>
+                                <td style="color:green;">${h.pointHoard ? h.pointHoard.toLocaleString() : "-"}</td>
+                                <td style="color:red;">${h.pointUsage ? h.pointUsage.toLocaleString() : "-"}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById("pointHistoryContainer").innerHTML = html;
+
+            // Nút phân trang
+            let paginationHtml = `
+                <button ${currentPointPage === 0 ? "disabled" : ""}
+                    onclick="loadPointHistory(${currentPointPage - 1}, ${size})">⬅ Trang trước</button>
+                <span>Trang ${currentPointPage + 1} / ${totalPages}</span>
+                <button ${currentPointPage >= totalPages - 1 ? "disabled" : ""}
+                    onclick="loadPointHistory(${currentPointPage + 1}, ${size})">Trang sau ➡</button>
+            `;
+            document.getElementById("pointHistoryPagination").innerHTML = paginationHtml;
+
+        } else {
+            alert(result.message || "Không thể tải lịch sử point");
+        }
+
+    } catch (err) {
+        alert("⚠️ Lỗi server khi tải lịch sử point: " + err.message);
+    }
+}
+window.loadPointHistory = loadPointHistory;
 
 window.onload = async () => {
     await loadCart();

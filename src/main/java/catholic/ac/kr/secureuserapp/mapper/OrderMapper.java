@@ -23,19 +23,13 @@ public interface OrderMapper {
     @Mapping(source = "coupon.couponCode",target = "couponCode") //Order có: Coupon coupon, Coupon có String couponCode;
     OrderDTO toOrderDTO(Order order);
 
-    @Mapping(target = "user", ignore = true)
-    Order toOrder(OrderDTO orderDTO);
-
     @Mapping(source = "book.id",target = "bookId")
     @Mapping(source = "book.title",target = "title")
     @Mapping(source = "book.price",target = "price")
+    @Mapping(source = "book.salePrice",target = "salePrice")
     @Mapping(source = "book.imgUrl",target = "imgUrl")
     @Mapping(target = "reviewed", ignore = true)
     OrderItemDTO toOrderItemDTO(OrderItem orderItem);
-
-    @Mapping(target = "book",ignore = true)
-    @Mapping(target = "order",ignore = true)
-    OrderItem toOrderItem(OrderItemDTO orderItemDTO);
 
     default Page<OrderDTO>toOrderDTO(Page<Order> orders) {
         List<OrderDTO> dtoList = toOrderDTO(orders.getContent());

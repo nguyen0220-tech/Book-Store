@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.CouponType;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.entity.Coupon;
@@ -19,23 +20,23 @@ public class CouponClaimService {
     private final UserRepository userRepository;
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ApiResponse<String> claimCoupon(Long userId,String couponCode) {
+    public ApiResponse<String> claimCoupon(Long userId, String couponCode) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() ->new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
-                .orElseThrow(() ->new ResourceNotFoundException("Coupon not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
 
-        if (!coupon.isActive() || coupon.getExpired().isBefore(LocalDateTime.now())){
+        if (!coupon.isActive() || coupon.getExpired().isBefore(LocalDateTime.now())) {
             return ApiResponse.error("Coupon expired");
-        }
-
-        else if (coupon.getUsers().contains(user)){
+        } else if (coupon.getUsers().contains(user)) {
             return ApiResponse.error("Coupon already claimed");
-        }
-
-        else if (coupon.getUsageCount() >= coupon.getMaxUsage()){
+        } else if (coupon.getUsageCount() >= coupon.getMaxUsage()) {
             return ApiResponse.error("Coupon exceeded max usage");
+        } else if (coupon.getType() == CouponType.BIRTHDAY) {
+            return ApiResponse.error("Can't claim coupon birthday");
+        } else if (coupon.getType() == CouponType.WELCOME) {
+            return ApiResponse.error("Can't claim coupon welcome");
         }
 
         coupon.getUsers().add(user);

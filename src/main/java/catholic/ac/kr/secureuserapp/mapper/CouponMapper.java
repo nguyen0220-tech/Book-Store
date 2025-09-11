@@ -42,13 +42,13 @@ public class CouponMapper {
         Coupon coupon = new Coupon();
         coupon.setCouponCode(request.getCouponCode());
         coupon.setDiscountAmount(request.getDiscountAmount());
-        coupon.setPercentDiscount(request.isPercentDiscount());
+        coupon.setPercentDiscount(request.getPercentDiscount());
         coupon.setDiscountPercent(request.getDiscountPercent());
-        coupon.setActive(request.isActive());
+        coupon.setActive(request.getActive());
         coupon.setMinimumAmount(request.getMinimumAmount());
         coupon.setDescription(request.getDescription());
         coupon.setExpired(request.getExpired());
-        coupon.setUsage(request.isUsage());
+        coupon.setUsage(request.getUsage());
         coupon.setMaxUsage(request.getMaxUsage());
         coupon.setUsageCount(request.getUsageCount());
 

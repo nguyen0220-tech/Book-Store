@@ -37,7 +37,7 @@ public class ScheduledHandler {
         notificationService.createCouponExpiredNotification();
     }
 
-    @Scheduled(cron ="0 01 16 * * *" )
+    @Scheduled(cron ="0 0 3 * * *" )
     public void giveCouponBirthDate(){couponService.giveCouponToUserBirthDate();}
 
     @Scheduled(cron = "00 53 18 * * *")

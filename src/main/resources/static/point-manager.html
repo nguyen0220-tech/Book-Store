@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16x16.png">
+    <link rel="manifest" href="icon/site.webmanifest">
+    <title>Quản lý Point</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafc;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        a {
+            text-decoration: none;
+            color: #3498db;
+            font-size: 14px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+        }
+        th {
+            background: #3498db;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr:hover {
+            background: #ecf6ff;
+        }
+        #pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #pagination button {
+            margin: 0 4px;
+            padding: 6px 12px;
+            border: none;
+            background: #3498db;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        #pagination button:hover {
+            background: #2980b9;
+        }
+        #pagination button.active {
+            font-weight: bold;
+            background: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h1>📊 Quản lý Point</h1>
+    <a href="home.html">🏠 Quay về Trang chủ</a>
+</div>
+
+<div>
+    <input type="text" id="search-username" placeholder="Nhập username">
+    <button onclick="searchPoint()">🔍 Tìm kiếm</button>
+</div>
+
+
+<table>
+    <thead>
+    <tr>
+        <th>Username</th>
+        <th>Họ và tên</th>
+        <th>Point</th>
+        <th>Cập nhật lần cuối</th>
+    </tr>
+    </thead>
+    <tbody id="point-table">
+    </tbody>
+</table>
+
+<div id="pagination"></div>
+
+<script type="module" src="/auth-utils.js"></script>
+<script type="module" src="/point-manager.js"></script>
+</body>
+</html>

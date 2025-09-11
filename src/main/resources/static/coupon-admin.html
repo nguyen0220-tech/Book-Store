@@ -12,6 +12,11 @@
         body {
             font-family: Arial, sans-serif;
             padding: 2rem;
+            background: #fafafa;
+        }
+
+        h2, h3 {
+            color: #2c3e50;
         }
 
         .form-group {
@@ -21,12 +26,15 @@
         label {
             font-weight: bold;
             display: block;
+            margin-bottom: 0.3rem;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 0.4rem;
             margin-top: 0.2rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         small {
@@ -35,8 +43,17 @@
         }
 
         button {
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
         }
 
         #couponList {
@@ -44,19 +61,27 @@
         }
 
         #couponList div {
-            padding: 0.5rem;
-            border-bottom: 1px solid #ddd;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            background: white;
         }
 
         .actions button {
             margin-left: 0.5rem;
+            background: #e67e22;
+        }
+
+        .actions button:hover {
+            background: #d35400;
         }
 
         .back-button {
             display: inline-block;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background-color: #3498db;
+            background-color: #2ecc71;
             color: white;
             text-decoration: none;
             border-radius: 8px;
@@ -65,11 +90,10 @@
         }
 
         .back-button:hover {
-            background-color: #2980b9;
+            background-color: #27ae60;
         }
 
     </style>
-
 </head>
 <body>
 
@@ -79,44 +103,40 @@
 <form id="couponForm" onsubmit="event.preventDefault(); submitCoupon()">
 
     <div class="form-group">
-        <label for="couponCode">Mã Coupon (Mã nay khi tạo/cập nhật coupon hệ thống sẽ tự động nhập nên không cần điền trực tiếp)</label>
-        <input id="couponCode" />
+        <label for="couponCode">Mã Coupon</label>
+        <input id="couponCode" placeholder="Tự động khi tạo/cập nhật" disabled />
+    </div>
+
+    <div class="form-group">
+        <label for="discountAmount">Giảm giá cố định (₩)</label>
+        <input id="discountAmount" type="number"/>
+        <small>Ví dụ: nhập 5000 sẽ giảm 5,000₩</small>
+    </div>
+
+    <div class="form-group">
+        <label for="discountPercent">Phần trăm giảm (%)</label>
+        <input id="discountPercent" type="number"max="100" />
+        <small>Ví dụ: nhập 10 sẽ giảm 10%</small>
     </div>
 
     <div class="form-group">
         <label>
-            <input id="percentDiscount" type="checkbox" onchange="toggleDiscountType()"/>
-            Sử dụng giảm giá theo phần trăm
+            <input id="percentDiscount" type="checkbox"/>
+            Áp dụng giảm theo %
         </label>
-        <small>Nếu bật, hệ thống sẽ dùng phần trăm thay vì giảm số tiền cố định.</small>
-    </div>
-
-    <div class="form-group" id="fixedDiscountGroup">
-        <label for="discountAmount">Giảm giá cố định (₩)</label>
-        <input id="discountAmount" type="number" min="0" value="0"/>
-        <small>Ví dụ: nhập 5000 sẽ giảm 5,000₩</small>
-    </div>
-
-    <div class="form-group" id="percentDiscountGroup" style="display:none">
-        <label for="discountPercent">Phần trăm giảm (%)</label>
-        <input id="discountPercent" type="number" min="0" max="100" value="0"/>
-        <small>Ví dụ: nhập 10 sẽ giảm 10%</small>
     </div>
 
     <div class="form-group">
         <label for="minimumAmount">Số tiền tối thiểu để áp dụng (₩)</label>
         <input id="minimumAmount" type="number" min="0" value="0"/>
-        <small>Đơn hàng cần đạt mức này để dùng coupon</small>
     </div>
 
     <div class="form-group">
         <label>
             <input id="active" type="checkbox" checked />
-            Kích hoạt coupon (active)?
+            Kích hoạt coupon
         </label>
-        <small>Nếu bỏ chọn, coupon sẽ không được áp dụng kể cả khi chưa hết hạn</small>
     </div>
-
 
     <div class="form-group">
         <label for="description">Mô tả</label>
@@ -131,9 +151,8 @@
     <div class="form-group">
         <label>
             <input id="usage" type="checkbox"/>
-            Coupon dùng được nhiều lần?
+            Coupon dùng nhiều lần
         </label>
-        <small>Nếu chọn, coupon có thể dùng nhiều lần (tuỳ theo số lượng)</small>
     </div>
 
     <div class="form-group">
@@ -149,24 +168,27 @@
     <button type="submit">💾 Lưu Coupon</button>
 </form>
 
+<hr>
+
 <div class="form-group">
-    <label for="searchCouponCode">Tìm Coupon theo mã</label>
+    <label for="searchCouponCode">🔍 Tìm Coupon theo mã</label>
     <input id="searchCouponCode" placeholder="Nhập mã coupon cần tìm..." />
-    <button type="button" onclick="searchCoupon()">🔍 Tìm</button>
+    <button type="button" onclick="searchCoupon()">Tìm</button>
 </div>
 
 <div class="form-group">
-    <label for="filterActive">Lọc theo trạng thái</label>
+    <label for="filterActive">📌 Lọc theo trạng thái</label>
     <select id="filterActive" onchange="filterCoupons()">
         <option value="">-- Tất cả --</option>
         <option value="true">✅ Active</option>
         <option value="false">❌ Inactive</option>
     </select>
-    <button type="button" onclick="loadCoupons()">🔄 Tải lại tất cả</button>
+    <button type="button" onclick="loadCoupons()">Tải lại</button>
 </div>
 
 <h3>📋 Danh sách Coupon</h3>
 <div id="couponList"></div>
+
 <script type="module" src="/auth-utils.js"></script>
 <script type="module" src="coupon-admin.js"></script>
 

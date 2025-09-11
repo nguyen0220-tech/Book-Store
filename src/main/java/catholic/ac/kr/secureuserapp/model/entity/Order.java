@@ -30,6 +30,8 @@ public class Order {
     @JoinColumn(name = "coupon_code")
     private Coupon coupon;
 
+    private BigDecimal pointUsage;
+
     @Column(nullable = false)
     private BigDecimal totalPrice;
 

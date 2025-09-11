@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.CouponType;
 import catholic.ac.kr.secureuserapp.Status.NotificationType;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.CouponMapper;
@@ -144,6 +145,7 @@ public class CouponService {
             coupon.setMaxUsage(1);
             coupon.setUsageCount(0);
             coupon.setUsers(new HashSet<>(Set.of(user)));
+            coupon.setType(CouponType.BIRTHDAY);
 
             couponRepository.save(coupon);
 
@@ -164,20 +166,20 @@ public class CouponService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<CouponDTO> updateCoupon(String code, CouponDTO couponDTO) {
+    public ApiResponse<CouponDTO> updateCoupon(String code, CouponRequest request) {
         Coupon coupon = couponRepository.findByCouponCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Coupon Not Found"));
 
-        coupon.setDiscountAmount(couponDTO.getDiscountAmount());
-        coupon.setPercentDiscount(couponDTO.isPercentDiscount());
-        coupon.setDiscountPercent(couponDTO.getDiscountPercent());
-        coupon.setMinimumAmount(couponDTO.getMinimumAmount());
-        coupon.setActive(couponDTO.isActive());
-        coupon.setDescription(couponDTO.getDescription());
-        coupon.setExpired(couponDTO.getExpired());
-        coupon.setUsage(couponDTO.isUsage());
-        coupon.setMaxUsage(couponDTO.getMaxUsage());
-        coupon.setUsageCount(couponDTO.getUsageCount());
+        coupon.setDiscountAmount(request.getDiscountAmount());
+        coupon.setPercentDiscount(request.getPercentDiscount());
+        coupon.setDiscountPercent(request.getDiscountPercent());
+        coupon.setMinimumAmount(request.getMinimumAmount());
+        coupon.setActive(request.getActive());
+        coupon.setDescription(request.getDescription());
+        coupon.setExpired(request.getExpired());
+        coupon.setUsage(request.getUsage());
+        coupon.setMaxUsage(request.getMaxUsage());
+        coupon.setUsageCount(request.getUsageCount());
 
         couponRepository.save(coupon);
         CouponDTO updatedCouponDTO = CouponMapper.toCouponDTO(coupon);

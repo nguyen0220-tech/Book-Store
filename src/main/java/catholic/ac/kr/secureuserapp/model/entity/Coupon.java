@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
+import catholic.ac.kr.secureuserapp.Status.CouponType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -46,4 +47,7 @@ public class Coupon {
             inverseJoinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id")
     )
     Set<User> users;
+
+    @Enumerated(EnumType.STRING)
+    private CouponType type;
 }

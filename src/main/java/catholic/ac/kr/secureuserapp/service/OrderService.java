@@ -107,6 +107,7 @@ public class OrderService {
         order.setTotalPrice(finalTotal);
         order.setTotalDiscount(total.subtract(finalTotal));
         order.setPointHoard(pointHoard);
+        order.setPointUsage(request.getUsePoint());
         order.setShippingAddress(request.getShippingAddress());
         order.setRecipientName(request.getRecipientName());
         order.setRecipientPhone(request.getRecipientPhone());
@@ -239,8 +240,35 @@ public class OrderService {
     public ApiResponse<Page<OrderDTO>> getOrderByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Order> orders = orderRepository.findByUserId(userId, pageable);
+
+//        for (Order order : orders) {
+//            BigDecimal totalOrder = BigDecimal.ZERO;
+//            BigDecimal totalDiscount = BigDecimal.ZERO;
+//
+//            for (OrderItem item : order.getOrderItems()) {
+//                BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
+//                // Tổng giá sau khi đã giảm
+//                totalOrder = totalOrder.add(item.getPrice().multiply(quantity));
+//                totalOrder = totalOrder.subtract(item.getOrder().getTotalDiscount());
+//
+//                // Tổng discount
+//                if (item.getBook().getSalePrice() != null &&
+//                        item.getBook().getSalePrice().compareTo(item.getBook().getPrice()) < 0) {
+//                    totalDiscount = totalDiscount.add(
+//                            (item.getBook().getPrice().subtract(item.getBook().getSalePrice()))
+//                                    .multiply(quantity)
+//                    );
+//                }
+//                totalDiscount = totalDiscount.add(item.getOrder().getTotalDiscount());
+//            }
+//
+//            order.setTotalPrice(totalOrder);
+//            order.setTotalDiscount(totalDiscount);
+//        }
+
         Page<OrderDTO> orderDTOS = orders.map(order -> {
             OrderDTO orderDTO = orderMapper.toOrderDTO(order);
+            BigDecimal totalDefaultPrice = BigDecimal.ZERO;
             for (OrderItemDTO itemDTO : orderDTO.getItems()) {
                 boolean reviewed = reviewRepository.existsByUserIdAndBookIdAndOrderId(
                         userId,
@@ -251,6 +279,11 @@ public class OrderService {
                 if (reviewed) {
                     itemDTO.setReviewed(true);
                 }
+                totalDefaultPrice = totalDefaultPrice.add(
+                        BigDecimal.valueOf(itemDTO.getPrice())
+                                .multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
+                orderDTO.setTotalDefaultPrice(totalDefaultPrice);
+
             }
             return orderDTO;
         });

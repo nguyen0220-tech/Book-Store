@@ -31,7 +31,7 @@ async function loadCoupons() {
                         📝 <i>${c.description || "Không có mô tả"}</i>
                         <div class="actions" style="margin-top: 0.3rem;">
                             <button onclick="editCoupon('${c.couponCode}')">✏️ Sửa</button>
-                            <button onclick="deleteCoupon('${c.couponCode}')">❌ Xoá</button>
+                            <button onclick="deleteCoupon('${c.couponCode}')">❌ Vô hiệu hóa</button>
                         </div>
                     </div>
                 `;
@@ -93,46 +93,101 @@ async function searchCoupon() {
 window.searchCoupon = searchCoupon;
 
 async function submitCoupon() {
+    const discountPercentValue = document.getElementById("discountPercent").value;
+    const discountAmountValue = document.getElementById("discountAmount").value;
+    const minimumAmountValue = document.getElementById("minimumAmount").value;
+    const maxUsageValue = document.getElementById("maxUsage").value;
+    const usageCountValue = document.getElementById("usageCount").value;
+
     const request = {
         couponCode: document.getElementById("couponCode").value.trim(),
-        discountAmount: parseFloat(document.getElementById("discountAmount").value),
+        discountAmount: discountAmountValue === "" ? null : parseFloat(discountAmountValue),
         percentDiscount: document.getElementById("percentDiscount").checked,
-        discountPercent: parseFloat(document.getElementById("discountPercent").value),
-        minimumAmount: parseFloat(document.getElementById("minimumAmount").value),
+        discountPercent: discountPercentValue === "" ? null : parseFloat(discountPercentValue),
+        minimumAmount: minimumAmountValue === "" ? null : parseFloat(minimumAmountValue),
         active: document.getElementById("active").checked,
         description: document.getElementById("description").value.trim(),
-        expired: document.getElementById("expired").value + ":00",
+        expired: document.getElementById("expired").value
+            ? document.getElementById("expired").value + ":00"
+            : null,
         usage: document.getElementById("usage").checked,
-        maxUsage: parseInt(document.getElementById("maxUsage").value),
-        usageCount: parseInt(document.getElementById("usageCount").value)
+        maxUsage: maxUsageValue === "" ? null : parseInt(maxUsageValue),
+        usageCount: usageCountValue === "" ? null : parseInt(usageCountValue)
     };
 
-
     const url = editingCode
-        ? `${API_BASE}/coupon/${editingCode}` // update
-        : `${API_BASE}/coupon/add`;           // create
+        ? `${API_BASE}/coupon/${editingCode}`
+        : `${API_BASE}/coupon/add`;
     const method = editingCode ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-        method,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify(request)
-    });
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(request)
+        });
 
-    const data = await res.json();
-    if (data.success) {
-        alert(editingCode ? "✅ Cập nhật thành công" : "✅ Tạo coupon thành công");
-        editingCode = null;
-        document.getElementById("couponForm").reset();
-        loadCoupons();
-    } else {
-        alert(data.message || "Thao tác thất bại");
+        const data = await res.json();
+        if (data.success) {
+            alert(editingCode ? "✅ Cập nhật thành công" : "✅ Tạo coupon thành công");
+            editingCode = null;
+            document.getElementById("couponForm").reset();
+            loadCoupons();
+        } else {
+            alert(data.message || "❌ Thao tác thất bại");
+        }
+    } catch (err) {
+        console.error("Lỗi khi gọi API:", err);
+        alert("⚠️ Không thể kết nối server");
     }
 }
-window.submitCoupon=submitCoupon
+window.submitCoupon = submitCoupon;
+
+
+async function editCoupon(code) {
+    try {
+        const res = await fetch(`${API_BASE}/coupon/code/${code}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            const c = data.data;
+
+            document.getElementById("couponCode").value = c.couponCode || "";
+            document.getElementById("discountAmount").value =
+                c.discountAmount == null ? "" : c.discountAmount;
+            document.getElementById("percentDiscount").checked = !!c.percentDiscount;
+            document.getElementById("discountPercent").value =
+                c.discountPercent == null ? "" : c.discountPercent;
+            document.getElementById("minimumAmount").value =
+                c.minimumAmount == null ? "" : c.minimumAmount;
+            document.getElementById("active").checked = !!c.active;
+            document.getElementById("description").value = c.description || "";
+            document.getElementById("expired").value = c.expired
+                ? c.expired.split(/[.+]/)[0] // bỏ mili-giây và timezone
+                : "";
+            document.getElementById("usage").checked = !!c.usage;
+            document.getElementById("maxUsage").value =
+                c.maxUsage == null ? "" : c.maxUsage;
+            document.getElementById("usageCount").value =
+                c.usageCount == null ? "" : c.usageCount;
+
+            editingCode = c.couponCode;
+            alert(`✏️ Đang chỉnh sửa coupon: ${editingCode}`);
+        } else {
+            alert(data.message || "Không thể tải dữ liệu coupon");
+        }
+    } catch (err) {
+        console.error("Lỗi khi gọi API:", err);
+        alert("⚠️ Không thể kết nối server");
+    }
+}
+window.editCoupon = editCoupon;
+
 
 async function deleteCoupon(code) {
     if (!confirm(`Xoá coupon "${code}"?`)) return;
@@ -149,40 +204,6 @@ async function deleteCoupon(code) {
     }
 }
 window.deleteCoupon=deleteCoupon
-
-async function editCoupon(code) {
-    const res = await fetch(`${API_BASE}/coupon/code/${code}`, {
-        headers: {Authorization: `Bearer ${accessToken}`}
-    });
-    const data = await res.json();
-    if (data.success) {
-        const c = data.data;
-        document.getElementById("couponCode").value = c.couponCode;
-        document.getElementById("discountAmount").value = c.discountAmount || 0;
-        document.getElementById("percentDiscount").checked = c.percentDiscount;
-        toggleDiscountType();
-        document.getElementById("discountPercent").value = c.discountPercent || 0;
-        document.getElementById("minimumAmount").value = c.minimumAmount || 0;
-        document.getElementById("active").checked = c.active;
-        document.getElementById("description").value = c.description || "";
-        document.getElementById("expired").value = c.expired ? c.expired.split(".")[0] : "";
-        document.getElementById("usage").checked = c.usage;
-        document.getElementById("maxUsage").value = c.maxUsage || 0;
-        document.getElementById("usageCount").value = c.usageCount || 0;
-
-        editingCode = c.couponCode;
-        alert(`✏️ Đang chỉnh sửa coupon: ${editingCode}`);
-    } else {
-        alert(data.message || "Không thể tải dữ liệu coupon");
-    }
-}
-window.editCoupon=editCoupon
-
-function toggleDiscountType() {
-    const isPercent = document.getElementById("percentDiscount").checked;
-    document.getElementById("fixedDiscountGroup").style.display = isPercent ? "none" : "block";
-    document.getElementById("percentDiscountGroup").style.display = isPercent ? "block" : "none";
-}
 
 async function filterCoupons() {
     const filterValue = document.getElementById("filterActive").value;
