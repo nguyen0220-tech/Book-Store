@@ -62,7 +62,7 @@ public class BookController {
     public ResponseEntity<ApiResponse<Page<BookDTO>>> getRandomBooks(
             @RequestParam int page,
             @RequestParam int size
-    ){
+    ) {
         return ResponseEntity.ok(bookService.getRandomBooks(page, size));
     }
 
@@ -71,44 +71,44 @@ public class BookController {
             @AuthenticationPrincipal MyUserDetails userDetails,
             @RequestParam int page,
             @RequestParam int size
-            ){
-        return ResponseEntity.ok(bookService.getSuggestBooksFromFriend(userDetails.getUser().getId(), page,size));
+    ) {
+        return ResponseEntity.ok(bookService.getSuggestBooksFromFriend(userDetails.getUser().getId(), page, size));
     }
 
     @GetMapping("paid-many")
-    public ResponseEntity<ApiResponse<List<BookPaidMany>>> getPaidManyBooks(@AuthenticationPrincipal MyUserDetails userDetails){
+    public ResponseEntity<ApiResponse<List<BookPaidMany>>> getPaidManyBooks(@AuthenticationPrincipal MyUserDetails userDetails) {
         return ResponseEntity.ok(bookService.getBooksPaidMany(userDetails.getUser().getId()));
     }
 
     @GetMapping("suggest-from-cart")
-    public ResponseEntity<ApiResponse<List<SuggestBookFromCartDTO>>> getSuggestBookFromCart(@AuthenticationPrincipal MyUserDetails userDetails){
+    public ResponseEntity<ApiResponse<List<SuggestBookFromCartDTO>>> getSuggestBookFromCart(@AuthenticationPrincipal MyUserDetails userDetails) {
         return ResponseEntity.ok(bookService.getSuggestBookFromCart(userDetails.getUser().getId()));
     }
 
     @GetMapping("top-book")
-    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopBooks(){
+    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopBooks() {
         return ResponseEntity.ok(bookService.getTopBooks());
     }
 
     @GetMapping("top-new")
-    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopNewBooks(){
+    public ResponseEntity<ApiResponse<List<TopBookDTO>>> getTopNewBooks() {
         return ResponseEntity.ok(bookService.getTopNewBooks());
     }
 
     @GetMapping("stock-max50")
     public ResponseEntity<ApiResponse<Page<BookStockMax50DTO>>> getBooksStockMax50(
             @RequestParam int page,
-            @RequestParam int size){
-        return ResponseEntity.ok(bookService.getBooksStockMax50(page,size));
+            @RequestParam int size) {
+        return ResponseEntity.ok(bookService.getBooksStockMax50(page, size));
     }
 
     @PostMapping("add")
-    public ResponseEntity<ApiResponse<BookDTO>> createBook(@Valid @RequestBody CreateBookRequest request){
+    public ResponseEntity<ApiResponse<BookDTO>> createBook(@Valid @RequestBody CreateBookRequest request) {
         return ResponseEntity.ok(bookService.createBook(request));
     }
 
     @PostMapping("{id}")
-    public ResponseEntity<ApiResponse<BookDTO>> updateBook(@PathVariable("id") Long id,@RequestBody BookDTO bookDTO){
+    public ResponseEntity<ApiResponse<BookDTO>> updateBook(@PathVariable("id") Long id, @RequestBody BookDTO bookDTO) {
         return ResponseEntity.ok(bookService.updateBook(id, bookDTO));
     }
 
@@ -118,7 +118,22 @@ public class BookController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<ApiResponse<String>> deleteBook(@PathVariable("id") Long id){
+    public ResponseEntity<ApiResponse<String>> deleteBook(@PathVariable("id") Long id) {
         return ResponseEntity.ok(bookService.deleteBook(id));
+    }
+
+    @GetMapping("sale")
+    public ResponseEntity<ApiResponse<Page<BookDTO>>> getBooksHavingASale(
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(bookService.getAllBooksHavingASale(page, size));
+    }
+
+    @GetMapping("deleted")
+    public ResponseEntity<ApiResponse<Page<BookDTO>>> getBooksDeletedByStatus(
+            @RequestParam boolean isDeleted,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(bookService.getAllBooksByStatus(isDeleted, page, size ));
     }
 }

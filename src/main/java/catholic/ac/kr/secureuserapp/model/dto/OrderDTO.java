@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -43,4 +44,8 @@ public class OrderDTO {
     private String note;
 
     private boolean confirmed;
+
+    private boolean deleted;
+
+    private LocalDateTime expiryCancel;
 }

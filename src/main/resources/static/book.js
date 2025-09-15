@@ -1,8 +1,8 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
-let currentPage = 0;
-const pageSize = 5;
-let totalPages = 0;
+// let currentPage = 0;
+// const pageSize = 5;
+// let totalPages = 0;
 let lowStockCurrentPage = 0;
 let lowStockTotalPages = 0;
 
@@ -52,21 +52,44 @@ async function loadBookCount() {
 }
 
 
-async function loadAllBooks(page = 0) {
-    try {
-        const url = new URL(`${API_BASE}/book`);
-        url.searchParams.append("page", page);
-        url.searchParams.append("size", pageSize);
+let currentPage = 0;
+let totalPages = 0;
+const pageSize = 5;
 
+async function loadBooks({ page = 0, filter, title } = {}) {
+    // lấy filter từ select nếu chưa truyền
+    if (!filter) filter = document.getElementById("filterSelect").value;
+
+    let url;
+    if (title && title.trim()) {
+        url = new URL(`${API_BASE}/book/by-title`);
+        url.searchParams.append("title", title.trim());
+    } else if (filter === "sale") {
+        url = new URL(`${API_BASE}/book/sale`);
+    } else if (filter === "deletedTrue") {
+        url = new URL(`${API_BASE}/book/deleted`);
+        url.searchParams.append("isDeleted", "true");
+    } else if (filter === "deletedFalse") {
+        url = new URL(`${API_BASE}/book/deleted`);
+        url.searchParams.append("isDeleted", "false");
+    } else {
+        url = new URL(`${API_BASE}/book`);
+    }
+
+    url.searchParams.append("page", page);
+    url.searchParams.append("size", pageSize);
+
+    try {
         const res = await fetch(url, {
             headers: { "Authorization": `Bearer ${accessToken}` }
         });
         const result = await res.json();
+
         if (res.ok && result.success) {
             showBooks(result.data.content || []);
-            totalPages = result.data.totalPages;
             currentPage = result.data.number;
-            renderPagination();
+            totalPages = result.data.totalPages;
+            renderPagination(() => loadBooks({ filter, title }));
         } else {
             alert(result.message || "Lỗi khi tải sách");
         }
@@ -74,10 +97,11 @@ async function loadAllBooks(page = 0) {
         alert("Lỗi server: " + err.message);
     }
 }
-window.loadAllBooks=loadAllBooks
+window.loadBooks = loadBooks;
+
 window.currentPage=currentPage
 
-function renderPagination(loadFn = loadAllBooks) {
+function renderPagination(loadFn) {
     const container = document.getElementById("paginationControls");
     container.innerHTML = "";
 
@@ -106,7 +130,7 @@ function showBooks(books) {
     const tbody = document.querySelector("#bookTable tbody");
     tbody.innerHTML = "";
     if (books.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='11'>Không có sách nào</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='12'>Không có sách nào</td></tr>";
         return;
     }
     books.forEach(b => {
@@ -117,11 +141,13 @@ function showBooks(books) {
             <td>${b.author}</td>
             <td>${b.price}</td>
             <td>${b.salePrice !== null ? b.salePrice : "-"}</td>
+            <td>${b.saleExpiry !== null ? b.saleExpiry : "-"}</td>
             <td>${b.stock}</td>
             <td>${b.description}</td>
             <td><img src="${b.imgUrl}" alt="${b.title}"/></td>
             <td>${b.categoryId || ""}</td>
             <td>${b.categoryName || ""}</td>
+            <td>${b.deleted ? "✅ Yes" : "❌ No"}</td>
             <td>
                 <button onclick="deleteBook(${b.id})">Xóa</button>
                 <button onclick="editBook(${b.id})">Sửa</button>
@@ -137,6 +163,8 @@ async function addBook() {
     const price = parseFloat(document.getElementById("addPrice").value);
     const salePriceInput = document.getElementById("addSalePrice").value;
     const salePrice = salePriceInput ? parseFloat(salePriceInput) : null;
+    const saleExpiryInput = document.getElementById("addSaleExpiry").value;
+    const saleExpiry = saleExpiryInput ? saleExpiryInput : null;
     const stock = parseInt(document.getElementById("addStock").value);
     const description = document.getElementById("addDescription").value.trim();
     const imgUrl = document.getElementById("addImgUrl").value.trim();
@@ -152,6 +180,9 @@ async function addBook() {
     if (salePrice !== null && !isNaN(salePrice)) {
         body.salePrice = salePrice;
     }
+    if (saleExpiry) {
+        body.saleExpiry = saleExpiry;
+    }
 
     try {
         const res = await fetch(`${API_BASE}/book/add`, {
@@ -165,7 +196,7 @@ async function addBook() {
         const result = await res.json();
         if (res.ok && result.success) {
             alert("Thêm sách thành công");
-            loadAllBooks(currentPage);
+            loadBooks(currentPage);
             clearAddForm();
         } else {
             document.getElementById("addBookMessage").textContent = result.message || "Lỗi khi thêm sách";
@@ -174,13 +205,14 @@ async function addBook() {
         document.getElementById("addBookMessage").textContent = "Lỗi server: " + err.message;
     }
 }
-window.addBook=addBook
+window.addBook = addBook;
 
 function clearAddForm() {
     document.getElementById("addTitle").value = "";
     document.getElementById("addAuthor").value = "";
     document.getElementById("addPrice").value = "";
     document.getElementById("addSalePrice").value = "";
+    document.getElementById("addSaleExpiry").value = "";
     document.getElementById("addStock").value = "";
     document.getElementById("addDescription").value = "";
     document.getElementById("addImgUrl").value = "";
@@ -197,7 +229,7 @@ async function deleteBook(id) {
         const result = await res.json();
         if (res.ok && result.success) {
             alert("Xóa sách thành công");
-            loadAllBooks(currentPage);
+            loadBooks(currentPage);
         } else {
             alert(result.message || "Lỗi khi xóa sách");
         }
@@ -225,12 +257,16 @@ function editBook(id) {
                 if (isNaN(price)) return alert("Giá không hợp lệ");
                 const salePrice = prompt("Sale Price:", book.salePrice ?? "");
                 if (salePrice && isNaN(salePrice)) return alert("Sale Price không hợp lệ");
+                const saleExpiry = prompt("Sale Expiry (yyyy-MM-dd):", book.saleExpiry ?? "");
+                if (saleExpiry && !/^\d{4}-\d{2}-\d{2}$/.test(saleExpiry)) return alert("Sale Expiry không hợp lệ (yyyy-MM-dd)");
                 const stock = prompt("Stock:", book.stock);
                 if (isNaN(stock)) return alert("Stock không hợp lệ");
                 const description = prompt("Description:", book.description);
                 const imgUrl = prompt("Image URL:", book.imgUrl);
                 const categoryId = parseInt(prompt("Category ID:", book.categoryId));
                 if (isNaN(categoryId)) return alert("Category ID không hợp lệ");
+                const deletedInput = prompt("Deleted? (true/false):", book.deleted);
+                const deleted = deletedInput === "true";
 
                 const updatedBook = {
                     id,
@@ -238,10 +274,12 @@ function editBook(id) {
                     author,
                     price: parseFloat(price),
                     salePrice: salePrice ? parseFloat(salePrice) : null,
+                    saleExpiry: saleExpiry ? saleExpiry : null,
                     stock: parseInt(stock),
                     description,
                     imgUrl,
-                    categoryId
+                    categoryId,
+                    deleted
                 };
 
                 fetch(`${API_BASE}/book/${id}`, {
@@ -256,7 +294,7 @@ function editBook(id) {
                     .then(res => {
                         if (res.success) {
                             alert("Cập nhật sách thành công");
-                            loadAllBooks(currentPage);
+                            loadBooks(currentPage);
                             loadLowStockBooks(lowStockCurrentPage);
                         } else {
                             alert(res.message || "Lỗi khi cập nhật sách");
@@ -273,35 +311,10 @@ window.editBook=editBook
 
 async function searchBooksByTitle(page = 0) {
     const title = document.getElementById("searchTitleInput").value.trim();
-    if (!title) {
-        loadAllBooks(); // fallback nếu rỗng
-        return;
-    }
-
-    try {
-        const url = new URL(`${API_BASE}/book/by-title`);
-        url.searchParams.append("page", page);
-        url.searchParams.append("size", pageSize);
-        url.searchParams.append("title", title);
-
-        const res = await fetch(url, {
-            headers: { "Authorization": `Bearer ${accessToken}` }
-        });
-
-        const result = await res.json();
-        if (res.ok && result.success) {
-            showBooks(result.data.content || []);
-            totalPages = result.data.totalPages;
-            currentPage = result.data.number;
-            renderPagination(() => searchBooksByTitle); // truyền callback tìm kiếm lại
-        } else {
-            alert(result.message || "Không tìm thấy sách phù hợp");
-        }
-    } catch (err) {
-        alert("Lỗi server: " + err.message);
-    }
+    loadBooks({ page, title });
 }
-window.searchBooksByTitle=searchBooksByTitle
+window.searchBooksByTitle = searchBooksByTitle;
+
 
 async function loadLowStockBooks(page = 0) {
     try {
@@ -381,5 +394,5 @@ function renderLowStockPagination() {
 }
 
 loadBookCount()
-loadAllBooks();
+loadBooks(currentPage);
 loadLowStockBooks(0)

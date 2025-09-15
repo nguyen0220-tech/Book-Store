@@ -53,32 +53,44 @@
         tr:hover {
             background: #ecf6ff;
         }
-        #pagination {
+
+        /* ---- Pagination chung ---- */
+        #pagination-points, #pagination-rank {
             margin-top: 20px;
             text-align: center;
         }
-        #pagination button {
+
+        #pagination-points button, #pagination-rank button {
             margin: 0 4px;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border: none;
             background: #3498db;
             color: white;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s ease-in-out;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        #pagination button:hover {
+
+        #pagination-points button:hover,
+        #pagination-rank button:hover {
             background: #2980b9;
+            transform: translateY(-2px);
         }
-        #pagination button.active {
-            font-weight: bold;
+
+        #pagination-points button:disabled,
+        #pagination-rank button:disabled {
             background: #2ecc71;
+            font-weight: bold;
+            cursor: default;
+            transform: none;
         }
     </style>
 </head>
 <body>
 <div>
-    <h1>📊 Quản lý Point</h1>
+    <h1>📊 Quản lý Point-Rank</h1>
     <a href="home.html">🏠 Quay về Trang chủ</a>
 </div>
 
@@ -86,7 +98,6 @@
     <input type="text" id="search-username" placeholder="Nhập username">
     <button onclick="searchPoint()">🔍 Tìm kiếm</button>
 </div>
-
 
 <table>
     <thead>
@@ -100,10 +111,24 @@
     <tbody id="point-table">
     </tbody>
 </table>
+<div id="pagination-points"></div>
 
-<div id="pagination"></div>
+<h2>🏆 Quản lý Rank</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Username</th>
+        <th>Họ và tên</th>
+        <th>Rank</th>
+        <th>Cập nhật lần cuối</th>
+    </tr>
+    </thead>
+    <tbody id="rank-table">
+    </tbody>
+</table>
+<div id="pagination-rank"></div>
 
 <script type="module" src="/auth-utils.js"></script>
-<script type="module" src="/point-manager.js"></script>
+<script type="module" src="/point-and-rank-manager.js"></script>
 </body>
 </html>

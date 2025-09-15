@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.repository;
 
 import catholic.ac.kr.secureuserapp.Status.OrderStatus;
+import catholic.ac.kr.secureuserapp.model.dto.UserPaymentAmount;
 import catholic.ac.kr.secureuserapp.model.entity.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,9 +10,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    Page<Order> findByUserId(Long userId,Pageable pageable);
+    @Query("""
+            SELECT o FROM Order o WHERE o.user.id = :userId AND o.deleted = :deleted
+            """)
+    Page<Order> findByUserId(@Param("userId") Long userId, Pageable pageable,@Param("deleted") Boolean deleted);
 
 //    Page<Order> findAll(Pageable pageable);
 
@@ -34,4 +40,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             WHERE o.coupon.couponCode = 'WC_STORE' AND o.user.id = :userId
             """)
     boolean existsCouponWelcome(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.UserPaymentAmount(
+            u.username, u.fullName, SUM(o.totalPrice))
+            FROM Order o
+            JOIN User u ON o.user.id = u.id
+            GROUP BY u.username, u.fullName
+            """)
+    List<UserPaymentAmount> getAllUserPaymentAmounts();
 }

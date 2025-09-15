@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -202,10 +203,12 @@ public class BookService {
         book.setAuthor(bookDTO.getAuthor());
         book.setPrice(bookDTO.getPrice());
         book.setSalePrice(newSalePrice);  // <-- set sau khi lấy oldSalePrice
+        book.setSaleExpiry(bookDTO.getSaleExpiry());
         book.setStock(bookDTO.getStock());
         book.setDescription(bookDTO.getDescription());
         book.setImgUrl(bookDTO.getImgUrl());
         book.setCategory(category);
+        book.setDeleted(bookDTO.isDeleted());
 
         Book savedBook = bookRepository.save(book);
 
@@ -236,7 +239,39 @@ public class BookService {
         Book book = bookRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Book not found"));
 
-        bookRepository.delete(book);
+        book.setDeleted(true);
+        bookRepository.save(book);
         return ApiResponse.success("Book deleted from store");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<BookDTO>> getAllBooksHavingASale(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size,Sort.by("salePrice").descending());
+        Page<Book> books = bookRepository.findBookHavingASale(LocalDate.now(), pageable);
+
+        Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
+
+        return ApiResponse.success("All books having a sale", bookDTOS);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<BookDTO>> getAllBooksByStatus(boolean isDeleted, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Book> books = bookRepository.findByDeleted(isDeleted, pageable);
+
+        Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
+
+        return ApiResponse.success("All books from store", bookDTOS);
+    }
+
+    public void resetPriceBook(){
+        List<Book> bookList = bookRepository.findBooksSalePriceExpiry(LocalDate.now());
+
+        for (Book book : bookList) {
+            book.setSalePrice(null);
+            book.setSaleExpiry(null);
+            bookRepository.save(book);
+        }
     }
 }

@@ -337,13 +337,37 @@ async function fetchCommentsForPost(postId) {
         commentDiv.innerHTML = `<p style="color:red;">Không thể tải bình luận.</p>`;
     }
 }
-
-
 fetchUnreadNotificationCount();
 fetchFriendRequestCount();
 
+async function loadMyRank() {
+    try {
+        const response = await fetch(`${API_BASE}/rank/my-rank`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+        if (!response.ok) throw new Error("Không thể lấy rank cá nhân");
+
+        const result = await response.json();
+        if (result.success && result.data) {
+            const rankInfo = `${result.data.username} <${result.data.rank}>`;
+            const rankSpan = document.getElementById("myRankInfo");
+            if (rankSpan) {
+                rankSpan.textContent = rankInfo;
+            }
+        } else {
+            document.getElementById("myRankInfo").textContent = "Chưa có dữ liệu";
+        }
+    } catch (error) {
+        console.error("Lỗi khi load rank cá nhân:", error);
+        const rankSpan = document.getElementById("myRankInfo");
+        if (rankSpan) rankSpan.textContent = "Error";
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts(currentPage);
+    loadMyRank()
     window.addEventListener('scroll', handleScroll);
 });
-

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -60,6 +61,11 @@ public class Order {
 
     private String note;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deleted;
+
     @Column(nullable = false, columnDefinition = "boolean default false") //tạo bảng mới, nếu không truyền giá trị thì mặc định DB sẽ set false
     private boolean confirmed;
+
+    private LocalDateTime expiryCancel;
 }

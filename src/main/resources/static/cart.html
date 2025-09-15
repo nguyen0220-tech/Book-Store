@@ -59,6 +59,10 @@
 <input type="text" id="shippingAddress" placeholder="Địa chỉ giao hàng" required/>
 <input type="text" id="note" placeholder="Ghi chú"/>
 <input type="text" id="couponCode" placeholder="Nhập mã coupon (nếu có)"/>
+<select id="couponSelect" onchange="applyCoupon(this.value)">
+    <option value="">-- Chọn coupon từ danh sách --</option>
+</select>
+
 <input type="text" id="usePoint" placeholder="Point"/>
 <button onclick="placeOrder()">🧾 Đặt hàng</button>
 <select id="friendSelect" onchange="fillFriendInfo(this.value)">

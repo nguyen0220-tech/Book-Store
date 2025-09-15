@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
     Optional<Coupon> findByCouponCode(String couponCode);
 
-    @Query("SELECT c FROM Coupon c JOIN c.users u WHERE u.id = :userId")
+    @Query("SELECT c FROM Coupon c JOIN c.users u WHERE u.id = :userId AND c.active = true")
     List<Coupon> findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.coupon.couponCode = :couponCode AND o.user.id = :userId")

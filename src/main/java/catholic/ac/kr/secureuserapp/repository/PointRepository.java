@@ -27,6 +27,7 @@ public interface PointRepository extends JpaRepository<Point, Long> {
             p.user.username, p.user.fullName, p.point, p.updatedAt)
             FROM Point p
             WHERE p.point > 0
+            ORDER BY p.point DESC
             """)
     Page<PointDTO> findAllPoint(Pageable pageable);
 

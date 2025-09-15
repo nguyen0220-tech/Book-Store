@@ -232,43 +232,58 @@ async function loadSuggestFromCart() {
         });
 
         const result = await res.json();
-        if (res.ok && result.success) {
-            const books = result.data || [];
-            if (books.length === 0) {
-                document.getElementById("suggestContainer").innerHTML =
-                    "<p>❌ Không có sách gợi ý</p>";
-                return;
-            }
+        let books = [];
+        let useRandomId = false; // đánh dấu nếu dùng API random (id khác)
 
-            const html = `
-                <div class="suggest-grid">
-                    ${books.map(b => `
-                        <div class="suggest-card">
-                            <img src="${b.imgUrl}" alt="${b.title}" />
-                            <h3>${b.title}</h3>
-                            <p>
-                                ${b.salePrice && b.salePrice < b.price
+        if (res.ok && result.success) {
+            books = result.data || [];
+        }
+
+        // Nếu không có sách gợi ý từ cart, gọi API random
+        if (!books || books.length === 0) {
+            const randomRes = await fetch(`${API_BASE}/book/random?page=0&size=6`, {
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            const randomResult = await randomRes.json();
+            if (randomRes.ok && randomResult.success) {
+                books = randomResult.data?.content || [];
+                useRandomId = true;
+            }
+        }
+
+        const suggestContainer = document.getElementById("suggestContainer");
+        if (!books || books.length === 0) {
+            suggestContainer.innerHTML = "<p>❌ Không có sách gợi ý</p>";
+            return;
+        }
+
+        const html = `
+            <div class="suggest-grid">
+                ${books.map(b => {
+            const idToUse = useRandomId ? b.id : b.bookId;
+            return `
+                    <div class="suggest-card">
+                        <img src="${b.imgUrl}" alt="${b.title}" />
+                        <h3>${b.title}</h3>
+                        <p>
+                            ${b.salePrice && b.salePrice < b.price
                 ? `<span style="text-decoration: line-through; color: gray;">
-                                           ${b.price.toLocaleString()}₩
-                                       </span>
-                                       <br/>
-                                       <span style="color: red; font-weight: bold;">
-                                           ${b.salePrice.toLocaleString()}₩
-                                       </span>`
+                                    ${b.price.toLocaleString()}₩
+                                  </span>
+                                  <br/>
+                                  <span style="color: red; font-weight: bold;">
+                                    ${b.salePrice.toLocaleString()}₩
+                                  </span>`
                 : `${b.price.toLocaleString()}₩`
             }
-                            </p>
-                            <button onclick="addToCart(${b.bookId})">🛒 Thêm vào giỏ</button>
-                        </div>
-                    `).join("")}
-                </div>
-            `;
-
-            document.getElementById("suggestContainer").innerHTML = html;
-
-        } else {
-            alert(result.message || "Không thể tải sách gợi ý");
-        }
+                        </p>
+                        <button onclick="addToCart(${idToUse})">🛒 Thêm vào giỏ</button>
+                    </div>
+                    `;
+        }).join("")}
+            </div>
+        `;
+        suggestContainer.innerHTML = html;
 
     } catch (err) {
         alert("Lỗi server khi tải gợi ý: " + err.message);
@@ -390,9 +405,59 @@ async function loadPointHistory(page = 0, size = pointPageSize) {
 }
 window.loadPointHistory = loadPointHistory;
 
+async function loadCoupons() {
+    try {
+        const res = await fetch(`${API_BASE}/coupon/user`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            const select = document.getElementById("couponSelect");
+            select.innerHTML = `<option value="">-- Chọn coupon từ danh sách --</option>`;
+
+            result.data.forEach(coupon => {
+                // Hiển thị rõ ràng loại giảm
+                let displayText = `${coupon.couponCode} - ${coupon.description} (`;
+                if (coupon.percentDiscount) {
+                    if (coupon.discountPercent && coupon.discountPercent > 0) {
+                        displayText += `Giảm ${coupon.discountPercent}%`;
+                    } else {
+                        displayText += `Giảm %`;
+                    }
+                } else {
+                    if (coupon.discountAmount && coupon.discountAmount > 0) {
+                        displayText += `Giảm ${coupon.discountAmount.toLocaleString()}₩`;
+                    } else {
+                        displayText += `Giảm cố định`;
+                    }
+                }
+                displayText += `)`;
+
+                const opt = document.createElement("option");
+                opt.value = coupon.couponCode;
+                opt.textContent = displayText;
+                select.appendChild(opt);
+            });
+        } else {
+            console.warn(result.message || "Không thể tải coupon");
+        }
+    } catch (err) {
+        console.error("Lỗi khi load coupon:", err.message);
+    }
+}
+
+function applyCoupon(code) {
+    document.getElementById("couponCode").value = code;
+}
+window.applyCoupon = applyCoupon;
+
 window.onload = async () => {
     await loadCart();
     await loadFriends();
     await loadSuggestFromCart();
     await loadPoint();
+    await loadCoupons()
 };

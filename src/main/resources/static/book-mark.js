@@ -40,12 +40,18 @@ function renderBookmarks(bookmarks) {
                <span style="color:red; font-weight:bold;"> → ${book.salePrice.toLocaleString()}₫</span>`
             : `<b>💰 Price:</b> ${book.price.toLocaleString()}₫`;
 
+        // Hiển thị saleExpiry nếu có
+        const saleExpiryHtml = book.saleExpiry
+            ? `<br/><b>⏳ Sale Expiry:</b> ${book.saleExpiry}`
+            : "";
+
         return `
             <div class="book-card">
                 <div>
                     <b>📖 Title:</b> ${book.title} <br/>
                     <b>✍️ Author:</b> ${book.author} <br/>
-                    ${priceHtml} <br/>
+                    ${priceHtml} 
+                    ${saleExpiryHtml} <br/>
                     <b>📝 Description:</b> ${book.description} <br/>
                     <img src="${book.imgUrl}" alt="${book.title}" style="max-width:100px; max-height:100px;" />
                 </div>
@@ -62,7 +68,6 @@ function renderBookmarks(bookmarks) {
 
     document.getElementById("bookmarkList").innerHTML = html;
 }
-
 
 async function addToCart(bookId) {
     if (!accessToken) return alert("Vui lòng đăng nhập");

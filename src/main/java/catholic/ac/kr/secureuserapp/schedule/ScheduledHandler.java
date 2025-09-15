@@ -2,9 +2,7 @@ package catholic.ac.kr.secureuserapp.schedule;
 
 import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 import catholic.ac.kr.secureuserapp.repository.CouponRepository;
-import catholic.ac.kr.secureuserapp.service.CouponService;
-import catholic.ac.kr.secureuserapp.service.NotificationService;
-import catholic.ac.kr.secureuserapp.service.RefreshTokenService;
+import catholic.ac.kr.secureuserapp.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +17,8 @@ public class ScheduledHandler {
     private final NotificationService notificationService;
     private final CouponService couponService;
     private final RefreshTokenService refreshTokenService;
+    private final RankService rankService;
+    private final BookService bookService;
 
     @Scheduled(cron = "0 37 5 * * *")
     public void cleanExpiredCoupons() {
@@ -42,4 +42,10 @@ public class ScheduledHandler {
 
     @Scheduled(cron = "00 53 18 * * *")
     public void clearTokensExpired(){refreshTokenService.clearTokenExpired();}
+
+    @Scheduled(cron = "00 03 5 * * *")
+    public void setRankToUse(){rankService.updateRankToUser();}
+
+    @Scheduled(cron = "00 15 022 * * *")
+    public void setOriginalPriceBook(){bookService.resetPriceBook();}
 }

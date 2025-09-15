@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -45,4 +46,9 @@ public class Book {
 
     @Column(nullable = false)
     private Timestamp createdAt = Timestamp.valueOf(LocalDateTime.now());
+
+    private LocalDate saleExpiry;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isDeleted;
 }

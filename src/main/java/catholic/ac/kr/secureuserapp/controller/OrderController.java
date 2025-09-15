@@ -37,7 +37,7 @@ public class OrderController {
             @AuthenticationPrincipal MyUserDetails userDetails,
             @RequestParam int page,
             @RequestParam int size) {
-        return ResponseEntity.ok(orderService.getOrderByUserId(userDetails.getUser().getId(),page,size));
+        return ResponseEntity.ok(orderService.getOrderByUserId(userDetails.getUser().getId(), page, size));
     }
 
     @GetMapping("admin/all")
@@ -89,13 +89,20 @@ public class OrderController {
     }
 
     @GetMapping("count-not-confirmed")
-    public ResponseEntity<ApiResponse<Integer>> getCountOrdersNotConfirmed(){
+    public ResponseEntity<ApiResponse<Integer>> getCountOrdersNotConfirmed() {
         return ResponseEntity.ok(orderService.countOrdersNotConfirmed());
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<String>> deleteOrderHistory(@PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.deleteOrderById(id));
+    }
+
+    @PutMapping("{id}/cancel")
+    public ResponseEntity<ApiResponse<String>> cancelOrder(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(userDetails.getUser().getId(), id));
     }
 
     @GetMapping("{orderId}/invoice")

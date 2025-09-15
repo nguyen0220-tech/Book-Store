@@ -96,6 +96,11 @@ function renderOrders(orders) {
     for (const order of orders) {
         const hasDiscount = (order.totalDiscount || 0) > 0;
 
+        // kiểm tra còn hạn hủy đơn không
+        const expiryDate = order.expiryCancel ? new Date(order.expiryCancel) : null;
+        const now = new Date();
+        const canCancel = expiryDate && now <= expiryDate;
+
         html += `
         <div class="order-card">
             <div class="order-header">
@@ -112,11 +117,22 @@ function renderOrders(orders) {
                 🔻 Điểm đã sử dụng: <b style="color:red;">${(order.pointUsage || 0).toLocaleString()} P</b><br/>
                 ⭐ Điểm tích luỹ: <b>${(order.pointHoard || 0).toLocaleString()} P</b><br/>
                 📦 Trạng thái: ${order.orderStatus}<br/>
+                
                 <button onclick="downloadInvoice(${order.orderId})"
                     style="margin-top: 10px; color: white; background-color: green; border: none; padding: 5px 10px; border-radius: 5px;">
                     📄 Xem hoá đơn PDF
                 </button>
-                <button onclick="deleteOrder(${order.orderId})" style="margin-top: 10px; color: white; background-color: red; border: none; padding: 5px 10px; border-radius: 5px;">❌ Xoá đơn</button>
+                
+                ${order.orderStatus === "CANCEL"
+            ? `<p style="color: gray; margin-top: 10px;">🚫 Đơn hàng đã bị huỷ</p>`
+            : (canCancel
+                ? `<button onclick="cancelOrder(${order.orderId})" style="margin-top: 10px; color: white; background-color: orange; border: none; padding: 5px 10px; border-radius: 5px;">🚫 Huỷ đơn</button>`
+                : `<p style="color: gray; margin-top: 10px;">⏰ Hết hạn huỷ (sau ${formatDateTime(order.expiryCancel)})</p>`)}
+
+                <button onclick="deleteOrder(${order.orderId})" 
+                    style="margin-top: 10px; color: white; background-color: red; border: none; padding: 5px 10px; border-radius: 5px;">
+                    ❌ Xoá đơn
+                </button>
             </div>
         `;
 
@@ -151,6 +167,37 @@ function renderOrders(orders) {
     }
 
     container.innerHTML = html;
+}
+
+
+async function cancelOrder(orderId) {
+    if (!confirm(`Bạn có chắc muốn huỷ đơn hàng #${orderId}?`)) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/order/${orderId}/cancel`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+            alert("✅ Đã huỷ đơn hàng thành công.");
+            fetchOrderHistory(currentPage); // reload danh sách
+        } else {
+            alert(result.message || "❌ Không thể huỷ đơn hàng.");
+        }
+    } catch (err) {
+        alert("Lỗi khi huỷ đơn hàng: " + err.message);
+    }
+}
+window.cancelOrder = cancelOrder;
+
+function formatDateTime(timestamp) {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    return date.toLocaleString("ko-KR");
 }
 
 async function submitReview(bookId, orderId) {

@@ -27,6 +27,8 @@ public class Rank {
 
     private Timestamp updatedAt;
 
+    private Boolean setRank;
+
     @PrePersist
     protected void onCreated(){
         updatedAt = new Timestamp(System.currentTimeMillis());

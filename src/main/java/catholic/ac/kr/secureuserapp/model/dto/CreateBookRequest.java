@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 public class CreateBookRequest {
@@ -22,6 +23,8 @@ public class CreateBookRequest {
 
     @DecimalMin(value = "0.0",inclusive = false)
     private BigDecimal salePrice;
+
+    private LocalDate saleExpiry;
 
     @Min(0)
     private int stock;

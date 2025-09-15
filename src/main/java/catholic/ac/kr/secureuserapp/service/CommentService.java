@@ -99,11 +99,14 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndPostId(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
 
+        User admin = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         boolean isCommenter = userId.equals(comment.getUser().getId());
 
         boolean isPoster = userId.equals(comment.getPost().getUser().getId());
 
-        if (isCommenter || isPoster) {
+        if (isCommenter || isPoster || admin.getUsername().equals("admin")) {
             commentRepository.delete(comment);
             return ApiResponse.success("deleted comment");
         }

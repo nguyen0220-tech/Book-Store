@@ -80,9 +80,9 @@ public class CouponService {
             }
         }
 
-        boolean exitsCouponWelcome = orderRepository.existsCouponWelcome(user.getId());
-
-        if (exitsCouponWelcome) {
+        boolean isUsageCouponWelcome = orderRepository.existsCouponWelcome(user.getId()); //kiểm tra coupon "WC_STORE"
+                                                                                          // đã sử dụng hay chưa?
+        if (isUsageCouponWelcome) {
             validCoupons.removeIf(c -> "WC_STORE".equals(c.getCouponCode()));
         }
 

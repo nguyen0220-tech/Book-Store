@@ -113,6 +113,7 @@ public class OrderService {
         order.setRecipientPhone(request.getRecipientPhone());
         order.setNote(request.getNote());
         order.setConfirmed(false);
+        order.setExpiryCancel(LocalDateTime.now().plusDays(7));
 
         if (coupon != null) {
             order.setCoupon(coupon);
@@ -239,32 +240,7 @@ public class OrderService {
 
     public ApiResponse<Page<OrderDTO>> getOrderByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Order> orders = orderRepository.findByUserId(userId, pageable);
-
-//        for (Order order : orders) {
-//            BigDecimal totalOrder = BigDecimal.ZERO;
-//            BigDecimal totalDiscount = BigDecimal.ZERO;
-//
-//            for (OrderItem item : order.getOrderItems()) {
-//                BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
-//                // Tổng giá sau khi đã giảm
-//                totalOrder = totalOrder.add(item.getPrice().multiply(quantity));
-//                totalOrder = totalOrder.subtract(item.getOrder().getTotalDiscount());
-//
-//                // Tổng discount
-//                if (item.getBook().getSalePrice() != null &&
-//                        item.getBook().getSalePrice().compareTo(item.getBook().getPrice()) < 0) {
-//                    totalDiscount = totalDiscount.add(
-//                            (item.getBook().getPrice().subtract(item.getBook().getSalePrice()))
-//                                    .multiply(quantity)
-//                    );
-//                }
-//                totalDiscount = totalDiscount.add(item.getOrder().getTotalDiscount());
-//            }
-//
-//            order.setTotalPrice(totalOrder);
-//            order.setTotalDiscount(totalDiscount);
-//        }
+        Page<Order> orders = orderRepository.findByUserId(userId, pageable,false);
 
         Page<OrderDTO> orderDTOS = orders.map(order -> {
             OrderDTO orderDTO = orderMapper.toOrderDTO(order);
@@ -357,7 +333,36 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        orderRepository.delete(order);
+        order.setDeleted(true);
+        orderRepository.save(order);
+
         return ApiResponse.success("Deleted order successfully");
+    }
+
+    public ApiResponse<String> cancelOrder(Long userId,Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getStatus() == OrderStatus.CANCELLED){
+            return ApiResponse.error("Đơn hàng đã bị hủy");
+        }
+
+        else if (order.getStatus() == OrderStatus.SHIPPED) {
+            return  ApiResponse.error("Đơn hàng đã giao thành công nên không thể hủy");
+        }
+
+        Point point = pointRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Point not found"));
+        order.setStatus(OrderStatus.CANCELLED);
+
+        BigDecimal subtractPoint = order.getPointHoard();
+        BigDecimal nowPoint = point.getPoint();
+
+        point.setPoint(nowPoint.subtract(subtractPoint));
+
+        pointRepository.save(point);
+        orderRepository.save(order);
+
+        return ApiResponse.success("Cancelled order successfully");
     }
 }

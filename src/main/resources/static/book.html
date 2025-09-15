@@ -72,6 +72,7 @@
         <input id="addAuthor" placeholder="Author" />
         <input id="addPrice" type="number" placeholder="Original Price" step="0.01" />
         <input id="addSalePrice" type="number" placeholder="Sale Price" step="0.01" />
+        <input id="addSaleExpiry" type="date" placeholder="Sale Expiry" />
         <input id="addStock" type="number" placeholder="Stock" />
         <input id="addDescription" placeholder="Description" />
         <input id="addImgUrl" placeholder="Image URL" />
@@ -91,6 +92,16 @@
         <p id="addBookMessage" class="error"></p>
     </section>
 
+    <label for="filterSelect">Lọc sách:</label>
+    <select id="filterSelect" onchange="loadBooks({ page: 0 })">
+        <option value="all">Tất cả</option>
+        <option value="sale">Đang sale</option>
+        <option value="deletedFalse">Chưa xóa</option>
+        <option value="deletedTrue">Đã xóa</option>
+    </select>
+
+
+
     <section class="card">
         <h2>📋 Danh sách sách</h2>
         <p id="bookCount" style="font-weight:bold; color:green;">Tổng số sách: ...</p>
@@ -101,9 +112,9 @@
             <thead>
             <tr>
                 <th>Id</th><th>Title</th><th>Author</th>
-                <th>Price</th><th>Sale Price</th><th>Stock</th>
-                <th>Description</th><th>Image</th>
-                <th>Category ID</th><th>Category Name</th><th>Actions</th>
+                <th>Price</th><th>Sale Price</th><th>Sale Expiry</th>
+                <th>Stock</th><th>Description</th><th>Image</th>
+                <th>Category ID</th><th>Category Name</th><th>Deleted</th><th>Actions</th>
             </tr>
             </thead>
             <tbody></tbody>
