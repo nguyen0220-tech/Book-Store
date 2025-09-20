@@ -49,30 +49,28 @@ async function loadChatHistory() {
 }
 
 let stompClient = null;
-
 function connectWebSocket() {
-    const socket = new SockJS(`${API_BASE}/ws?token=${accessToken}`);
+    const socket = new SockJS(`${API_BASE}/ws`);
     stompClient = Stomp.over(socket);
 
+    const headers = {
+        "Authorization": `Bearer ${accessToken}`
+    };
 
-    stompClient.connect(
-        {
-            Authorization: `Bearer ${accessToken}`
-        },
-        frame => {
-            console.log("✅ WebSocket connected:", frame);
-            statusDiv.textContent = "🟢 Đã kết nối WebSocket";
-            // stompClient.subscribe("/user/topic/message", msg => displayMessage(JSON.parse(msg.body)));
-            stompClient.subscribe("/user/topic/message", msg => displayMessage(JSON.parse(msg.body)));
-        },
-        error => {
-            console.error("❌ WebSocket error:", error);
-            statusDiv.textContent = "🔴 Mất kết nối WebSocket";
-        }
-    );
+    stompClient.connect(headers, frame => {
+        console.log("✅ WebSocket connected:", frame);
 
+        stompClient.subscribe("/user/queue/message", (message) => {
+            const receivedMessage = JSON.parse(message.body);
+            displayMessage(receivedMessage);
+        });
+
+    }, error => {
+        console.error("🔴 WebSocket connection error:", error);
+        statusDiv.textContent = "Lỗi kết nối WebSocket (token không hợp lệ hoặc hết hạn).";
+        statusDiv.style.color = "red";
+    });
 }
-
 
 function sendMessage() {
     const content = messageInput.value.trim();

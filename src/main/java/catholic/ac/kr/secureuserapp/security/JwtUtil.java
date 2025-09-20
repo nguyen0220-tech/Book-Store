@@ -1,7 +1,10 @@
 package catholic.ac.kr.secureuserapp.security;
 
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetailsService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,6 +23,9 @@ import java.util.Map;
 public class JwtUtil {
     @Value("${jwt.secret}") //Spring sẽ inject giá trị từ application.properties
     private String secret;
+
+    @Autowired
+    private MyUserDetailsService userDetailsService;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); //Tạo đối tượng Key từ chuỗi bí mật -> Biến chuỗi thành mảng byte
@@ -66,17 +72,10 @@ public class JwtUtil {
 
     public Authentication getAuthentication(String token) {
         String username = extractUsername(token);
-        var claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
 
-        var roles = (List<String>) claims.get("roles");
-        var authorities = roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        // load từ DB để tạo MyUserDetails
+        MyUserDetails userDetails = (MyUserDetails) userDetailsService.loadUserByUsername(username);
 
-        return new UsernamePasswordAuthenticationToken(username, null, authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }

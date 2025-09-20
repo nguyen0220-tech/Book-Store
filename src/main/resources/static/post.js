@@ -362,7 +362,7 @@ async function loadMyRank() {
     } catch (error) {
         console.error("Lỗi khi load rank cá nhân:", error);
         const rankSpan = document.getElementById("myRankInfo");
-        if (rankSpan) rankSpan.textContent = "Error";
+        if (rankSpan) rankSpan.textContent = "";
     }
 }
 
