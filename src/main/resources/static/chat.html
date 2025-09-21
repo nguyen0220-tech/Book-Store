@@ -32,12 +32,16 @@
     </style>
 </head>
 <body>
-<h2>💬 Chat hỗ trợ khách hàng</h2>
+<h2>💬 Message</h2>
 <div id="status">🟡 Đang kết nối...</div>
+
+<label for="recipientSelect">👤 Chọn người nhận:</label>
+<select id="recipientSelect"></select>
+
 <div id="chatWindow"></div>
 
 <form id="inputForm">
-    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." required />
+    <input type="text" id="messageInput" placeholder="Message..." required />
     <button type="submit">Gửi</button>
 </form>
 

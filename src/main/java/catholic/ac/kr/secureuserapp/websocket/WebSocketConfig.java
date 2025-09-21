@@ -20,7 +20,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private  JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     public WebSocketConfig(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -64,4 +64,3 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         });
     }
 }
-

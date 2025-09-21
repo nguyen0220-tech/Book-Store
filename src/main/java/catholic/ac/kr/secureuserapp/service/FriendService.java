@@ -4,6 +4,7 @@ import catholic.ac.kr.secureuserapp.Status.FriendStatus;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.FriendMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO;
 import catholic.ac.kr.secureuserapp.model.dto.FriendDTO;
 import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Friend;
@@ -11,14 +12,12 @@ import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.FriendRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -211,15 +210,37 @@ public class FriendService {
         return ApiResponse.success("find send request friend", dtoPage);
     }
 
-    public ApiResponse<String> cancelRequestFriend(Long userId, Long friendId) {
-        Optional<Friend> pendingRequest = friendRepository.findByUserIdAndFriendIdAndStatus(userId, friendId, FriendStatus.PENDING);
+    public ApiResponse<Page<FriendChatDTO>> getAllFriendAndAdminToChatMessage(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        if (pendingRequest.isPresent()) {
-            pendingRequest.get().setStatus(FriendStatus.CANCELLED);
-            friendRepository.save(pendingRequest.get());
-            return ApiResponse.success("cancelled request friend");
+        Page<FriendChatDTO> dtoPage = friendRepository.findByUserId(userId, pageable);
+
+        User admin = userRepository.findByUsername("admin")
+                .orElseThrow(() -> new ResourceNotFoundException("admin not found"));
+
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("current user not found"));
+
+        boolean isFriendWithAdmin = friendRepository.existsByUserIdAndFriendIdAndStatus(userId,admin.getId(),FriendStatus.FRIEND);
+
+        if (currentUser.equals(admin) || isFriendWithAdmin) {
+            return ApiResponse.success("find send request friend", dtoPage);
         }
 
-        return ApiResponse.success("friend not found");
+        FriendChatDTO adminChat = new FriendChatDTO(admin.getUsername());
+
+        List<FriendChatDTO> dtoList = new ArrayList<>(dtoPage.getContent());
+
+        long totalPages = dtoPage.getTotalPages();
+        if (page == 0){
+            dtoList.add(adminChat);
+            totalPages ++;
+        }
+
+        Page<FriendChatDTO> result = new PageImpl<>(dtoList, pageable, totalPages);
+
+        return ApiResponse.success("success",result);
+        //kiem tra xem ket ban ad chua? neu roi thi khong them ad vao list
+        //khong them ad khi user = admin
     }
 }

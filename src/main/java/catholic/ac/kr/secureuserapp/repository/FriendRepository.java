@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.repository;
 
 import catholic.ac.kr.secureuserapp.Status.FriendStatus;
+import catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO;
 import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Friend;
 import org.springframework.data.domain.Page;
@@ -60,4 +61,11 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             WHERE u.id = :userId AND f.status = 'FRIEND'
             """)
     List<ToGiveFriendDTO> findToGiveFriends(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO(f.friend.username)
+            FROM Friend f
+            WHERE f.user.id = :userId AND f.status = 'FRIEND'
+            """)
+    Page<FriendChatDTO> findByUserId(Long userId, Pageable pageable);
 }

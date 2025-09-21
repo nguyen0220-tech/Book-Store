@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DisabledException;
@@ -90,7 +89,7 @@ public class SecurityConfig {
                 Người dùng tưởng đang bấm vào nút "OK" trên website A,
                 nhưng thực tế đang bấm vào nút "Thanh toán" của website B.
                  */
-                .headers(header -> header.frameOptions(frame -> frame.sameOrigin()))
+//                .headers(header -> header.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth // Không dùng session (vì dùng JWT)
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(

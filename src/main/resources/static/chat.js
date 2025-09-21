@@ -11,13 +11,13 @@ function parseJwt(token) {
 }
 
 const senderUsername = parseJwt(accessToken).sub;
-const recipientUsername = prompt("👤 Nhập tên người nhận:");
+let recipientUsername = null; // sẽ set sau khi user chọn
 
 const chatWindow = document.getElementById("chatWindow");
 const statusDiv = document.getElementById("status");
 const inputForm = document.getElementById("inputForm");
 const messageInput = document.getElementById("messageInput");
-
+const recipientSelect = document.getElementById("recipientSelect");
 
 function displayMessage(message) {
     const div = document.createElement("div");
@@ -28,12 +28,42 @@ function displayMessage(message) {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+async function loadFriends() {
+    try {
+        const res = await fetch(`${API_BASE}/friend/with-admin?page=0&size=50`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const json = await res.json();
+
+        if (json.success) {
+            recipientSelect.innerHTML = "";
+            json.data.content.forEach(friend => {
+                const option = document.createElement("option");
+                option.value = friend.friendUsername;
+                option.textContent = friend.friendUsername;
+                recipientSelect.appendChild(option);
+            });
+
+            // mặc định chọn bạn đầu tiên
+            if (json.data.content.length > 0) {
+                recipientUsername = recipientSelect.value;
+                loadChatHistory();
+            }
+        } else {
+            alert("❌ Không tải được danh sách bạn bè.");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi tải danh sách bạn bè.");
+    }
+}
+
 async function loadChatHistory() {
+    if (!recipientUsername) return;
+
     try {
         const res = await fetch(`${API_BASE}/message?recipient=${recipientUsername}&page=0&size=20&direction=TWO_WAY`, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
+            headers: { Authorization: `Bearer ${accessToken}` }
         });
         const json = await res.json();
         if (json.success) {
@@ -53,9 +83,7 @@ function connectWebSocket() {
     const socket = new SockJS(`${API_BASE}/ws`);
     stompClient = Stomp.over(socket);
 
-    const headers = {
-        "Authorization": `Bearer ${accessToken}`
-    };
+    const headers = { "Authorization": `Bearer ${accessToken}` };
 
     stompClient.connect(headers, frame => {
         console.log("✅ WebSocket connected:", frame);
@@ -74,8 +102,8 @@ function connectWebSocket() {
 
 function sendMessage() {
     const content = messageInput.value.trim();
-    if (!content || !stompClient || !stompClient.connected) {
-        alert("🔴 Không thể gửi tin nhắn khi WebSocket chưa kết nối.");
+    if (!content || !recipientUsername || !stompClient || !stompClient.connected) {
+        alert("🔴 Không thể gửi tin nhắn.");
         return;
     }
 
@@ -95,7 +123,13 @@ inputForm.addEventListener("submit", function (e) {
     sendMessage();
 });
 
-window.onload = () => {
+// Khi đổi người nhận thì load lại lịch sử chat
+recipientSelect.addEventListener("change", () => {
+    recipientUsername = recipientSelect.value;
     loadChatHistory();
+});
+
+window.onload = () => {
+    loadFriends();
     connectWebSocket();
 };

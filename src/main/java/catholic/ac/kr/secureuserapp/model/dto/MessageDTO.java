@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.sql.Timestamp;
 
 @Getter @Setter
-public class ChatMessageDTO {
+public class MessageDTO {
     private Long id;
     private String sender;
     private String senderFullName;

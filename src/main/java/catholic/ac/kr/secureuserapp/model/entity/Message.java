@@ -8,14 +8,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.awt.*;
 import java.sql.Timestamp;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class ChatMessage {
+public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,7 +33,7 @@ public class ChatMessage {
     @Column(nullable = false)
     private boolean fromAdmin;
 
-    @CreationTimestamp //để tự động set ngày
+//    @CreationTimestamp //để tự động set ngày
     @Column(nullable = false)
     private Timestamp timestamp;
 

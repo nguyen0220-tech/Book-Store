@@ -1,7 +1,7 @@
 package catholic.ac.kr.secureuserapp.websocket;
 
-import catholic.ac.kr.secureuserapp.model.dto.ChatMessageDTO;
-import catholic.ac.kr.secureuserapp.service.ChatMessageService;
+import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
+import catholic.ac.kr.secureuserapp.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -14,10 +14,10 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class WebSocketController {
     private final SimpMessagingTemplate messagingTemplate; //gửi message đến client qua WebSocket
-    private final ChatMessageService chatMessageService;
+    private final MessageService messageService;
 
     @MessageMapping("chat")
-    public void handleChatMessage(@Payload ChatMessageDTO messageDTO, Principal principal) {
+    public void handleChatMessage(@Payload MessageDTO messageDTO, Principal principal) {
         if (principal == null) {
             System.out.println("❌ Principal is null");
             return;
@@ -30,7 +30,7 @@ public class WebSocketController {
 
         messageDTO.setSender(username);
 
-        ChatMessageDTO savedMessage = chatMessageService.saveChatMessage(messageDTO).getData();
+        MessageDTO savedMessage = messageService.saveChatMessage(messageDTO).getData();
 
         messagingTemplate.convertAndSendToUser(
                 savedMessage.getRecipient(),

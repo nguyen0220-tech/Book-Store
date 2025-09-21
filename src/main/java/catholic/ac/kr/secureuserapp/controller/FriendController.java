@@ -1,9 +1,6 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.FriendDTO;
-import catholic.ac.kr.secureuserapp.model.dto.FriendRequest;
-import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
+import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.FriendService;
 import lombok.RequiredArgsConstructor;
@@ -100,5 +97,13 @@ public class FriendController {
     @PutMapping("cancel-request")
     public ResponseEntity<ApiResponse<String>> cancelRequestFriend(@AuthenticationPrincipal MyUserDetails userDetails, @RequestBody FriendRequest request) {
         return ResponseEntity.ok(friendService.cancelFriendRequest(userDetails.getUser().getId(), request.getFriendId()));
+    }
+
+    @GetMapping("with-admin")
+    public ResponseEntity<ApiResponse<Page<FriendChatDTO>>> getFriendsAndAdminToChat(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestParam int page,
+            @RequestParam int size){
+        return ResponseEntity.ok(friendService.getAllFriendAndAdminToChatMessage(userDetails.getUser().getId(), page, size));
     }
 }
