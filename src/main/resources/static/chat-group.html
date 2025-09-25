@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16x16.png">
+    <link rel="manifest" href="icon/site.webmanifest">
+
+    <title>Group Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        /* Danh sách nhóm chat */
+        #chatRoomList .chat-room-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #chatRoomList .chat-room-item:hover {
+            background: #e9f5ff;
+            transform: scale(1.02);
+        }
+
+        /* Chat window */
+        #groupChatWindow {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: linear-gradient(to bottom, #ffffff, #f0f8ff);
+        }
+
+        /* Tin nhắn */
+        .message-item {
+            padding: 10px 14px;
+            margin: 6px 0;
+            border-radius: 20px;
+            max-width: 65%;
+            word-wrap: break-word;
+            clear: both;
+            position: relative;
+            animation: fadeInUp 0.3s ease-in-out;
+        }
+
+        .message-item:hover {
+            transform: scale(1.03);
+        }
+
+        /* Tin nhắn của mình */
+        .message-me {
+            background: linear-gradient(135deg, #a0e9fd, #00b4ff);
+            color: #fff;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        /* Tin nhắn người khác */
+        .message-other {
+            background: linear-gradient(135deg, #319831, #6bdc6b);
+            color: #fff;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        /* Thời gian */
+        .message-item small {
+            display: block;
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 3px;
+        }
+
+        /* Animation xuất hiện */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input form */
+        #groupInputForm {
+            margin-top: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        #groupMessageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #aaa;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #groupMessageInput:focus {
+            border-color: #3498db;
+        }
+
+        #groupInputForm button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        #groupInputForm button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #2980b9, #1f618d);
+        }
+
+        /* Scrollbar đẹp hơn */
+        #groupChatWindow::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #groupChatWindow::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+    </style>
+
+</head>
+<body>
+
+<h2 class="title">Chat nhóm</h2>
+<div id="status">🟡 Đang kết nối...</div>
+
+<h2>Tạo nhóm chat</h2>
+<div id="createGroupForm">
+    <input type="text" id="chatRoomName" placeholder="Tên nhóm" required>
+    <div id="friendsList"></div>
+    <button id="createGroupBtn">Tạo nhóm</button>
+</div>
+<hr style="color: #1e7e34">
+
+<h2>Danh sách nhóm chat</h2>
+<div id="chatRoomList"></div>
+<hr style="color: #1e7e34">
+
+<div id="groupChatWindow"></div>
+
+<form id="groupInputForm">
+    <input type="text" id="groupMessageInput" placeholder="Message nhóm..." required />
+    <button type="submit">Gửi</button>
+</form>
+
+
+<!-- Include SockJS and Stomp -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script type="module" src="/auth-utils.js"></script>
+<script  type="module" src="chat-group.js"></script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 package catholic.ac.kr.secureuserapp.websocket;
 
 import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
+import catholic.ac.kr.secureuserapp.model.dto.MessageForChatRoomRequest;
+import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
 import catholic.ac.kr.secureuserapp.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -44,6 +46,21 @@ public class WebSocketController {
                 "/queue/message",
                 savedMessage
         );
+    }
+
+    @MessageMapping("chat-group")
+    public void handleChatRoomMessage(@Payload MessageForChatRoomRequest request, Principal principal) {
+        if (principal == null) {
+            System.out.println("Principal is null");
+            return;
+        }
+        request.setSender(principal.getName());
+
+        MessageForGroupChatDTO saveMessageForGroup = messageService.saveMessageForChatGroup(request).getData();
+
+        messagingTemplate.convertAndSend(
+                "/topic/message" + request.getChatRoomId(),
+                saveMessageForGroup);
     }
 }
 

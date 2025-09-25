@@ -1,8 +1,9 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.Status.MessageStatus;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.MessageForChatRoomRequest;
 import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
+import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,13 @@ public class MessageController {
         return ResponseEntity.ok(messageService.saveChatMessage(messageDTO));
     }
 
-    @PutMapping("update/{messageId}/status")
-    public ResponseEntity<ApiResponse<MessageDTO>> updateMessage(
-            @PathVariable("messageId") Long messageId,
-            @RequestParam("status") MessageStatus status) {
-        return ResponseEntity.ok(messageService.updateMessageStatus(messageId, status));
+    @PostMapping("chat-room")
+    public ResponseEntity<ApiResponse<MessageForGroupChatDTO>> saveMessageForChatRoom(
+            @AuthenticationPrincipal MyUserDetails sender,
+            @RequestBody MessageForChatRoomRequest request
+            ){
+        request.setSender(sender.getUsername());
+        return ResponseEntity.ok(messageService.saveMessageForChatGroup(request));
     }
+
 }

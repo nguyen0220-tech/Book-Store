@@ -89,7 +89,7 @@ public class SecurityConfig {
                 Người dùng tưởng đang bấm vào nút "OK" trên website A,
                 nhưng thực tế đang bấm vào nút "Thanh toán" của website B.
                  */
-//                .headers(header -> header.frameOptions(frame -> frame.sameOrigin()))
+                .headers(header -> header.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth // Không dùng session (vì dùng JWT)
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(

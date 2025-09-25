@@ -1,0 +1,58 @@
+package catholic.ac.kr.secureuserapp.service;
+
+import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
+import catholic.ac.kr.secureuserapp.mapper.ChatRoomMapper;
+import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
+import catholic.ac.kr.secureuserapp.model.dto.ChatRoomDTO;
+import catholic.ac.kr.secureuserapp.model.dto.ChatRoomRequest;
+import catholic.ac.kr.secureuserapp.model.entity.ChatRoom;
+import catholic.ac.kr.secureuserapp.model.entity.User;
+import catholic.ac.kr.secureuserapp.repository.ChatRoomRepository;
+import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+public class ChatRoomService {
+    private final ChatRoomRepository chatRoomRepository;
+    private final UserRepository userRepository;
+
+    public ApiResponse<Page<ChatRoomDTO>> getChatRoomsByUserId(Long userId, int page, int size) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<ChatRoom> chatRooms = chatRoomRepository.findByUserId(user.getId(),pageable);
+
+        Page<ChatRoomDTO> chatRoomDTOS = chatRooms.map(ChatRoomMapper::convertToDTO);
+
+        return ApiResponse.success("success", chatRoomDTOS);
+    }
+
+    public ApiResponse<String> createChatRoom(Long userId, ChatRoomRequest request) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        ChatRoom chatRoom = new ChatRoom();
+
+        Set<User> members = new HashSet<>(userRepository.findAllById(request.getMemberIds()));
+        members.add(owner);
+
+        chatRoom.setOwner(owner);
+        chatRoom.setMembers(members);
+        chatRoom.setChatRoomName(request.getChatRoomName());
+
+        chatRoomRepository.save(chatRoom);
+
+        return ApiResponse.success("Chat room created");
+    }
+
+}

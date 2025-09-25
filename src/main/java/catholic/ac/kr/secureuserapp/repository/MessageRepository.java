@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.repository;
 
 import catholic.ac.kr.secureuserapp.Status.MessageStatus;
+import catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +29,25 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("recipientUsername") String recipientUsername,
             Pageable pageable);
 
+    @Query(value = "SELECT m.* FROM message m " +
+            "JOIN chat_room_members crm ON m.chat_room_id = crm.chat_room_id" +
+            " WHERE crm.user_id = :userId AND crm.chat_room_id = :chatRoomId",nativeQuery = true)
+    Page<Message> findMessageGroupChatByUserIdAndChatRoomId(
+            @Param("userId") Long userId,
+            @Param("chatRoomId") Long chatRoomId,
+            Pageable pageable);
+
     @Modifying
     @Query("""
             UPDATE Message m SET m.status = :status
             WHERE m.sender.username = :user1 AND m.recipient.username = :user2 AND m.status <> :status
             """)
-    int maskAsReal(@Param("user1") String user1,@Param("user2") String user2,@Param("status") MessageStatus status);
+    int maskAsReal(@Param("user1") String user1, @Param("user2") String user2, @Param("status") MessageStatus status);
+
+    @Query("""
+            SELECT DISTINCT new catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO(m.sender.id,m.sender.username)
+            FROM Message m
+            WHERE m.recipient.id = :adminId
+            """)
+    Page<FriendChatDTO> findUsersSendMessageToAdmin(@Param("adminId") Long adminId, Pageable pageable);
 }

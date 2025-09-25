@@ -10,6 +10,7 @@ import catholic.ac.kr.secureuserapp.model.dto.ToGiveFriendDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Friend;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.FriendRepository;
+import catholic.ac.kr.secureuserapp.repository.MessageRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -27,6 +28,7 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final MessageRepository messageRepository;
 
     public ApiResponse<Page<FriendDTO>> getFriends(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -211,7 +213,7 @@ public class FriendService {
     }
 
     public ApiResponse<Page<FriendChatDTO>> getAllFriendAndAdminToChatMessage(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<FriendChatDTO> dtoPage = friendRepository.findByUserId(userId, pageable);
 
@@ -223,11 +225,17 @@ public class FriendService {
 
         boolean isFriendWithAdmin = friendRepository.existsByUserIdAndFriendIdAndStatus(userId,admin.getId(),FriendStatus.FRIEND);
 
-        if (currentUser.equals(admin) || isFriendWithAdmin) {
+        if ( isFriendWithAdmin) {
             return ApiResponse.success("find send request friend", dtoPage);
         }
 
-        FriendChatDTO adminChat = new FriendChatDTO(admin.getUsername());
+        Page<FriendChatDTO> userSendToAdmin = messageRepository.findUsersSendMessageToAdmin(admin.getId(), pageable);
+
+        if (currentUser.getId().equals(admin.getId())) {
+            return ApiResponse.success("find send request friend", userSendToAdmin);
+        }
+
+        FriendChatDTO adminChat = new FriendChatDTO(admin.getId(),admin.getUsername());
 
         List<FriendChatDTO> dtoList = new ArrayList<>(dtoPage.getContent());
 

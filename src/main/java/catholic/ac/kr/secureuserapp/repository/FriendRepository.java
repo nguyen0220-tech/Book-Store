@@ -63,7 +63,7 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     List<ToGiveFriendDTO> findToGiveFriends(@Param("userId") Long userId);
 
     @Query("""
-            SELECT new catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO(f.friend.username)
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.FriendChatDTO(f.friend.id,f.friend.username)
             FROM Friend f
             WHERE f.user.id = :userId AND f.status = 'FRIEND'
             """)
