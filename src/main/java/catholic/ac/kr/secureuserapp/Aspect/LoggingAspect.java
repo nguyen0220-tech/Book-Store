@@ -1,6 +1,6 @@
 package catholic.ac.kr.secureuserapp.Aspect;
 
-import catholic.ac.kr.secureuserapp.model.dto.SignupRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.SignupRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

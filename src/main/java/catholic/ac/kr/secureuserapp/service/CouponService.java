@@ -6,7 +6,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.CouponMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CouponDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CouponRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CouponRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 import catholic.ac.kr.secureuserapp.model.entity.Notification;
 import catholic.ac.kr.secureuserapp.model.entity.User;

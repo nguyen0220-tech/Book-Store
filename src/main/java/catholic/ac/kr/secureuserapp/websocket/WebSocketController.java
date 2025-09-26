@@ -1,9 +1,12 @@
 package catholic.ac.kr.secureuserapp.websocket;
 
-import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
-import catholic.ac.kr.secureuserapp.model.dto.MessageForChatRoomRequest;
-import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
+import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageForChatRoomRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageReplyRequest;
+import catholic.ac.kr.secureuserapp.model.entity.User;
+import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import catholic.ac.kr.secureuserapp.service.MessageService;
+import catholic.ac.kr.secureuserapp.service.MessageReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -17,6 +20,8 @@ import java.security.Principal;
 public class WebSocketController {
     private final SimpMessagingTemplate messagingTemplate; //gửi message đến client qua WebSocket
     private final MessageService messageService;
+    private final MessageReplyService messageReplyService;
+    private final UserRepository userRepository;
 
     @MessageMapping("chat")
     public void handleChatMessage(@Payload MessageDTO messageDTO, Principal principal) {
@@ -61,6 +66,27 @@ public class WebSocketController {
         messagingTemplate.convertAndSend(
                 "/topic/message" + request.getChatRoomId(),
                 saveMessageForGroup);
+    }
+
+    @MessageMapping("message-reply")
+    public void handleMessageReply(@Payload MessageReplyRequest request, Principal principal) {
+        if (principal == null) {
+            System.out.println("Principal is null");
+            return;
+        }
+
+        String username = principal.getName();
+        request.setSender(username);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        MessageReplyDTO messageReplyDTO = messageReplyService.createMessageReply(user.getId(), request.getMessageId(), request.getReplyText()).getData();
+
+        messagingTemplate.convertAndSend(
+                "/topic/message" + request.getChatRoomId(),
+                messageReplyDTO
+        );
     }
 }
 

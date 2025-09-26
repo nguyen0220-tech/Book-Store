@@ -3,6 +3,7 @@ package catholic.ac.kr.secureuserapp.service;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.BookMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.CreateBookRequest;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;
 import lombok.RequiredArgsConstructor;

@@ -5,7 +5,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.PostMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.PostDTO;
-import catholic.ac.kr.secureuserapp.model.dto.PostRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.PostRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Post;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.PostRepository;

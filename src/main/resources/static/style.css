@@ -90,6 +90,10 @@ button:focus {
     box-shadow: 0 0 10px #4CAF50;
 }
 
+#bookList, #newBookList, #topBooks{
+    background-color: beige;
+}
+
 #authButtons {
     position: fixed;
     top: 16px;

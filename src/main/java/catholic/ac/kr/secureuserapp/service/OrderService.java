@@ -6,7 +6,7 @@ import catholic.ac.kr.secureuserapp.mapper.OrderMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.OrderDTO;
 import catholic.ac.kr.secureuserapp.model.dto.OrderItemDTO;
-import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.OrderRequest;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;
 import lombok.RequiredArgsConstructor;

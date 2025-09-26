@@ -1,7 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.MessageForChatRoomRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageForChatRoomRequest;
 import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
 import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;

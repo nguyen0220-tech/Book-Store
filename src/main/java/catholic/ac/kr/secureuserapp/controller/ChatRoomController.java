@@ -1,6 +1,9 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.ActMemberToGroupRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.ChatRoomRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.RenameChatRoomRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.ChatRoomService;
 import catholic.ac.kr.secureuserapp.service.MessageService;
@@ -31,7 +34,7 @@ public class ChatRoomController {
             @PathVariable Long chatRoomId,
             @RequestParam int page,
             @RequestParam int size) {
-        return ResponseEntity.ok(messageService.getMessagesForChatRoom(userDetails.getUser().getId(), chatRoomId, page, size));
+        return ResponseEntity.ok(messageService.getMessagesFromChatRoom(userDetails.getUser().getId(), chatRoomId, page, size));
     }
 
     @PostMapping
@@ -41,4 +44,35 @@ public class ChatRoomController {
     ) {
         return ResponseEntity.ok(chatRoomService.createChatRoom(userDetails.getUser().getId(), request));
     }
+
+    @PostMapping("act-member")
+    public ResponseEntity<ApiResponse<String>> actMemberToChatRoom(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestBody ActMemberToGroupRequest request){
+        return ResponseEntity.ok(chatRoomService.setMemberToChatRoom(
+                userDetails.getUser().getId(),
+                request.getChatRoomId(),
+                request.getMemberId(),
+                request.getAct()));
+    }
+
+    @PutMapping("{chatRoomId}")
+    public ResponseEntity<ApiResponse<String>> exitChatRoom(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PathVariable Long chatRoomId){
+        return ResponseEntity.ok(chatRoomService.exitChatRoom(userDetails.getUser().getId(), chatRoomId));
+    }
+
+    @PutMapping("rename")
+    public ResponseEntity<ApiResponse<String>> removeChatRoom(@RequestBody RenameChatRoomRequest request){
+        return ResponseEntity.ok(chatRoomService.renameChatRoom(request.getChatRoomId(), request.getNewName()));
+    }
+
+    @DeleteMapping("{chatRoomId}")
+    public ResponseEntity<ApiResponse<String>> deleteChatRoom(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PathVariable Long chatRoomId){
+        return ResponseEntity.ok(chatRoomService.deleteChatRoom(userDetails.getUser().getId(), chatRoomId));
+    }
+
 }

@@ -1,7 +1,7 @@
 package catholic.ac.kr.secureuserapp.mapper;
 
 import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CreateBookRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CreateBookRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

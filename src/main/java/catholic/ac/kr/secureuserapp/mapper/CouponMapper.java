@@ -1,7 +1,7 @@
 package catholic.ac.kr.secureuserapp.mapper;
 
 import catholic.ac.kr.secureuserapp.model.dto.CouponDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CouponRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CouponRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Coupon;
 
 import java.util.ArrayList;

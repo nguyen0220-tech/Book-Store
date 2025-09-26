@@ -1,4 +1,4 @@
-package catholic.ac.kr.secureuserapp.model.dto;
+package catholic.ac.kr.secureuserapp.model.dto.request;
 
 import jakarta.persistence.*;
 import lombok.Data;

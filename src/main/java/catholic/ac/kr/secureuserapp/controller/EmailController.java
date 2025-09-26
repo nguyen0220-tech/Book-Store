@@ -1,8 +1,8 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.model.dto.AttachmentEmailRequest;
-import catholic.ac.kr.secureuserapp.model.dto.EmailRequest;
-import catholic.ac.kr.secureuserapp.model.dto.HtmlEmailRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.AttachmentEmailRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.EmailRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.HtmlEmailRequest;
 import catholic.ac.kr.secureuserapp.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

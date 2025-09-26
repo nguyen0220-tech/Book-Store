@@ -2,7 +2,7 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.PostDTO;
-import catholic.ac.kr.secureuserapp.model.dto.PostRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.PostRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.PostService;
 import lombok.RequiredArgsConstructor;

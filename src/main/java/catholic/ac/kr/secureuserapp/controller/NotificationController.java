@@ -3,7 +3,7 @@ package catholic.ac.kr.secureuserapp.controller;
 import catholic.ac.kr.secureuserapp.Status.NotificationType;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.NotificationDTO;
-import catholic.ac.kr.secureuserapp.model.dto.NotificationMessageRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.NotificationMessageRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.NotificationService;
 import lombok.RequiredArgsConstructor;

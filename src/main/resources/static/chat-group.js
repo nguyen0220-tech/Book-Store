@@ -76,6 +76,7 @@ async function createChatRoom() {
             alert("✅ Tạo nhóm thành công!");
             document.getElementById("chatRoomName").value = "";
             document.querySelectorAll("#friendsList input[type=checkbox]").forEach(cb => cb.checked = false);
+            loadChatRooms()
         } else {
             alert("❌ Tạo nhóm thất bại: " + json.message);
         }
@@ -85,8 +86,10 @@ async function createChatRoom() {
     }
 }
 
+/////////////////////////////
 async function loadChatRooms(page = 0, size = 10) {
     try {
+        // gọi API lấy danh sách phòng
         const res = await fetch(`${API_BASE}/chat-room?page=${page}&size=${size}`, {
             method: "GET",
             headers: {
@@ -100,6 +103,13 @@ async function loadChatRooms(page = 0, size = 10) {
             alert("❌ Không lấy được danh sách phòng chat: " + json.message);
             return;
         }
+
+        // gọi API lấy danh sách bạn bè 1 lần
+        const friendsRes = await fetch(`${API_BASE}/friend/with-admin?page=0&size=100`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const friendsJson = await friendsRes.json();
+        const allFriends = friendsJson.success ? friendsJson.data.content : [];
 
         const chatRooms = json.data.content; // Page<ChatRoomDTO>
         const container = document.getElementById("chatRoomList");
@@ -115,14 +125,41 @@ async function loadChatRooms(page = 0, size = 10) {
             div.classList.add("chat-room-item");
             div.dataset.roomId = room.id;
 
+            // 🚀 render danh sách thành viên
+            const membersHtml = Object.entries(room.members).map(([userId, username]) => `
+                <li>
+                    ${username} 
+                    <button onclick="actMemberToChatRoom(${room.id}, ${userId}, false)">❌ Xóa</button>
+                </li>
+            `).join("");
+
+            // lọc ra bạn bè chưa có trong group
+            const memberIds = Object.keys(room.members).map(Number);
+            const optionsHtml = allFriends
+                .filter(f => !memberIds.includes(f.friendId))
+                .map(f => `<option value="${f.friendId}">${f.friendUsername}</option>`)
+                .join("");
+
             div.innerHTML = `
                 <strong>${room.chatRoomName}</strong><br>
-                <small>Thành viên: ${Array.from(room.usernames).join(", ")}</small>
+                <small>Thành viên:</small>
+                <ul>${membersHtml}</ul>
+                <div>
+                    <button style="background-color: #4CAF50" onclick="openChatRoom(${room.id}, '${room.chatRoomName}')">💬 Vào nhóm</button>
+                    <button style="background-color: gray" onclick="exitChatRoom(${room.id})">🚪 Thoát nhóm</button>
+                    <button style="background-color: red" onclick="deleteChatRoom(${room.id})">🗑 Xóa nhóm</button>
+                    <button style="background-color: orange" onclick="renameChatRoom(${room.id}, '${room.chatRoomName}')">✏️ Đổi tên</button>
+                </div>
+                <br>
+                <label>➕ Thêm thành viên:</label>
+                <select id="addMemberSelect_${room.id}">
+                    ${optionsHtml || "<option disabled>(Không còn bạn để thêm)</option>"}
+                </select>
+                <button onclick="
+                    actMemberToChatRoom(${room.id}, 
+                        document.getElementById('addMemberSelect_${room.id}').value, 
+                        true)">Thêm</button>
             `;
-
-            div.addEventListener("click", () => {
-                openChatRoom(room.id, room.chatRoomName);
-            });
 
             container.appendChild(div);
         });
@@ -133,18 +170,6 @@ async function loadChatRooms(page = 0, size = 10) {
     }
 }
 
-let currentChatRoomId = null;
-let currentChatRoomName = null;
-
-// async function openChatRoom(roomId, roomName) {
-//     currentChatRoomId = roomId;
-//     currentChatRoomName = roomName;
-//
-//     const container = document.getElementById("groupChatWindow");
-//     container.innerHTML = `<h3>💬 Nhóm: ${roomName}</h3><div id="groupMessages"></div>`;
-//
-//     await loadGroupMessages(roomId);
-// }
 
 async function loadGroupMessages(roomId, page = 0, size = 20) {
     try {
@@ -172,20 +197,7 @@ async function loadGroupMessages(roomId, page = 0, size = 20) {
         }
 
         messages.forEach(msg => {
-            const div = document.createElement("div");
-            div.classList.add("message-item");
-
-            if (msg.senderFullName === currentUser) {
-                div.classList.add("message-me");
-            } else {
-                div.classList.add("message-other");
-            }
-
-            div.innerHTML = `
-        <strong>${msg.senderFullName}</strong><br>
-        ${msg.message}
-        <br><small>${new Date(msg.timestamp).toLocaleString()}</small>
-    `;
+            const div = createMessageDiv(msg);
             msgContainer.appendChild(div);
         });
 
@@ -197,6 +209,47 @@ async function loadGroupMessages(roomId, page = 0, size = 20) {
         alert("❌ Lỗi khi tải tin nhắn nhóm.");
     }
 }
+
+// Hàm tách riêng để tạo div message + replies
+function createMessageDiv(msg) {
+    const div = document.createElement("div");
+    div.classList.add("message-item");
+    div.dataset.messageId = msg.messageId;
+
+    if (msg.senderFullName === currentUser) {
+        div.classList.add("message-me");
+    } else {
+        div.classList.add("message-other");
+    }
+
+    let repliesHtml = "";
+    if (msg.messageReplies && msg.messageReplies.length > 0) {
+        repliesHtml = msg.messageReplies.map(reply => `
+            <div class="message-reply">
+                <small><b>${reply.replyUser}</b>: ${reply.messageReply}</small>
+            </div>
+        `).join("");
+    }
+
+    div.innerHTML = `
+        <strong>${msg.senderFullName}</strong><br>
+        ${msg.message}<br>
+        ${repliesHtml}
+        <small>${new Date(msg.timestamp).toLocaleString()}</small>
+        <br><button onclick="startReply(${msg.messageId}, '${msg.senderFullName}', '${msg.message}')">↩️ Reply</button>
+    `;
+    return div;
+}
+
+function displayGroupMessage(msg) {
+    const msgContainer = document.getElementById("groupMessages");
+    if (!msgContainer) return;
+
+    const div = createMessageDiv(msg);
+    msgContainer.appendChild(div);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+}
+
 //xong load tin nhan
 
 let stompClient = null;
@@ -215,6 +268,8 @@ function connectWebSocket() {
     });
 }
 
+window.currentChatRoomId = null;
+window.currentChatRoomName = null;
 async function openChatRoom(roomId, roomName) {
     currentChatRoomId = roomId;
     currentChatRoomName = roomName;
@@ -224,34 +279,55 @@ async function openChatRoom(roomId, roomName) {
 
     await loadGroupMessages(roomId);
 
+    //fix real time
     // 🔔 mỗi lần mở phòng → subscribe topic của phòng đó
     stompClient.subscribe(`/topic/message${roomId}`, (message) => {
         const received = JSON.parse(message.body);
-        displayGroupMessage(received);
+
+        if (received.messageId && received.replyUser) {
+            // Đây là reply
+            displayReply(received);
+        } else {
+            // Đây là tin nhắn mới
+            displayGroupMessage(received);
+        }
     });
 }
+window.openChatRoom=openChatRoom
 
-function displayGroupMessage(msg) {
-    const msgContainer = document.getElementById("groupMessages");
-    if (!msgContainer) return;
+function displayReply(reply) {
+    // tìm message gốc theo data-message-id
+    const msgDiv = document.querySelector(`[data-message-id='${reply.messageId}']`);
+    if (!msgDiv) return;
 
-    const div = document.createElement("div");
-    div.classList.add("message-item");
+    const replyDiv = document.createElement("div");
+    replyDiv.classList.add("message-reply");
+    replyDiv.innerHTML = `<small><b>${reply.replyUser}</b>: ${reply.messageReply}</small>`;
 
-    if (msg.senderFullName === currentUser) {
-        div.classList.add("message-me");
-    } else {
-        div.classList.add("message-other");
-    }
-
-    div.innerHTML = `
-        <strong>${msg.senderFullName}</strong><br>
-        ${msg.message}
-        <br><small>${new Date(msg.timestamp).toLocaleString()}</small>
-    `;
-    msgContainer.appendChild(div);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
+    msgDiv.appendChild(replyDiv);
 }
+
+let replyTarget = null;
+
+function startReply(messageId, sender, messageText) {
+    replyTarget = { messageId, sender, messageText };
+
+    // Hiện box "đang reply..."
+    const replyBox = document.getElementById("replyBox");
+    replyBox.innerHTML = `
+        <div style="border-left:2px solid #666; padding-left:6px; margin-bottom:4px;">
+            <small>↩️ Replying to <b>${sender}</b>: ${messageText}</small>
+            <button onclick="cancelReply()">❌</button>
+        </div>
+    `;
+}
+window.startReply=startReply;
+
+function cancelReply() {
+    replyTarget = null;
+    document.getElementById("replyBox").innerHTML = "";
+}
+window.cancelReply=cancelReply
 
 // gửi tin nhắn nhóm qua socket
 const groupInputForm = document.getElementById("groupInputForm");
@@ -267,14 +343,140 @@ if (groupInputForm) {
         const message = input.value.trim();
         if (!message) return;
 
-        const body = { chatRoomId: currentChatRoomId, message: message };
-
-        // 🚀 gửi qua WebSocket
-        stompClient.send("/app/chat-group", {}, JSON.stringify(body));
-
+        if (replyTarget) {
+            stompClient.send("/app/message-reply", {}, JSON.stringify({
+                chatRoomId: currentChatRoomId,
+                messageId: replyTarget.messageId,
+                replyText: message
+            }));
+            cancelReply();
+        } else {
+            stompClient.send("/app/chat-group", {}, JSON.stringify({
+                chatRoomId: currentChatRoomId,
+                message: message
+            }));
+        }
         input.value = "";
     });
 }
+
+// 📌 Gọi API thêm / xóa thành viên
+async function actMemberToChatRoom(chatRoomId, memberId, act) {
+    try {
+        const body = {
+            chatRoomId: chatRoomId,
+            memberId: memberId,
+            act: act   // true = thêm, false = xóa
+        };
+
+        const res = await fetch(`${API_BASE}/chat-room/act-member`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            alert(`✅ ${act ? "Thêm" : "Xóa"} thành viên thành công!`);
+            // Sau khi thêm / xoá thì reload lại danh sách phòng
+            loadChatRooms();
+        } else {
+            alert(`${act ? "Thêm" : "Xóa"}: ${json.message}`);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi gọi API act-member.");
+    }
+}
+window.actMemberToChatRoom=actMemberToChatRoom
+
+async function exitChatRoom(chatRoomId) {
+    if (!confirm("⚠️ Bạn có chắc chắn muốn rời nhóm này không?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/chat-room/${chatRoomId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            alert("✅ Rời nhóm thành công!");
+            loadChatRooms();
+        } else {
+            alert("❌ Không rời được nhóm: " + json.message);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi gọi API rời nhóm.");
+    }
+}
+window.exitChatRoom = exitChatRoom;
+
+async function renameChatRoom(chatRoomId, oldName) {
+    const newName = prompt("✏️ Nhập tên mới cho nhóm:", oldName);
+    if (!newName || newName.trim() === "" || newName === oldName) return;
+
+    try {
+        const body = {
+            chatRoomId: chatRoomId,
+            newName: newName.trim()
+        };
+
+        const res = await fetch(`${API_BASE}/chat-room/rename`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            alert("✅ Đổi tên nhóm thành công:" + json.message);
+            loadChatRooms();
+        } else {
+            alert("❌ Không đổi được tên nhóm: " + json.message);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi gọi API đổi tên nhóm.");
+    }
+}
+window.renameChatRoom = renameChatRoom;
+
+async function deleteChatRoom(chatRoomId) {
+    if (!confirm("⚠️ Bạn có chắc muốn XÓA NHÓM này không? Hành động này không thể hoàn tác!")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/chat-room/${chatRoomId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            alert("✅ Đã xóa nhóm thành công: " + json.message);
+            loadChatRooms();
+        } else {
+            alert("❌ Không xóa được nhóm: " + json.message);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi gọi API xóa nhóm.");
+    }
+}
+window.deleteChatRoom = deleteChatRoom;
 
 window.onload = () => {
     loadFriendsForGroup();

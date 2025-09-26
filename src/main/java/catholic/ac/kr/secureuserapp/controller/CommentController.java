@@ -2,7 +2,7 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CommentDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CommentRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CommentRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.CommentService;
 import lombok.RequiredArgsConstructor;

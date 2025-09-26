@@ -4,6 +4,8 @@ import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.ChangePasswordRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.UpdateProfileRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.model.entity.User;

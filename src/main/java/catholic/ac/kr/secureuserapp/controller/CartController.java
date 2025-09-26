@@ -1,9 +1,9 @@
 package catholic.ac.kr.secureuserapp.controller;
 
-import catholic.ac.kr.secureuserapp.model.dto.AddToCartRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.AddToCartRequest;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CartDTO;
-import catholic.ac.kr.secureuserapp.model.dto.UpdateCartRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.UpdateCartRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.CartService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,5 @@
-package catholic.ac.kr.secureuserapp.model.dto;
+package catholic.ac.kr.secureuserapp.model.dto.request;
 
-import catholic.ac.kr.secureuserapp.model.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 

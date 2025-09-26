@@ -1,9 +1,7 @@
-package catholic.ac.kr.secureuserapp.model.dto;
+package catholic.ac.kr.secureuserapp.model.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.sql.Timestamp;
 
 @Getter @Setter
 public class PostRequest {

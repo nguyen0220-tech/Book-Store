@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.FriendRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.FriendService;
 import lombok.RequiredArgsConstructor;

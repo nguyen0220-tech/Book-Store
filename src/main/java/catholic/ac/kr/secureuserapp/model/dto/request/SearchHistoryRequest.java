@@ -1,4 +1,4 @@
-package catholic.ac.kr.secureuserapp.model.dto;
+package catholic.ac.kr.secureuserapp.model.dto.request;
 
 import catholic.ac.kr.secureuserapp.Status.SearchType;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.RoleToUserRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.RoleToUserRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.service.RoleToUserService;
 import lombok.RequiredArgsConstructor;

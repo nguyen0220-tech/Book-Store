@@ -3,7 +3,7 @@ package catholic.ac.kr.secureuserapp.controller;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.PointDTO;
 import catholic.ac.kr.secureuserapp.model.dto.PointHistory;
-import catholic.ac.kr.secureuserapp.model.dto.PointRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.PointRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.PointService;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,9 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
-import catholic.ac.kr.secureuserapp.model.dto.CouponClaimRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CouponClaimRequest;
 import catholic.ac.kr.secureuserapp.model.dto.CouponDTO;
-import catholic.ac.kr.secureuserapp.model.dto.CouponRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.CouponRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.CouponClaimService;
 import catholic.ac.kr.secureuserapp.service.CouponService;

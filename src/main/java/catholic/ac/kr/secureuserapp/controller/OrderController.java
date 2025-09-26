@@ -3,7 +3,7 @@ package catholic.ac.kr.secureuserapp.controller;
 import catholic.ac.kr.secureuserapp.Status.OrderStatus;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.OrderDTO;
-import catholic.ac.kr.secureuserapp.model.dto.OrderRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.OrderRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Order;
 import catholic.ac.kr.secureuserapp.repository.OrderRepository;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;

@@ -2,7 +2,7 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.SearchHistoryDTO;
-import catholic.ac.kr.secureuserapp.model.dto.SearchHistoryRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.SearchHistoryRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.SearchHistoryService;
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,12 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
-import catholic.ac.kr.secureuserapp.Status.ChatType;
 import catholic.ac.kr.secureuserapp.Status.MessageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -42,8 +43,7 @@ public class Message {
     @Column(nullable = false)
     private MessageStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ChatType type;
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageReply> messageReplies = new ArrayList<>();
 
 }

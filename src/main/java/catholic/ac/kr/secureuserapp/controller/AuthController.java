@@ -1,6 +1,10 @@
 package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.*;
+import catholic.ac.kr.secureuserapp.model.dto.request.FindUserRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.LoginRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.LogoutRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.SignupRequest;
 import catholic.ac.kr.secureuserapp.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

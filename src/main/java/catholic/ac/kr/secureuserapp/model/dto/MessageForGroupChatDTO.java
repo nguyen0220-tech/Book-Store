@@ -4,10 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter @Setter
 public class MessageForGroupChatDTO {
     private String senderFullName;
+    private Long messageId;
     private String message;
     private Timestamp timestamp;
+    private List<MessageReplyDTO> messageReplies;
 }
