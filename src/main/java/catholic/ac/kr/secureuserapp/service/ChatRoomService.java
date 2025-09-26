@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.ChatRoomType;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.ChatRoomMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -26,11 +28,11 @@ public class ChatRoomService {
 
     public ApiResponse<Page<ChatRoomDTO>> getChatRoomsByUserId(Long userId, int page, int size) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ChatRoom> chatRooms = chatRoomRepository.findByUserId(user.getId(),pageable);
+        Page<ChatRoom> chatRooms = chatRoomRepository.findByUserId(user.getId(), String.valueOf(ChatRoomType.GROUP_CHAT), pageable);
 
         Page<ChatRoomDTO> chatRoomDTOS = chatRooms.map(ChatRoomMapper::convertToDTO);
 
@@ -49,10 +51,62 @@ public class ChatRoomService {
         chatRoom.setOwner(owner);
         chatRoom.setMembers(members);
         chatRoom.setChatRoomName(request.getChatRoomName());
+        chatRoom.setType(ChatRoomType.GROUP_CHAT);
 
         chatRoomRepository.save(chatRoom);
 
         return ApiResponse.success("Chat room created");
     }
 
+    public ApiResponse<String> setMemberToChatRoom(Long userId, Long chatRoomId, Long memberId, Boolean act) {
+
+
+        boolean success =  setUserForChatRoom(userId, chatRoomId, memberId, act);
+
+        if (success) {
+           return ApiResponse.success("success");
+        }
+
+        return ApiResponse.success("fail");
+    } //fix loi khong the xoa thanh vien do rang buoc message
+
+    private boolean setUserForChatRoom(Long userId, Long chatRoomId, Long memberId, boolean act) {
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        User member = userRepository.findById(memberId)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ResourceNotFoundException("chatRoom not found"));
+
+        if (currentUser.getId().equals(chatRoom.getOwner().getId())) {
+            //true : add    false : remove
+            if (act) {
+                chatRoom.getMembers().add(member);
+            } else {
+                chatRoom.getMembers().remove(member);
+            }
+            chatRoomRepository.save(chatRoom);
+            return true;
+        }
+        return false;
+
+    }
+
+    //    public ApiResponse<String> exitChatRoom(Long userId,Long chatRoomId) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+//
+//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+//                .orElseThrow(() -> new ResourceNotFoundException("chatRoom not found"));
+//
+//        Set<User> members = chatRoom.getMembers();
+//
+//        if (!members.contains(user)) {
+//            return ApiResponse.success("Member does not exist");
+//        }
+//
+//        members.remove(user);
+//    }
 }

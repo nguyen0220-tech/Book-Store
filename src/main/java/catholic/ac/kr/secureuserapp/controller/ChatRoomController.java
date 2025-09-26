@@ -31,7 +31,7 @@ public class ChatRoomController {
             @PathVariable Long chatRoomId,
             @RequestParam int page,
             @RequestParam int size) {
-        return ResponseEntity.ok(messageService.getMessagesForChatRoom(userDetails.getUser().getId(), chatRoomId, page, size));
+        return ResponseEntity.ok(messageService.getMessagesFromChatRoom(userDetails.getUser().getId(), chatRoomId, page, size));
     }
 
     @PostMapping
@@ -41,4 +41,16 @@ public class ChatRoomController {
     ) {
         return ResponseEntity.ok(chatRoomService.createChatRoom(userDetails.getUser().getId(), request));
     }
+
+    @PostMapping("act-member")
+    public ResponseEntity<ApiResponse<String>> actMemberToChatRoom(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @RequestBody ActMemberToGroupRequest request){
+        return ResponseEntity.ok(chatRoomService.setMemberToChatRoom(
+                userDetails.getUser().getId(),
+                request.getChatRoomId(),
+                request.getMemberId(),
+                request.getAct()));
+    }
+
 }

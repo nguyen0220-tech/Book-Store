@@ -22,8 +22,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Optional<ChatRoom> findByRoomName(@Param("roomName") String roomName);
 
     @Query(value = "SELECT cr.* FROM chat_room cr " +
-            "JOIN chat_room_members crm ON cr.id = crm.chat_room_id" +
-            " WHERE crm.user_id = :userId " +
-            "ORDER BY cr.created_at DESC ",nativeQuery = true)
-    Page<ChatRoom> findByUserId(@Param("userId") Long userId, Pageable pageable);
+            " JOIN chat_room_members crm ON cr.id = crm.chat_room_id" +
+            " WHERE crm.user_id = :userId AND cr.type = :type" +
+            " ORDER BY cr.created_at DESC ",nativeQuery = true)
+    Page<ChatRoom> findByUserId(@Param("userId") Long userId,@Param("type") String type, Pageable pageable);
 }

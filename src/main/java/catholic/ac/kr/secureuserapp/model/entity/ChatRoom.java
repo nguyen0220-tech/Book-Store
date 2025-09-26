@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
+import catholic.ac.kr.secureuserapp.Status.ChatRoomType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,10 @@ public class ChatRoom {
     private User owner;
 
     private Timestamp createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChatRoomType type;
 
     @PrePersist
     protected void onCreated(){createdAt = new Timestamp(System.currentTimeMillis());}

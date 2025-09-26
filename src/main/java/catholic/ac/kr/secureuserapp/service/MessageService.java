@@ -1,6 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
-import catholic.ac.kr.secureuserapp.Status.ChatType;
+import catholic.ac.kr.secureuserapp.Status.ChatRoomType;
 import catholic.ac.kr.secureuserapp.Status.MessageStatus;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.MessageMapper;
@@ -55,8 +55,8 @@ public class MessageService {
         return ApiResponse.success("List of chat messages two way", messageDTOS);
     }
 
-    public ApiResponse<Page<MessageForGroupChatDTO>> getMessagesForChatRoom(Long userId,Long chatRoomId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").descending());
+    public ApiResponse<Page<MessageForGroupChatDTO>> getMessagesFromChatRoom(Long userId,Long chatRoomId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").ascending());
 
         Page<Message> messages = messageRepository.findMessageGroupChatByUserIdAndChatRoomId(userId, chatRoomId, pageable);
 
@@ -85,6 +85,7 @@ public class MessageService {
                             .members(Set.of(sender, recipient))
                             .chatRoomName(roomName)
                             .owner(sender)
+                            .type(ChatRoomType.CHAT_1VS1)
                             .build();
 
                     return chatRoomRepository.save(chatRoom);
@@ -98,7 +99,6 @@ public class MessageService {
         }
 
         message.setStatus(MessageStatus.SEND);
-        message.setType(ChatType.CHAT_1VS1);
         message.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
         messageRepository.save(message);
@@ -133,7 +133,6 @@ public class MessageService {
                 .status(MessageStatus.SEND)
                 .sender(user)
                 .timestamp(new Timestamp(System.currentTimeMillis()))
-                .type(ChatType.GROUP_CHAT)
                 .build();
 
         User admin = userRepository.findByUsername("admin")

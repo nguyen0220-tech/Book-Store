@@ -85,8 +85,10 @@ async function createChatRoom() {
     }
 }
 
+/////////////////////////////
 async function loadChatRooms(page = 0, size = 10) {
     try {
+        // gọi API lấy danh sách phòng
         const res = await fetch(`${API_BASE}/chat-room?page=${page}&size=${size}`, {
             method: "GET",
             headers: {
@@ -100,6 +102,13 @@ async function loadChatRooms(page = 0, size = 10) {
             alert("❌ Không lấy được danh sách phòng chat: " + json.message);
             return;
         }
+
+        // gọi API lấy danh sách bạn bè 1 lần
+        const friendsRes = await fetch(`${API_BASE}/friend/with-admin?page=0&size=100`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const friendsJson = await friendsRes.json();
+        const allFriends = friendsJson.success ? friendsJson.data.content : [];
 
         const chatRooms = json.data.content; // Page<ChatRoomDTO>
         const container = document.getElementById("chatRoomList");
@@ -115,14 +124,36 @@ async function loadChatRooms(page = 0, size = 10) {
             div.classList.add("chat-room-item");
             div.dataset.roomId = room.id;
 
+            // 🚀 render danh sách thành viên
+            const membersHtml = Object.entries(room.members).map(([userId, username]) => `
+                <li>
+                    ${username} 
+                    <button onclick="actMemberToChatRoom(${room.id}, ${userId}, false)">❌ Xóa</button>
+                </li>
+            `).join("");
+
+            // lọc ra bạn bè chưa có trong group
+            const memberIds = Object.keys(room.members).map(Number);
+            const optionsHtml = allFriends
+                .filter(f => !memberIds.includes(f.friendId))
+                .map(f => `<option value="${f.friendId}">${f.friendUsername}</option>`)
+                .join("");
+
             div.innerHTML = `
                 <strong>${room.chatRoomName}</strong><br>
-                <small>Thành viên: ${Array.from(room.usernames).join(", ")}</small>
+                <small>Thành viên:</small>
+                <ul>${membersHtml}</ul>
+                <button onclick="openChatRoom(${room.id}, '${room.chatRoomName}')">💬 Vào nhóm</button>
+                <br>
+                <label>➕ Thêm thành viên:</label>
+                <select id="addMemberSelect_${room.id}">
+                    ${optionsHtml || "<option disabled>(Không còn bạn để thêm)</option>"}
+                </select>
+                <button onclick="
+                    actMemberToChatRoom(${room.id}, 
+                        document.getElementById('addMemberSelect_${room.id}').value, 
+                        true)">Thêm</button>
             `;
-
-            div.addEventListener("click", () => {
-                openChatRoom(room.id, room.chatRoomName);
-            });
 
             container.appendChild(div);
         });
@@ -133,18 +164,6 @@ async function loadChatRooms(page = 0, size = 10) {
     }
 }
 
-let currentChatRoomId = null;
-let currentChatRoomName = null;
-
-// async function openChatRoom(roomId, roomName) {
-//     currentChatRoomId = roomId;
-//     currentChatRoomName = roomName;
-//
-//     const container = document.getElementById("groupChatWindow");
-//     container.innerHTML = `<h3>💬 Nhóm: ${roomName}</h3><div id="groupMessages"></div>`;
-//
-//     await loadGroupMessages(roomId);
-// }
 
 async function loadGroupMessages(roomId, page = 0, size = 20) {
     try {
@@ -215,6 +234,8 @@ function connectWebSocket() {
     });
 }
 
+window.currentChatRoomId = null;
+window.currentChatRoomName = null;
 async function openChatRoom(roomId, roomName) {
     currentChatRoomId = roomId;
     currentChatRoomName = roomName;
@@ -230,6 +251,7 @@ async function openChatRoom(roomId, roomName) {
         displayGroupMessage(received);
     });
 }
+window.openChatRoom=openChatRoom
 
 function displayGroupMessage(msg) {
     const msgContainer = document.getElementById("groupMessages");
@@ -275,6 +297,39 @@ if (groupInputForm) {
         input.value = "";
     });
 }
+
+// 📌 Gọi API thêm / xóa thành viên
+async function actMemberToChatRoom(chatRoomId, memberId, act) {
+    try {
+        const body = {
+            chatRoomId: chatRoomId,
+            memberId: memberId,
+            act: act   // true = thêm, false = xóa
+        };
+
+        const res = await fetch(`${API_BASE}/chat-room/act-member`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            alert(`✅ ${act ? "Thêm" : "Xóa"} thành viên thành công!`);
+            // Sau khi thêm / xoá thì reload lại danh sách phòng
+            loadChatRooms();
+        } else {
+            alert(`❌ ${act ? "Thêm" : "Xóa"} thất bại: ${json.message}`);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ Lỗi khi gọi API act-member.");
+    }
+}
+window.actMemberToChatRoom=actMemberToChatRoom
 
 window.onload = () => {
     loadFriendsForGroup();

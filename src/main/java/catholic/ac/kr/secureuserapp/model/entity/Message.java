@@ -1,6 +1,5 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
-import catholic.ac.kr.secureuserapp.Status.ChatType;
 import catholic.ac.kr.secureuserapp.Status.MessageStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,9 +40,5 @@ public class Message {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessageStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ChatType type;
 
 }
