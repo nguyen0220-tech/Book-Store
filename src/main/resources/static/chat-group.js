@@ -232,8 +232,8 @@ function createMessageDiv(msg) {
     }
 
     div.innerHTML = `
-        <strong>${msg.senderFullName}</strong><br>
-        ${msg.message}<br>
+        <strong style="color: blue">${msg.senderFullName}</strong><br>
+        "${msg.message}"<br>
         ${repliesHtml}
         <small>${new Date(msg.timestamp).toLocaleString()}</small>
         <br><button onclick="startReply(${msg.messageId}, '${msg.senderFullName}', '${msg.message}')">↩️ Reply</button>

@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.model.dto;
 
+import catholic.ac.kr.secureuserapp.Status.Rating;
 import lombok.Data;
 
 import java.sql.Timestamp;
@@ -15,4 +16,5 @@ public class ReviewDTO {
     private String author;
     private String content;
     private Timestamp createdAt;
+    private int rating;
 }

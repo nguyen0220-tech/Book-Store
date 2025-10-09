@@ -1,5 +1,7 @@
 package catholic.ac.kr.secureuserapp.model.entity;
 
+import catholic.ac.kr.secureuserapp.Status.Rating;
+import catholic.ac.kr.secureuserapp.convert.RatingConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,6 +33,9 @@ public class Review {
 
     @Column(nullable = false,length = 2000)
     private String content;
+
+    @Convert(converter = RatingConverter.class)
+    private Rating rating;
 
     @Column(nullable = false)
     private Timestamp createdAt;

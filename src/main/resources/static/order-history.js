@@ -1,5 +1,6 @@
 const API_BASE = window.location.origin;
 const accessToken = localStorage.getItem("accessToken");
+const selectedRatings = {}; // Lưu rating tạm thời cho từng (orderId, bookId)
 
 let currentPage = 0;
 const pageSize = 5;
@@ -151,14 +152,27 @@ function renderOrders(orders) {
 
             if (!item.reviewed) {
                 html += `
-                <div style="margin-top: 10px;">
-                    <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
-                    <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
-                </div>
-                `;
+    <div style="margin-top: 10px;">
+        <div style="margin-bottom: 5px;">
+            <label>⭐ Đánh giá:</label><br/>
+            <span class="rating-stars" id="rating-${order.orderId}-${item.bookId}">
+                ${[1, 2, 3, 4, 5].map(i => `
+                    <span 
+                        onclick="setRating(${order.orderId}, ${item.bookId}, ${i})"
+                        id="star-${order.orderId}-${item.bookId}-${i}"
+                        style="cursor:pointer; font-size:22px; color:gray;">★
+                    </span>
+                `).join('')}
+            </span>
+        </div>
+        <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
+        <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
+    </div>
+    `;
             } else {
                 html += `<p style="color: green; margin-top: 10px;">✅ Bạn đã đánh giá sách này</p>`;
             }
+
 
             html += `</div>`; // close .order-item
         }
@@ -200,9 +214,31 @@ function formatDateTime(timestamp) {
     return date.toLocaleString("ko-KR");
 }
 
+function setRating(orderId, bookId, value) {
+    const key = `${orderId}-${bookId}`;
+    selectedRatings[key] = value;
+
+    // Cập nhật hiển thị sao (vàng đến số sao được chọn)
+    for (let i = 1; i <= 5; i++) {
+        const star = document.getElementById(`star-${orderId}-${bookId}-${i}`);
+        if (star) {
+            star.style.color = i <= value ? "gold" : "gray";
+        }
+    }
+}
+window.setRating = setRating;
+
 async function submitReview(bookId, orderId) {
     const textarea = document.getElementById(`review-input-${orderId}-${bookId}`);
     const content = textarea.value.trim();
+
+    const key = `${orderId}-${bookId}`;
+    const rating = selectedRatings[key];
+
+    if (!rating) {
+        alert("⚠️ Vui lòng chọn số sao trước khi gửi đánh giá.");
+        return;
+    }
 
     if (!content) {
         alert("⚠️ Vui lòng nhập nội dung đánh giá.");
@@ -212,7 +248,8 @@ async function submitReview(bookId, orderId) {
     const review = {
         bookId: bookId,
         orderId: orderId,
-        content: content
+        content: content,
+        rating: rating
     };
 
     try {
@@ -229,6 +266,10 @@ async function submitReview(bookId, orderId) {
         if (res.ok && result.success) {
             alert("✅ Đã gửi đánh giá thành công!");
             textarea.disabled = true;
+
+            // Khóa chọn sao sau khi gửi
+            const stars = document.getElementById(`rating-${orderId}-${bookId}`);
+            if (stars) stars.style.pointerEvents = "none";
         } else {
             alert(result.message || "❌ Gửi đánh giá thất bại.");
         }
@@ -237,7 +278,7 @@ async function submitReview(bookId, orderId) {
     }
 }
 
-window.submitReview = submitReview
+window.submitReview = submitReview;
 
 function formatDate(timestamp) {
     const date = new Date(timestamp);

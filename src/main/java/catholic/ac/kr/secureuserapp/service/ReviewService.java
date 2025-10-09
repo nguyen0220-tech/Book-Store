@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.Rating;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.ReviewMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
@@ -63,6 +64,7 @@ public class ReviewService {
         review.setBook(book);
         review.setContent(reviewDTO.getContent());
         review.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        review.setRating(Rating.getRating(reviewDTO.getRating()));
 
         reviewRepository.save(review);
 

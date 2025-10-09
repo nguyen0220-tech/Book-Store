@@ -8,10 +8,28 @@
     <link rel="icon" type="image/png" sizes="16x16" href="icon/favicon-16x16.png">
     <link rel="manifest" href="icon/site.webmanifest">
     <style>
+        .nav {
+            text-decoration: none;
+            color: #0b5ed7;
+            font-size: 25px;
+            padding: 5px 5px 5px 5px;
+
+        }
+
+        .home{
+            text-decoration: none;
+        }
+
+        .home:hover{
+            font-size: 35px;
+            color: #e67e22;
+        }
+
         body {
             display: flex;
             gap: 10px;
         }
+
         iframe {
             width: 50%;
             height: 500px;
@@ -20,6 +38,13 @@
     </style>
 </head>
 <body>
+<div>
+    <div class="nav"><a href="home.html" class="home">Trang chủ</a></div>
+    <div class="nav"><a href="user-profile.html" class="home">Thông tin cá nhân</a></div>
+    <div class="nav"><a href="friend.html" class="home">Bạn bè</a></div>
+    <div class="nav"><a href="post.html" class="home">Bài post</a></div>
+
+</div>
 
 <!-- Iframe 1 -->
 <iframe src="chat.html"></iframe>
