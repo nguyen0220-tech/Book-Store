@@ -21,6 +21,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.isDeleted = false AND LOWER(b.category.name) LIKE LOWER(CONCAT('%', :category, '%'))")
     Page<Book> findByCategory(@Param("category") String category, Pageable pageable);
 
+//    @Query("""
+//            SELECT new catholic.ac.kr.secureuserapp.model.dto.BookDetailDTO(
+//            b.id,b.title,b.author,b.price,b.salePrice,b.saleExpiry,
+//            b.description,b.imgUrl,b.category.name,avg(r.rating))
+//            FROM Book b
+//            JOIN Review r ON b.id = r.book.id
+//            WHERE b.id = :bookId
+//            """)
+//    BookDetailDTO findBookDetailById(@Param("bookId") Long bookId);
+
     //random books
     @Query(value = "SELECT * FROM Book b WHERE b.is_deleted = false ORDER BY random() LIMIT :limit OFFSET :offset", nativeQuery = true)
     List<Book> findRandomBooks(@Param("limit") int limit, @Param("offset") int offset);

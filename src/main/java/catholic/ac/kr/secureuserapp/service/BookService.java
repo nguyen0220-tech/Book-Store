@@ -28,6 +28,7 @@ public class BookService {
     private final NotificationService notificationService;
     private final BookMarkRepository bookMarkRepository;
     private final CartRepository cartRepository;
+    private final ReviewRepository reviewRepository;
 
     public ApiResponse<BookDTO> getBookById(Long bookId) {
         Book book = bookRepository.findById(bookId)
@@ -38,8 +39,21 @@ public class BookService {
         return ApiResponse.success("Book found", bookDTO);
     }
 
+    public ApiResponse<BookDetailDTO> getBookDetailById(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
+
+        BookDetailDTO bookDetailDTO = bookMapper.bookToBookDetailDTO(book);
+
+        Double avgRating = reviewRepository.getAvgRatingByBookId(book.getId());
+
+        bookDetailDTO.setAverageRating(avgRating != null ? avgRating : 0.0);
+
+        return ApiResponse.success("Book found", bookDetailDTO);
+    }
+
     public ApiResponse<Page<BookDTO>> getAllBooks(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Book> books = bookRepository.findAll(pageable);
         Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
 
@@ -114,12 +128,12 @@ public class BookService {
         return ApiResponse.success("Suggest books from friends", pageResult);
     }
 
-   public ApiResponse<List<BookPaidMany>> getBooksPaidMany(Long userId) {
+    public ApiResponse<List<BookPaidMany>> getBooksPaidMany(Long userId) {
         List<BookPaidMany> list = bookRepository.findBookPaidMany(userId);
         return ApiResponse.success("Books paid many", list);
-   }
+    }
 
-   public ApiResponse<List<SuggestBookFromCartDTO>> getSuggestBookFromCart(Long userId) {
+    public ApiResponse<List<SuggestBookFromCartDTO>> getSuggestBookFromCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
@@ -127,30 +141,30 @@ public class BookService {
                 .map(item -> item.getBook().getId())
                 .collect(Collectors.toSet());
 
-       Set<String> categoryNames = cart.getItems().stream()
-               .map(item -> item.getBook().getCategory().getName())
-               .collect(Collectors.toSet());
+        Set<String> categoryNames = cart.getItems().stream()
+                .map(item -> item.getBook().getCategory().getName())
+                .collect(Collectors.toSet());
 
-       Set<Long> added = new HashSet<>();
-       List<SuggestBookFromCartDTO> listSuggest = new ArrayList<>(); //danh sach de xuat cung the loai khi da loc nhung sach co trong cart hien tai
+        Set<Long> added = new HashSet<>();
+        List<SuggestBookFromCartDTO> listSuggest = new ArrayList<>(); //danh sach de xuat cung the loai khi da loc nhung sach co trong cart hien tai
 
-       for (String categoryName : categoryNames) {
-           List<Book> bookList = bookRepository.findBooksSuggestByCategory(categoryName);
-           for (Book book : bookList) {
-               if (!bookIdsInCart.contains(book.getId()) && added.add(book.getId())) {
-                   listSuggest.add(new SuggestBookFromCartDTO(
-                           book.getId(),
-                           book.getTitle(),
-                           book.getPrice(),
-                           book.getSalePrice(),
-                           book.getImgUrl()
-                   ));
-               }
-           }
-       }
+        for (String categoryName : categoryNames) {
+            List<Book> bookList = bookRepository.findBooksSuggestByCategory(categoryName);
+            for (Book book : bookList) {
+                if (!bookIdsInCart.contains(book.getId()) && added.add(book.getId())) {
+                    listSuggest.add(new SuggestBookFromCartDTO(
+                            book.getId(),
+                            book.getTitle(),
+                            book.getPrice(),
+                            book.getSalePrice(),
+                            book.getImgUrl()
+                    ));
+                }
+            }
+        }
 
         return ApiResponse.success("Suggest books from cart", listSuggest);
-   }
+    }
 
     public ApiResponse<List<TopBookDTO>> getTopBooks() {
         List<TopBookDTO> topBookDTOS = bookRepository.findTop5SellingBooks(PageRequest.of(0, 5));
@@ -247,7 +261,7 @@ public class BookService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Page<BookDTO>> getAllBooksHavingASale(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size,Sort.by("salePrice").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("salePrice").descending());
         Page<Book> books = bookRepository.findBookHavingASale(LocalDate.now(), pageable);
 
         Page<BookDTO> bookDTOS = bookMapper.toBookDTO(books);
@@ -266,7 +280,7 @@ public class BookService {
         return ApiResponse.success("All books from store", bookDTOS);
     }
 
-    public void resetPriceBook(){
+    public void resetPriceBook() {
         List<Book> bookList = bookRepository.findBooksSalePriceExpiry(LocalDate.now());
 
         for (Book book : bookList) {

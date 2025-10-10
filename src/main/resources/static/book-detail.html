@@ -90,6 +90,20 @@
 <div id="bookDetailContainer">
     <!-- Nội dung sách sẽ được render bằng JS -->
 </div>
+<div id="reviewSection" style="max-width: 900px; margin: 20px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h2>💬 Đánh giá của người dùng</h2>
+    <div style="margin-bottom:10px;">
+        <label for="filterReview">Filter:</label>
+        <select id="filterReview">
+            <option value="REVIEW_NEW">Mới nhất</option>
+            <option value="RATING_HIGH">Điểm cao nhất</option>
+            <option value="RATING_LOW">Điểm thấp nhất</option>
+        </select>
+        <button id="applyFilterBtn" style="margin-left:10px;">Áp dụng</button>
+    </div>
+    <div id="reviewList"></div>
+    <button id="loadMoreReviews" style="margin-top:10px; padding:6px 12px; cursor:pointer;">Xem thêm</button>
+</div>
 
 <script type="module" src="/auth-utils.js"></script>
 <!-- Phần JS -->
@@ -104,7 +118,7 @@
 
     async function fetchBookDetail(bookId) {
         try {
-            const res = await fetch(`${API_BASE}/book/${bookId}`, {
+            const res = await fetch(`${API_BASE}/book/detail/${bookId}`, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             const result = await res.json();
@@ -124,40 +138,127 @@
         let priceHtml;
         if (book.salePrice && book.salePrice < book.price) {
             priceHtml = `
-                <p class="price">
-                    <del>${book.price.toLocaleString()} ₩</del>
-                    <span class="sale">${book.salePrice.toLocaleString()} ₩</span>
-                </p>
-            `;
+            <p class="price">
+                <del>${book.price.toLocaleString()} ₩</del>
+                <span class="sale">${book.salePrice.toLocaleString()} ₩</span>
+            </p>
+        `;
         } else {
             priceHtml = `<p class="price">${book.price.toLocaleString()} ₩</p>`;
         }
 
-        // Render chi tiết + input số lượng + nút thêm giỏ
+        // ⭐ Hiển thị điểm trung bình đánh giá (có thể là 0.0)
+        const avg = book.averageRating?.toFixed(1) || "0.0";
+        const stars = renderStars(avg);
+
         container.innerHTML = `
-            <img src="${book.imgUrl || '/default-book.png'}" alt="${book.title}">
-            <div class="book-info">
-                <h2>${book.title}</h2>
-                <p><b>Tác giả:</b> ${book.author || "Không rõ"}</p>
-                ${priceHtml}
-                <p><b>Thể loại:</b> ${book.categoryName}</p>
-                <p><b>Mô tả:</b> ${book.description || "Chưa có mô tả"}</p>
-                <p class="stock">Kho: ${book.stock}</p>
-                <div style="margin-top:10px;">
-                    <label for="qty-detail">Số lượng:</label>
-                    <input type="number" id="qty-detail" value="1" min="1" max="${book.stock}" style="width:60px; margin-left:5px;">
-                    <button id="addCartBtn" style="margin-left:10px; padding:6px 12px; background:#3498db; color:white; border:none; border-radius:6px; cursor:pointer;">
-                        🛒 Thêm vào giỏ
-                    </button>
-                </div>
+        <img src="${book.imgUrl || '/default-book.png'}" alt="${book.title}">
+        <div class="book-info">
+            <h2>${book.title}</h2>
+            <p><b>Tác giả:</b> ${book.author || "Không rõ"}</p>
+            ${priceHtml}
+            <p><b>Thể loại:</b> ${book.categoryName}</p>
+
+            <p><b>⭐ Đánh giá trung bình:</b> ${stars} (${avg}/5)</p>
+
+            <p><b>Mô tả:</b> ${book.description || "Chưa có mô tả"}</p>
+            <div style="margin-top:10px;">
+                <label for="qty-detail">Số lượng:</label>
+                <input type="number" id="qty-detail" value="1" min="1" max="${book.stock}" style="width:60px; margin-left:5px;">
+                <button id="addCartBtn" style="margin-left:10px; padding:6px 12px; background:#3498db; color:white; border:none; border-radius:6px; cursor:pointer;">
+                    🛒 Thêm vào giỏ
+                </button>
             </div>
-        `;
+        </div>
+    `;
 
         document.getElementById("addCartBtn").addEventListener("click", () => {
             const qty = parseInt(document.getElementById("qty-detail").value) || 1;
             addToCart(book.id, qty);
         });
     }
+
+    // 🟡 Hàm tạo biểu tượng sao từ điểm trung bình
+    function renderStars(avg) {
+        const fullStar = "⭐";
+        const emptyStar = "☆";
+        const rounded = Math.round(avg);
+        return fullStar.repeat(rounded) + emptyStar.repeat(5 - rounded);
+    }
+
+    let reviewPage = 0;
+    const reviewSize = 5;
+    let totalReviewPages = 1;
+    let currentFilter = "REVIEW_NEW"; // mặc định
+
+    async function fetchReviewsByBookId(bookId, page = 0, size = 5, filter = currentFilter) {
+        try {
+            const res = await fetch(`${API_BASE}/review/book/detail?bookId=${bookId}&filter=${filter}&page=${page}&size=${size}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                renderReviewList(result.data.content, page === 0);
+                totalReviewPages = result.data.totalPages;
+            } else {
+                if (page === 0)
+                    document.getElementById("reviewList").innerHTML = `<p>Không thể tải danh sách đánh giá.</p>`;
+            }
+        } catch (err) {
+            if (page === 0)
+                document.getElementById("reviewList").innerHTML = `<p>Lỗi server: ${err.message}</p>`;
+        }
+    }
+
+    function renderReviewList(reviews, reset = false) {
+        const container = document.getElementById("reviewList");
+        if (reset) container.innerHTML = "";
+        if (!reviews || reviews.length === 0) {
+            if (reset) container.innerHTML = `<p>📭 Chưa có đánh giá nào cho sách này.</p>`;
+            return;
+        }
+
+        const html = reviews.map(r => `
+        <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+            <p><b>${r.username}</b> — <small>${new Date(r.createdAt).toLocaleDateString()}</small></p>
+            <p>⭐ ${ratingToNumber(r.rating)}/5</p>
+            <p>${r.content}</p>
+        </div>
+    `).join("");
+
+        container.insertAdjacentHTML("beforeend", html);
+    }
+
+    function ratingToNumber(rating) {
+        switch (rating) {
+            case "ONE": return 1;
+            case "TWO": return 2;
+            case "THREE": return 3;
+            case "FOUR": return 4;
+            case "FIVE": return 5;
+            default: return 0;
+        }
+    }
+
+    document.getElementById("loadMoreReviews").addEventListener("click", () => {
+        if (reviewPage + 1 >= totalReviewPages) {
+            alert("Không còn review nào nữa.");
+            return;
+        }
+        reviewPage++;
+        const bookId = getBookIdFromUrl();
+        fetchReviewsByBookId(bookId, reviewPage, reviewSize, currentFilter);
+    });
+
+
+    document.getElementById("applyFilterBtn").addEventListener("click", () => {
+        const bookId = getBookIdFromUrl();
+        currentFilter = document.getElementById("filterReview").value;
+        reviewPage = 0;
+        fetchReviewsByBookId(bookId, reviewPage, reviewSize, currentFilter);
+    });
+
 
     // Hàm gọi API thêm vào giỏ
     async function addToCart(bookId, quantity) {
@@ -190,6 +291,7 @@
             return;
         }
         fetchBookDetail(bookId);
+        fetchReviewsByBookId(bookId);
     }
 </script>
 

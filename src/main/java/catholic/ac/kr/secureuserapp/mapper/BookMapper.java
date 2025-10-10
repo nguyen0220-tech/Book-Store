@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.mapper;
 
 import catholic.ac.kr.secureuserapp.model.dto.BookDTO;
+import catholic.ac.kr.secureuserapp.model.dto.BookDetailDTO;
 import catholic.ac.kr.secureuserapp.model.dto.request.CreateBookRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Book;
 import org.mapstruct.Mapper;
@@ -18,6 +19,10 @@ public interface BookMapper {
     @Mapping(source = "stock",target = "stock")
     @Mapping(source = "deleted", target = "isDeleted")
     BookDTO bookToBookDTO(Book book);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "category.name",target = "categoryName")
+    BookDetailDTO bookToBookDetailDTO(Book book);
 
     @Mapping(target = "category", ignore = true) // map thủ công
     Book bookDTOToBook(BookDTO bookDTO);

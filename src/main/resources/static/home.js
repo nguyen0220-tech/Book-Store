@@ -381,6 +381,12 @@ async function searchBooks(type, keyword, page = 0) {
 
 let currentBooks = [];
 
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("vi-VN"); // hiển thị theo dạng DD/MM/YYYY
+}
+
 function showBooks(books) {
     currentBooks = books;
     const html =
@@ -388,18 +394,20 @@ function showBooks(books) {
             ? "<p>Không có kết quả</p>"
             : books.map((b) => {
                 const isBookmarked = bookmarkedBookIds.includes(b.id);
+                const hasSale = b.salePrice && b.salePrice < b.price;
+
                 return `
     <div style="display: flex; justify-content: space-between; border:1px solid #ccc; margin:10px; padding:10px;">
       <div style="flex: 1;">
         <b>Title:</b> <a href="book-detail.html?bookId=${b.id}">${b.title}</a> <br/>
         <b>Author:</b> ${b.author} <br/>
-        <b>Price:</b> ${
-                    b.salePrice && b.salePrice < b.price
-                        ? `<span style="text-decoration: line-through; color: gray;">${b.price}</span> 
-                   <span style="color: red; font-weight: bold;">${b.salePrice}</span>`
-                        : `${b.price}`
-                } <br/>
-<!--        <b>Stock:</b> ${b.stock} <br/>-->
+        <b>Price:</b> 
+            ${hasSale
+                    ? `<span style="text-decoration: line-through; color: gray;">${b.price.toLocaleString()}₩</span> 
+                   <span style="color: red; font-weight: bold;">${b.salePrice.toLocaleString()}₩</span>
+                   <br/>⏰ <span style="color: blue;">Giảm đến: ${formatDate(b.saleExpiry)}</span>`
+                    : `${b.price.toLocaleString()}₩`}
+        <br/>
         <b>Description:</b> ${truncateToSentences(b.description, 2)} <br/>
         <b>Category:</b> ${b.categoryName} <br/>
         <img src="${b.imgUrl}" alt="${b.title}" style="max-width:100px; max-height:100px;" /><br/>

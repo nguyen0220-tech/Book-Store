@@ -24,6 +24,11 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBookById(bookId));
     }
 
+    @GetMapping("/detail/{bookId}")
+    public ResponseEntity<ApiResponse<BookDetailDTO>> getBookDetail(@PathVariable("bookId") Long bookId) {
+        return ResponseEntity.ok(bookService.getBookDetailById(bookId));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<BookDTO>>> findAllBooks(
             @RequestParam int page,
