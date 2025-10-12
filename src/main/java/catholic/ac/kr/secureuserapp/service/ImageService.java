@@ -32,7 +32,7 @@ public class ImageService {
 
     public ImageService(
             @Value("${ibb.api_key}") String API_KEY,
-            @Value("${ibb_api}") String IBB_API,
+            @Value("${ibb.api_url}") String IBB_API,
             UserRepository userRepository,
             ImageRepository imageRepository) {
 
