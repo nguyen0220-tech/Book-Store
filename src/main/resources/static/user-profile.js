@@ -9,6 +9,15 @@ window.onload = async () => {
         const data = await res.json();
         if (data.success) {
             const user = data.data;
+
+            // Hiển thị avatar
+            const avatarImg = document.getElementById("avatarImg");
+            if (user.avatarUrl) {
+                avatarImg.src = user.avatarUrl;
+            } else {
+                avatarImg.src = "/icon/default-avatar.png"; // ảnh mặc định nếu chưa có
+            }
+
             document.getElementById("username").value = user.username;
             document.getElementById("fullName").value = user.fullName || "";
             document.getElementById("address").value = user.address || "";
@@ -16,7 +25,6 @@ window.onload = async () => {
             document.getElementById("phone").value = user.phone || "";
             document.getElementById("sex").value = user.sex || "UNKNOWN";
 
-            // Hiển thị ngày/tháng/năm sinh
             document.getElementById("yob").value = user.yearOfBirth || "";
             document.getElementById("mob").value = user.monthOfBirth || "";
             document.getElementById("dob").value = user.dayOfBirth || "";
@@ -25,6 +33,109 @@ window.onload = async () => {
         showMessage("Không thể tải thông tin người dùng", true);
     }
 };
+
+async function uploadAvatar() {
+    const fileInput = document.getElementById("avatarFile");
+    if (!fileInput.files.length) {
+        showMessage("Chọn file trước khi upload!", true);
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    try {
+        const res = await fetch(`${API_BASE}/upload/avatar`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            // Cập nhật avatar trên FE ngay
+            document.getElementById("avatarImg").src = data.data;
+            showMessage("Upload avatar thành công!");
+        } else {
+            showMessage(data.message || "Upload thất bại", true);
+        }
+    } catch (err) {
+        showMessage("Lỗi khi upload avatar", true);
+    }
+}
+window.uploadAvatar = uploadAvatar;
+
+let avatarPage = 0;
+const avatarSize = 5;
+let totalAvatarPages = 1;
+
+async function loadAvatarList() {
+    if (avatarPage >= totalAvatarPages) {
+        showMessage("Không còn ảnh nào nữa");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/upload?page=${avatarPage}&size=${avatarSize}`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            const pageData = data.data;
+            totalAvatarPages = pageData.totalPages;
+
+            const listContainer = document.getElementById("avatarList");
+
+            pageData.content.forEach(img => {
+                const imgEl = document.createElement("img");
+                imgEl.src = img.imageUrl;
+                imgEl.width = 100;
+                imgEl.height = 100;
+                imgEl.style.cursor = "pointer";
+                imgEl.title = `Upload: ${new Date(img.uploadAt).toLocaleString()}`;
+
+                imgEl.onclick = async () => {
+                    const confirmSet = confirm("Đặt ảnh này làm avatar?");
+                    if (confirmSet) {
+                        await setAsCurrentAvatar(img.id);
+                    }
+                };
+
+                listContainer.appendChild(imgEl);
+            });
+
+            avatarPage++;
+        } else {
+            showMessage(data.message || "Không tải được avatar", true);
+        }
+    } catch (err) {
+        showMessage("Lỗi khi tải danh sách avatar", true);
+    }
+}
+window.loadAvatarList = loadAvatarList;
+
+async function setAsCurrentAvatar(imageId) {
+    try {
+        const res = await fetch(`${API_BASE}/upload/avatar/change?imageId=${imageId}`, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            // Cập nhật ảnh đại diện hiện tại
+            document.getElementById("avatarImg").src = data.data;
+            showMessage("Đặt lại avatar thành công!");
+        } else {
+            showMessage(data.message || "Không thể đổi avatar", true);
+        }
+    } catch (err) {
+        showMessage("Lỗi khi đặt lại avatar", true);
+    }
+}
 
 async function updateProfile() {
     const request = {

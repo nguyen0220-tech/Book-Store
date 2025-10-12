@@ -6,6 +6,7 @@ import catholic.ac.kr.secureuserapp.model.dto.UserProfileDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
@@ -19,6 +20,7 @@ public interface UserMapper {
 
     User toUser(UserDTO userDTO);
 
+    @Mapping(target = "avatarUrl",ignore = true)
     UserProfileDTO toUserProfileDTO(User user);
 
     RoleDTO toDTO(Role role);

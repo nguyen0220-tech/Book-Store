@@ -18,4 +18,5 @@ public class UserProfileDTO {
     private String yearOfBirth;
     private String monthOfBirth;
     private String dayOfBirth;
+    private String avatarUrl;
 }

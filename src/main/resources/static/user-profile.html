@@ -114,12 +114,83 @@
         .success {
             color: green;
         }
+
+        .profile-avatar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            width: 500px;
+        }
+
+        .profile-avatar img {
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            object-fit: cover; /* không méo ảnh */
+            border: 1px solid #000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* bóng nhẹ */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .profile-avatar img:hover {
+            transform: scale(1.05); /* hover nhẹ */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .profile-avatar img {
+                width: 180px; /* responsive cho màn hình nhỏ */
+                height: 180px;
+            }
+        }
+
+        .avatar-upload {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .avatar-upload input[type="file"] {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.4rem;
+        }
+
+        .avatar-upload button {
+            padding: 0.4rem 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .avatar-upload button:hover {
+            background: #0056b3;
+        }
+
+        #avatarFile{
+            margin-top: 10px;
+        }
+
+        #uploadButton{
+            margin: 5px 50px 5px 5px;
+        }
+
+        #uploadTable td {
+            border: none; /* xóa viền cell */
+            padding: 5px; /* optional, căn cell đẹp hơn */
+        }
+
+
     </style>
 </head>
 <body>
 
 <header>
-    <h1>👤 Quản lí thông tin trang cá nhân</h1>
+    <h1>👤 Trang cá nhân</h1>
     <nav>
         <a href="home.html" class="cart-link">🏠 Trang chủ</a>
 
@@ -127,7 +198,24 @@
 </header>
 
 <main class="profile-container">
-    <h2>Thông tin cá nhân</h2>
+    <div class="profile-avatar">
+        <img id="avatarImg" src="" alt="Avatar">
+    </div>
+
+    <div class="avatar-upload">
+        <table id="uploadTable">
+            <tr>
+                <td><input  type="file" id="avatarFile" accept="image/*"></td>
+                <td><button id="uploadButton" onclick="uploadAvatar()">📤 Đổi Avatar</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="avatarListContainer" style="margin-top: 15px;">
+        <button id="loadAvatarBtn" onclick="loadAvatarList()">Thay đổi avatar</button>
+        <div id="avatarList" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
+    </div>
+
     <div>
         <label>Username:</label>
         <input type="text" id="username" disabled>

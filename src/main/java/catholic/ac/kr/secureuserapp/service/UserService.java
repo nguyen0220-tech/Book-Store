@@ -6,7 +6,9 @@ import catholic.ac.kr.secureuserapp.mapper.UserMapper;
 import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.dto.request.ChangePasswordRequest;
 import catholic.ac.kr.secureuserapp.model.dto.request.UpdateProfileRequest;
+import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.Role;
+import catholic.ac.kr.secureuserapp.repository.ImageRepository;
 import catholic.ac.kr.secureuserapp.repository.RoleRepository;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
@@ -37,6 +39,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
+    private final ImageRepository imageRepository;
 
     @Cacheable(value = "userCache", key = "#userId")
     @PreAuthorize("hasRole('ADMIN')")
@@ -137,6 +140,16 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         UserProfileDTO userProfileDTO = userMapper.toUserProfileDTO(user);
+
+        Optional<Image> avatar = imageRepository.findByUserAndSelected(user,true);
+
+        if (avatar.isEmpty()) {
+            return ApiResponse.success("User profile", userProfileDTO);
+        }
+
+        Image image = avatar.get();
+
+        userProfileDTO.setAvatarUrl(image.getImageUrl());
 
         return ApiResponse.success("User profile", userProfileDTO);
     }
