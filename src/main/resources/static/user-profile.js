@@ -72,8 +72,21 @@ const avatarSize = 5;
 let totalAvatarPages = 1;
 
 async function loadAvatarList() {
+    avatarPage = 0; // reset về trang đầu
+    document.getElementById("avatarList").innerHTML = ""; // clear danh sách cũ
+    await fetchAvatarPage();
+}
+window.loadAvatarList=loadAvatarList
+
+async function loadMoreAvatars() {
+    await fetchAvatarPage();
+}
+window.loadMoreAvatars=loadMoreAvatars
+
+async function fetchAvatarPage() {
     if (avatarPage >= totalAvatarPages) {
         showMessage("Không còn ảnh nào nữa");
+        document.getElementById("loadMoreAvatarBtn").style.display = "none";
         return;
     }
 
@@ -88,7 +101,6 @@ async function loadAvatarList() {
             totalAvatarPages = pageData.totalPages;
 
             const listContainer = document.getElementById("avatarList");
-
             pageData.content.forEach(img => {
                 const imgEl = document.createElement("img");
                 imgEl.src = img.imageUrl;
@@ -108,6 +120,10 @@ async function loadAvatarList() {
             });
 
             avatarPage++;
+
+            // Hiện hoặc ẩn nút "Xem thêm"
+            document.getElementById("loadMoreAvatarBtn").style.display =
+                avatarPage < totalAvatarPages ? "inline-block" : "none";
         } else {
             showMessage(data.message || "Không tải được avatar", true);
         }
@@ -115,7 +131,6 @@ async function loadAvatarList() {
         showMessage("Lỗi khi tải danh sách avatar", true);
     }
 }
-window.loadAvatarList = loadAvatarList;
 
 async function setAsCurrentAvatar(imageId) {
     try {

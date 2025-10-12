@@ -9,89 +9,72 @@ import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.ImageRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Base64;
+
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class ImageService {
-    private final String API_KEY;
-    private final String IBB_API;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
+    private final Cloudinary cloudinary;
 
     public ImageService(
-            @Value("${ibb.api_key}") String API_KEY,
-            @Value("${ibb.api_url}") String IBB_API,
             UserRepository userRepository,
-            ImageRepository imageRepository) {
+            ImageRepository imageRepository,
+            Cloudinary cloudinary) {
 
-        this.API_KEY = API_KEY;
-        this.IBB_API = IBB_API;
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
+        this.cloudinary = cloudinary;
+
     }
 
     public ApiResponse<String> uploadAvatar(Long userId, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Optional<Image> isAvatar = imageRepository.findByUserAndSelected(user, true);
+        imageRepository.findByUserAndSelected(user, true)
+                .ifPresent(avatar -> {
+                    avatar.setSelected(false);
+                    imageRepository.save(avatar);
+                });
 
-        if (isAvatar.isPresent()) {
-            Image avatar = isAvatar.get();
-            avatar.setSelected(false);
-            imageRepository.save(avatar);
-        }
-
+        if (file.isEmpty())
+            return ApiResponse.error("File is empty");
 
         try {
-//            1.Đọc file sang mảng byte
-            byte[] fileBytes = file.getBytes();
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "avatar" + userId,
+                            "public_id", "user_id" + userId + "_" + LocalDateTime.now(),
+                            "overwrite", true
+                    ));
 
-//            2.Chuyển sang Base64 string (ImgBB yêu cầu dữ liệu ảnh phải được gửi dưới dạng Base64.)
-            String base64Image = Base64.getEncoder().encodeToString(fileBytes);
+            String imageUrl = uploadResult.get("url").toString();
 
-//            3.Gửi POST request đến ImgBB
-//          WebClient là HTTP client hiện đại của Spring, dùng để gửi HTTP request đến API khác (REST API, cloud, v.v.).
-            WebClient webClient = WebClient.create();
+            Image newAvatar = Image.builder()
+                    .user(user)
+                    .imageUrl(imageUrl)
+                    .type(ImageType.AVATAR)
+                    .isSelected(true)
+                    .build();
 
-            String response = webClient.post() //send: POST
-                    .uri(IBB_API + "?key=" + API_KEY) // URL của API ImgBB
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData("image", base64Image)) //hêm dữ liệu “image” (đã Base64) vào body
-                    .retrieve() //send request
-                    .bodyToMono(String.class) //đọc phản hồi về dạng String
-                    .block(); //chờ kết quả (đồng bộ hoá, vì WebClient mặc định là async)
+            imageRepository.save(newAvatar);
 
-//            4.Parse JSON
-            if (response != null && response.contains("\"url\"")) {
-                int start = response.indexOf("\"url\":\"") + 7;
-                int end = response.indexOf("\"", start);
-
-                Image uploadAvatar = Image.builder()
-                        .user(user)
-                        .imageUrl(response.substring(start, end))
-                        .type(ImageType.AVATAR)
-                        .isSelected(true)
-                        .build();
-
-                imageRepository.save(uploadAvatar);
-                return ApiResponse.success("upload avatar success", response.substring(start, end));
-            }
-            return null;
+            return ApiResponse.success("Image uploaded successfully", imageUrl);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload image" + e.getMessage(), e);
+            throw new RuntimeException("failed to upload image" + e.getMessage());
         }
     }
 

@@ -147,11 +147,11 @@
         </dependency>
 
 <!--        cloudinary-->
-<!--        <dependency>-->
-<!--            <groupId>com.cloudinary</groupId>-->
-<!--            <artifactId>cloudinary-http44</artifactId>-->
-<!--            <version>1.39.0</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.39.0</version>
+        </dependency>
 
 <!--        Spring WebFlux, và cho phép bạn gọi API ngoài theo cách bất đồng bộ (non-blocking) hoặc đồng bộ (blocking).-->
         <dependency>
