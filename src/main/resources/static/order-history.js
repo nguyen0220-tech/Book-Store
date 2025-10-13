@@ -152,23 +152,24 @@ function renderOrders(orders) {
 
             if (!item.reviewed) {
                 html += `
-    <div style="margin-top: 10px;">
-        <div style="margin-bottom: 5px;">
-            <label>⭐ Đánh giá:</label><br/>
-            <span class="rating-stars" id="rating-${order.orderId}-${item.bookId}">
-                ${[1, 2, 3, 4, 5].map(i => `
-                    <span 
-                        onclick="setRating(${order.orderId}, ${item.bookId}, ${i})"
-                        id="star-${order.orderId}-${item.bookId}-${i}"
-                        style="cursor:pointer; font-size:22px; color:gray;">★
-                    </span>
-                `).join('')}
-            </span>
-        </div>
-        <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
-        <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
-    </div>
-    `;
+                    <div style="margin-top: 10px;">
+                        <div style="margin-bottom: 5px;">
+                            <label>⭐ Đánh giá:</label><br/>
+                            <span class="rating-stars" id="rating-${order.orderId}-${item.bookId}">
+                                ${[1, 2, 3, 4, 5].map(i => `
+                                    <span 
+                                        onclick="setRating(${order.orderId}, ${item.bookId}, ${i})"
+                                        id="star-${order.orderId}-${item.bookId}-${i}"
+                                        style="cursor:pointer; font-size:22px; color:gray;">★
+                                    </span>
+                                `).join('')}
+                            </span>
+                        </div>
+                        <textarea id="review-input-${order.orderId}-${item.bookId}" placeholder="Viết đánh giá..." style="width: 100%; height: 60px;"></textarea>
+                        <input id="review-file-${order.orderId}-${item.bookId}" type="file" accept="image/*" style="margin-top: 5px;" />
+                        <button onclick="submitReview(${item.bookId}, ${order.orderId})">✍️ Gửi đánh giá</button>
+                    </div>
+                        `;
             } else {
                 html += `<p style="color: green; margin-top: 10px;">✅ Bạn đã đánh giá sách này</p>`;
             }
@@ -206,6 +207,7 @@ async function cancelOrder(orderId) {
         alert("Lỗi khi huỷ đơn hàng: " + err.message);
     }
 }
+
 window.cancelOrder = cancelOrder;
 
 function formatDateTime(timestamp) {
@@ -232,6 +234,9 @@ async function submitReview(bookId, orderId) {
     const textarea = document.getElementById(`review-input-${orderId}-${bookId}`);
     const content = textarea.value.trim();
 
+    const fileInput = document.getElementById(`review-file-${orderId}-${bookId}`);
+    const file = fileInput.files[0];
+
     const key = `${orderId}-${bookId}`;
     const rating = selectedRatings[key];
 
@@ -240,34 +245,34 @@ async function submitReview(bookId, orderId) {
         return;
     }
 
-    if (!content) {
-        alert("⚠️ Vui lòng nhập nội dung đánh giá.");
+    if (!content && !file) {
+        alert("⚠️ Vui lòng nhập nội dung hoặc chọn ảnh đánh giá.");
         return;
     }
 
-    const review = {
-        bookId: bookId,
-        orderId: orderId,
-        content: content,
-        rating: rating
-    };
+    const formData = new FormData();
+    formData.append("bookId", bookId);
+    formData.append("orderId", orderId);
+    formData.append("content", content);
+    formData.append("rating", rating);
+    if (file) formData.append("file", file);
 
     try {
         const res = await fetch(`${API_BASE}/review/upload`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${accessToken}` // Không để Content-Type, browser tự set khi dùng FormData
             },
-            body: JSON.stringify(review)
+            body: formData
         });
 
         const result = await res.json();
         if (res.ok && result.success) {
             alert("✅ Đã gửi đánh giá thành công!");
             textarea.disabled = true;
+            fileInput.disabled = true;
 
-            // Khóa chọn sao sau khi gửi
+            // Khóa chọn sao
             const stars = document.getElementById(`rating-${orderId}-${bookId}`);
             if (stars) stars.style.pointerEvents = "none";
         } else {

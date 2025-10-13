@@ -9,8 +9,7 @@ import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.ImageRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
+import catholic.ac.kr.secureuserapp.uploadhandler.UploadFileHandler;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,26 +17,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
-
 @Service
 public class ImageService {
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
-    private final Cloudinary cloudinary;
+    private final UploadFileHandler uploadFileHandler;
 
     public ImageService(
             UserRepository userRepository,
             ImageRepository imageRepository,
-            Cloudinary cloudinary) {
+            UploadFileHandler uploadFileHandler) {
 
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
-        this.cloudinary = cloudinary;
-
+        this.uploadFileHandler = uploadFileHandler;
     }
 
     public ApiResponse<String> uploadAvatar(Long userId, MultipartFile file) {
@@ -50,63 +43,67 @@ public class ImageService {
                     imageRepository.save(avatar);
                 });
 
-        if (file.isEmpty())
-            return ApiResponse.error("File is empty");
+        if(file.isEmpty())
 
-        try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "avatar" + userId,
-                            "public_id", "user_id" + userId + "_" + LocalDateTime.now(),
-                            "overwrite", true
-                    ));
+    {
+        return ApiResponse.error("File is empty");
+    }
 
-            String imageUrl = uploadResult.get("url").toString();
+    String imageUrl = uploadFileHandler.uploadFile(userId, file);
 
-            Image newAvatar = Image.builder()
-                    .user(user)
-                    .imageUrl(imageUrl)
-                    .type(ImageType.AVATAR)
-                    .isSelected(true)
-                    .build();
+    Image newAvatar = Image.builder()
+            .user(user)
+            .imageUrl(imageUrl)
+            .type(ImageType.AVATAR)
+            .isSelected(true)
+            .build();
 
             imageRepository.save(newAvatar);
 
-            return ApiResponse.success("Image uploaded successfully", imageUrl);
-        } catch (Exception e) {
-            throw new RuntimeException("failed to upload image" + e.getMessage());
-        }
-    }
+        return ApiResponse.success("Image uploaded successfully",imageUrl);
+}
 
-    public ApiResponse<Page<ImageDTO>> getAvatar(Long userId, int page, int size) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+public ApiResponse<Page<ImageDTO>> getAvatars(Long userId, int page, int size) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("uploadAt").descending());
+    Pageable pageable = PageRequest.of(page, size, Sort.by("uploadAt").descending());
 
-        Page<Image> imagePage = imageRepository.findByUserAndType(user, ImageType.AVATAR, pageable);
+    Page<Image> imagePage = imageRepository.findByUserAndType(user, ImageType.AVATAR, pageable);
 
-        Page<ImageDTO> imageDTOS = imagePage.map(ImageMapper::convertToDTO);
+    Page<ImageDTO> imageDTOS = imagePage.map(ImageMapper::convertToDTO);
 
-        return ApiResponse.success("get avatar success", imageDTOS);
-    }
+    return ApiResponse.success("get avatar success", imageDTOS);
+}
 
-    public ApiResponse<String> changeAvatar(Long userId, Long imageId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+public ApiResponse<String> changeAvatar(Long userId, Long imageId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Image avatar = imageRepository.findByUserAndSelected(user, true)
-                .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
+    Image avatar = imageRepository.findByUserAndSelected(user, true)
+            .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
 
-        avatar.setSelected(false);
+    avatar.setSelected(false);
 
-        Image image = imageRepository.findByUserAndId(user, imageId)
-                .orElseThrow(() -> new ResourceNotFoundException("image not found"));
+    Image image = imageRepository.findByUserAndId(user, imageId)
+            .orElseThrow(() -> new ResourceNotFoundException("image not found"));
 
-        image.setSelected(true);
+    image.setSelected(true);
 
-        imageRepository.save(image);
+    imageRepository.save(image);
 
-        return ApiResponse.success("changed avatar success", image.getImageUrl());
-    }
+    return ApiResponse.success("changed avatar success", image.getImageUrl());
+}
+
+public ApiResponse<String> deleteAvatar(Long userId, Long imageId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    Image image = imageRepository.findByUserAndId(user, imageId)
+            .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
+
+    imageRepository.delete(image);
+
+    return ApiResponse.success("deleted avatar success");
+}
 }

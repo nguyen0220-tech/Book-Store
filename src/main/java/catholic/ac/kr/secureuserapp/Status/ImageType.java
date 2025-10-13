@@ -4,5 +4,6 @@ public enum ImageType {
     AVATAR,
     POST,
     REVIEW,
-    MESSAGE
+    MESSAGE,
+    COMMENT,
 }

@@ -12,5 +12,6 @@ public class CommentDTO {
     private Long userId;
     private String username;
     private String commentContent;
+    private String imageUrl;
     private Timestamp createdAt;
 }

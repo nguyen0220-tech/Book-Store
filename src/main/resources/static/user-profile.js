@@ -102,6 +102,10 @@ async function fetchAvatarPage() {
 
             const listContainer = document.getElementById("avatarList");
             pageData.content.forEach(img => {
+                const wrapper = document.createElement("div");
+                wrapper.style.display = "inline-block";
+                wrapper.style.position = "relative";
+
                 const imgEl = document.createElement("img");
                 imgEl.src = img.imageUrl;
                 imgEl.width = 100;
@@ -109,19 +113,46 @@ async function fetchAvatarPage() {
                 imgEl.style.cursor = "pointer";
                 imgEl.title = `Upload: ${new Date(img.uploadAt).toLocaleString()}`;
 
-                imgEl.onclick = async () => {
-                    const confirmSet = confirm("Đặt ảnh này làm avatar?");
-                    if (confirmSet) {
+                // Menu action overlay
+                const menu = document.createElement("div");
+                menu.style.position = "absolute";
+                menu.style.bottom = "0";
+                menu.style.left = "0";
+                menu.style.right = "0";
+                menu.style.backgroundColor = "rgba(0,0,0,0.6)";
+                menu.style.color = "white";
+                menu.style.textAlign = "center";
+                menu.style.display = "none";
+                menu.style.padding = "2px 0";
+                menu.innerHTML = `
+                    <button style="margin:2px; padding:2px 5px;font-size: 10px">Chọn làm avatar</button>
+                    <button style="margin:2px; padding:2px 5px; font-size: 10px;color: red">Xóa</button>
+                `;
+
+                wrapper.appendChild(imgEl);
+                wrapper.appendChild(menu);
+                listContainer.appendChild(wrapper);
+
+                imgEl.onmouseenter = () => menu.style.display = "block";
+                imgEl.onmouseleave = () => menu.style.display = "none";
+
+                const [setBtn, deleteBtn] = menu.querySelectorAll("button");
+
+                setBtn.onclick = async () => {
+                    if (confirm("Đặt ảnh này làm avatar?")) {
                         await setAsCurrentAvatar(img.id);
                     }
                 };
 
-                listContainer.appendChild(imgEl);
+                deleteBtn.onclick = async () => {
+                    if (confirm("Bạn có chắc muốn xóa ảnh này?")) {
+                        await deleteAvatar(img.id, wrapper);
+                    }
+                };
             });
 
             avatarPage++;
 
-            // Hiện hoặc ẩn nút "Xem thêm"
             document.getElementById("loadMoreAvatarBtn").style.display =
                 avatarPage < totalAvatarPages ? "inline-block" : "none";
         } else {
@@ -131,6 +162,28 @@ async function fetchAvatarPage() {
         showMessage("Lỗi khi tải danh sách avatar", true);
     }
 }
+
+// Hàm xóa avatar
+async function deleteAvatar(imageId, wrapperEl) {
+    try {
+        const res = await fetch(`${API_BASE}/upload/${imageId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            // Xóa phần tử avatar khỏi DOM
+            wrapperEl.remove();
+            showMessage("Xóa avatar thành công!");
+        } else {
+            showMessage(data.message || "Không thể xóa avatar", true);
+        }
+    } catch (err) {
+        showMessage("Lỗi khi xóa avatar", true);
+    }
+}
+
 
 async function setAsCurrentAvatar(imageId) {
     try {

@@ -28,8 +28,8 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<ApiResponse<CommentDTO>> createComment(
             @AuthenticationPrincipal MyUserDetails user,
-            @RequestBody CommentRequest request) {
-        return ResponseEntity.ok(commentService.createComment(user.getUser().getId(), request.getPostId(), request.getComment()));
+            @ModelAttribute CommentRequest request) {
+        return ResponseEntity.ok(commentService.createComment(user.getUser().getId(), request));
     }
 
     @DeleteMapping("{commentId}")

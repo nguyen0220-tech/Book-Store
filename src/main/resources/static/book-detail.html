@@ -214,18 +214,40 @@
     function renderReviewList(reviews, reset = false) {
         const container = document.getElementById("reviewList");
         if (reset) container.innerHTML = "";
+
         if (!reviews || reviews.length === 0) {
-            if (reset) container.innerHTML = `<p>📭 Chưa có đánh giá nào cho sách này.</p>`;
+            if (reset)
+                container.innerHTML = `<p>📭 Chưa có đánh giá nào cho sách này.</p>`;
             return;
         }
 
-        const html = reviews.map(r => `
-        <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
-            <p><b>${r.username}</b> — <small>${new Date(r.createdAt).toLocaleDateString()}</small></p>
-            <p>⭐ ${ratingToNumber(r.rating)}/5</p>
-            <p>${r.content}</p>
+        const html = reviews.map(r => {
+            const ratingNum = ratingToNumber(r.rating);
+            const stars = "⭐".repeat(ratingNum) + "☆".repeat(5 - ratingNum);
+
+            // Nếu có ảnh, hiển thị ảnh review bên dưới nội dung
+            const imageHtml = r.imageReviewUrl
+                ? `<div style="margin-top:8px;">
+                   <img src="${r.imageReviewUrl}"
+                        alt="Review Image"
+                        style="max-width:200px; border-radius:8px; cursor:pointer; transition:transform 0.2s;"
+                        onmouseover="this.style.transform='scale(1.15)'"
+                        onmouseout="this.style.transform='scale(1)'"
+                   />
+               </div>`
+                : "";
+
+            return `
+        <div style="border-bottom: 1px solid #eee; padding: 12px 0;">
+            <p><b>${r.username}</b> —
+               <small>${new Date(r.createdAt).toLocaleDateString("ko-KR")}</small>
+            </p>
+            <p>${stars} (${ratingNum}/5)</p>
+            <p style="white-space: pre-wrap;">${r.content || "(Không có nội dung)"}</p>
+            ${imageHtml}
         </div>
-    `).join("");
+        `;
+        }).join("");
 
         container.insertAdjacentHTML("beforeend", html);
     }

@@ -30,7 +30,7 @@ public class ImageController {
             @AuthenticationPrincipal MyUserDetails userDetails,
             @RequestParam int page,
             @RequestParam int size) {
-        return ResponseEntity.ok(imageService.getAvatar(userDetails.getUser().getId(), page, size));
+        return ResponseEntity.ok(imageService.getAvatars(userDetails.getUser().getId(), page, size));
     }
 
     @PutMapping("/avatar/change")
@@ -38,5 +38,13 @@ public class ImageController {
             @AuthenticationPrincipal MyUserDetails userDetails,
             @RequestParam Long imageId){
         return ResponseEntity.ok(imageService.changeAvatar(userDetails.getUser().getId(), imageId));
+    }
+
+    @DeleteMapping("{imageId}")
+    public ResponseEntity<ApiResponse<String>> deleteAvatar(
+            @AuthenticationPrincipal MyUserDetails userDetails,
+            @PathVariable Long imageId
+    ){
+        return ResponseEntity.ok(imageService.deleteAvatar(userDetails.getUser().getId(), imageId));
     }
 }

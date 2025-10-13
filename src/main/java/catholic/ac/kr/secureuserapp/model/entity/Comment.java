@@ -26,6 +26,8 @@ public class Comment {
     @Column(nullable = false)
     private String commentContent;
 
+    private String imageUrl;
+
     @Column(nullable = false)
     private Timestamp createdAt;
 }

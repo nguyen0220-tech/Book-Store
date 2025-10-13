@@ -32,7 +32,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("""
             SELECT new catholic.ac.kr.secureuserapp.model.dto.ReviewDetailDTO(
-            r.user.fullName,r.rating,r.content,r.createdAt
+            r.user.fullName,r.rating,r.content,r.imageReviewUrl,r.createdAt
                         )
             FROM Review r
             WHERE r.book.id = :bookId

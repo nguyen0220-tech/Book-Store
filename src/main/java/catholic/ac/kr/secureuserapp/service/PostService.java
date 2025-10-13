@@ -1,15 +1,19 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.Status.ImageType;
 import catholic.ac.kr.secureuserapp.Status.PostShare;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.PostMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.PostDTO;
 import catholic.ac.kr.secureuserapp.model.dto.request.PostRequest;
+import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.Post;
 import catholic.ac.kr.secureuserapp.model.entity.User;
+import catholic.ac.kr.secureuserapp.repository.ImageRepository;
 import catholic.ac.kr.secureuserapp.repository.PostRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import catholic.ac.kr.secureuserapp.uploadhandler.UploadFileHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,6 +31,8 @@ import java.time.LocalDateTime;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final UploadFileHandler uploadFileHandler;
+    private final ImageRepository imageRepository;
 
     @Cacheable(value = "postCache", key = "#userId")
     public ApiResponse<Page<PostDTO>> getAllPostsByUserId(Long userId, int page, int size) {
@@ -68,10 +74,28 @@ public class PostService {
         post.setContent(request.getContent());
         post.setPostDate(new Timestamp(System.currentTimeMillis()));
         post.setPostShare(PostShare.valueOf(request.getPostShare()));
-        post.setImageUrl(request.getImageUrl());
+
+        String imageUrl = request.getFile() != null ?
+                uploadFileHandler.uploadFile(userId, request.getFile())
+                : null;
+
+        post.setImageUrl(imageUrl);
+
         post.setDeleted(false);
 
         postRepository.save(post);
+
+        if (imageUrl != null) {
+            Image image = Image.builder()
+                    .user(user)
+                    .imageUrl(imageUrl)
+                    .isSelected(false)
+                    .type(ImageType.POST)
+                    .referenceId(post.getId())
+                    .build();
+
+            imageRepository.save(image);
+        }
 
         PostDTO savedPostDTO = PostMapper.toPostDTO(post);
 
@@ -88,7 +112,7 @@ public class PostService {
 
         post.setContent(request.getContent());
         post.setPostShare(PostShare.valueOf(request.getPostShare()));
-        post.setImageUrl(request.getImageUrl());
+//        post.setImageUrl(request.getImageUrl());
 
         postRepository.save(post);
         PostDTO savedPostDTO = PostMapper.toPostDTO(post);

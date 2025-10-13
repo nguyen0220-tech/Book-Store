@@ -865,19 +865,19 @@ function renderUserPosts(posts) {
                     <p>${post.content}</p>
                     ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; max-height: 300px; border-radius: 6px;" />` : ""}
                     <p><em>Chế độ: ${post.postShare === 'PUBLIC' ? 'Công khai' : post.postShare === 'FRIEND' ? 'Bạn bè' : 'Riêng tư'}</em></p>
-                    
+
                     <!-- Cảm xúc -->
                     <div id="emotions-${post.id}" style="margin-top:10px;"></div>
 
-                    <!-- Bình luận -->
-                    <div id="comments-${post.id}" style="margin-top: 10px; background-color: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
-                        <p><strong>Bình luận:</strong></p>
+                    <!-- Bình luận hiển thị -->
+                    <div id="comments-container-${post.id}" style="margin-top: 10px; background-color: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee;">
                         <p>Đang tải bình luận...</p>
                     </div>
 
                     <!-- Form nhập bình luận -->
-                    <div style="margin-top: 10px;">
-                        <input id="comment-input-${post.id}" type="text" placeholder="Viết bình luận..." style="width: 80%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;" />
+                    <div id="comment-form-${post.id}" style="margin-top: 10px;">
+                        <input id="comment-input-${post.id}" type="text" placeholder="Viết bình luận..." style="width: 60%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;" />
+                        <input id="comment-file-${post.id}" type="file" accept="image/*" style="margin-left: 5px;" />
                         <button onclick="submitComment(${post.id})" style="padding: 6px 10px; border-radius: 4px; background-color: #007bff; color: white; border: none;">Gửi</button>
                     </div>
                 </div>
@@ -885,13 +885,12 @@ function renderUserPosts(posts) {
         </div>
     `;
 
-    // Gọi fetchComments & fetchPostEmotions sau khi đã render khung
+    // Load comment & emotions sau khi render
     posts.forEach(post => {
         fetchComments(post.id);
         fetchPostEmotions(post.id);
     });
 }
-
 
 function renderPostPagination(pageData) {
     const container = document.getElementById("postPagination");
@@ -916,9 +915,7 @@ async function fetchComments(postId) {
             }
         });
 
-        if (!response.ok) {
-            throw new Error("Không thể tải bình luận");
-        }
+        if (!response.ok) throw new Error("Không thể tải bình luận");
 
         const json = await response.json();
         const comments = json.data.content || [];
@@ -926,15 +923,13 @@ async function fetchComments(postId) {
         renderComments(postId, comments);
     } catch (error) {
         console.error(error);
-        const commentContainer = document.getElementById(`comments-${postId}`);
-        if (commentContainer) {
-            commentContainer.innerHTML = `<p style="color:red;">Lỗi tải bình luận: ${error.message}</p>`;
-        }
+        const commentContainer = document.getElementById(`comments-container-${postId}`);
+        if (commentContainer) commentContainer.innerHTML = `<p style="color:red;">Lỗi tải bình luận: ${error.message}</p>`;
     }
 }
 
 function renderComments(postId, comments) {
-    const commentContainer = document.getElementById(`comments-${postId}`);
+    const commentContainer = document.getElementById(`comments-container-${postId}`);
     if (!commentContainer) return;
 
     if (comments.length === 0) {
@@ -950,14 +945,11 @@ function renderComments(postId, comments) {
         const canDelete = comment.userId === currentUserId || comment.postUserId === currentUserId;
         return `
             <div style="padding: 4px 8px; border-bottom: 1px solid #ddd;">
-                <strong>${comment.username}</strong>: ${comment.commentContent}
+                <strong>${comment.username}</strong>: ${comment.commentContent || ""}
+                ${comment.imageUrl ? `<br/><img src="${comment.imageUrl}" style="max-width:100px; max-height:100px; margin-top:2px; border-radius:4px;">` : ""}
                 <br/>
                 <small style="color:gray;">${new Date(comment.createdAt).toLocaleString()}</small>
-                ${canDelete ? `
-                    <button onclick="deleteComment(${postId}, ${comment.id})"
-                        style="margin-left: 10px; color: red; border: none; background: none; cursor: pointer;">
-                        🗑️
-                    </button>` : ""}
+                ${canDelete ? `<button onclick="deleteComment(${postId}, ${comment.id})" style="margin-left:10px; color:red; border:none; background:none; cursor:pointer;">🗑️</button>` : ""}
             </div>
         `;
     }).join("");
@@ -1001,43 +993,45 @@ async function submitComment(postId) {
         window.location.href = "/auth.html";
         return;
     }
-    const input = document.getElementById(`comment-input-${postId}`);
-    const content = input.value.trim();
 
-    if (!content) {
-        alert("Vui lòng nhập bình luận.");
+    const input = document.getElementById(`comment-input-${postId}`);
+    const fileInput = document.getElementById(`comment-file-${postId}`);
+    const content = input.value.trim();
+    const file = fileInput.files[0];
+
+    if (!content && !file) {
+        alert("Vui lòng nhập bình luận hoặc chọn ảnh.");
         return;
     }
+
+    const formData = new FormData();
+    formData.append("postId", postId);
+    if (content) formData.append("comment", content);
+    if (file) formData.append("file", file);
 
     try {
         const response = await fetch(`${API_BASE}/comment`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({
-                postId: postId,
-                comment: content
-            })
+            headers: { "Authorization": `Bearer ${accessToken}` },
+            body: formData
         });
 
-        const result = await response.json(); // Đọc JSON dù là success hay error
-
+        const result = await response.json();
         if (!response.ok || !result.success) {
             alert(result.message || "Không thể gửi bình luận");
             return;
         }
 
         input.value = "";
-        fetchComments(postId);
+        fileInput.value = "";
+        fetchComments(postId); // refresh
     } catch (error) {
-        console.error("Lỗi gửi bình luận:", error);
+        console.error(error);
         alert("Lỗi khi gửi bình luận: " + error.message);
     }
 }
 
-window.submitComment = submitComment
+window.submitComment = submitComment;
 
 // hàm load cảm xúc cho mỗi bài viết
 async function fetchPostEmotions(postId) {

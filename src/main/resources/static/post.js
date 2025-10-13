@@ -8,24 +8,29 @@ const pageSize = 5;
 async function createPost() {
     const content = document.getElementById("postContent").value.trim();
     const postShare = document.getElementById("postShare").value;
-    const imageUrl = document.getElementById("imageUrl").value.trim();
+    const fileInput = document.getElementById("postFile");
+    const file = fileInput.files[0]; // Lấy file người dùng chọn
 
     if (!content) {
         alert("Nội dung bài viết không được để trống.");
         return;
     }
 
-    const postData = { content, postShare };
-    if (imageUrl !== "") postData.imageUrl = imageUrl;
+    // Tạo FormData
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("postShare", postShare);
+    if (file) {
+        formData.append("file", file);
+    }
 
     try {
         const response = await fetch(`${API_BASE}/post`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
             },
-            body: JSON.stringify(postData)
+            body: formData
         });
 
         if (!response.ok) {
@@ -38,7 +43,7 @@ async function createPost() {
         alert("Đăng bài thành công!");
         // Clear form
         document.getElementById("postContent").value = "";
-        document.getElementById("imageUrl").value = "";
+        fileInput.value = "";
 
         // Reset và tải lại bài viết từ trang đầu
         currentPage = 0;
@@ -51,7 +56,7 @@ async function createPost() {
         alert("Lỗi kết nối server.");
     }
 }
-window.createPost=createPost
+window.createPost = createPost;
 
 async function fetchPosts(page = 0, size = pageSize) {
     if (isLoading) return;
@@ -327,7 +332,8 @@ async function fetchCommentsForPost(postId) {
 
         commentDiv.innerHTML = comments.map(c => `
             <div style="border-bottom: 1px solid #eee; padding: 4px 0;">
-                <strong>${c.username}</strong>: ${c.commentContent}
+                <strong>${c.username}</strong>: ${c.commentContent || ""}
+                ${c.imageUrl ? `<br/><img src="${c.imageUrl}" style="max-width: 150px; max-height: 150px; margin-top: 4px; border-radius: 4px;">` : ""}
                 <br/>
                 <small style="color:gray;">${new Date(c.createdAt).toLocaleString()}</small>
             </div>
@@ -337,6 +343,7 @@ async function fetchCommentsForPost(postId) {
         commentDiv.innerHTML = `<p style="color:red;">Không thể tải bình luận.</p>`;
     }
 }
+
 fetchUnreadNotificationCount();
 fetchFriendRequestCount();
 

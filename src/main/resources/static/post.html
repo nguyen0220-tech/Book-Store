@@ -147,12 +147,12 @@
 </header>
 
 <div class="container">
-    <form onsubmit="event.preventDefault(); createPost();">
+    <form id="postForm" onsubmit="event.preventDefault(); createPost();">
         <label for="postContent">Nội dung bài viết</label>
         <textarea id="postContent" rows="4" placeholder="Hãy chia sẻ cuốn sách mà bạn yêu thích !!!"></textarea>
 
-        <label for="imageUrl">Link ảnh (nếu có)</label>
-        <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg">
+        <label for="postFile">Ảnh (nếu có)</label>
+        <input type="file" id="postFile" accept="image/*">
 
         <label for="postShare">Chế độ hiển thị</label>
         <select id="postShare">

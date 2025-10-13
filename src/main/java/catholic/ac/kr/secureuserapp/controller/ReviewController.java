@@ -44,7 +44,7 @@ public class ReviewController {
     @PostMapping("upload")
     public ResponseEntity<ApiResponse<ReviewDTO>> addReview(
             @AuthenticationPrincipal MyUserDetails userDetails,
-            @RequestBody ReviewDTO reviewDTO) {
+            @ModelAttribute ReviewDTO reviewDTO) {
         return ResponseEntity.ok(reviewService.createReview(userDetails.getUser().getId(), reviewDTO));
     }
 }

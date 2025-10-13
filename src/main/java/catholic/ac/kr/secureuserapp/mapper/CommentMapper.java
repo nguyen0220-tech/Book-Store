@@ -12,6 +12,7 @@ public class CommentMapper {
         commentDTO.setUserId(comment.getUser().getId());
         commentDTO.setUsername(comment.getUser().getUsername());
         commentDTO.setCommentContent(comment.getCommentContent());
+        commentDTO.setImageUrl(comment.getImageUrl());
         commentDTO.setCreatedAt(comment.getCreatedAt());
 
         return commentDTO;

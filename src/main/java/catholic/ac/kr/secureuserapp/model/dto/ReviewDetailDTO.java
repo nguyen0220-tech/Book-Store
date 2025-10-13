@@ -8,5 +8,6 @@ public record ReviewDetailDTO(
         String username,
         Rating rating,
         String content,
+        String imageReviewUrl,
         Timestamp createdAt
 ) {}

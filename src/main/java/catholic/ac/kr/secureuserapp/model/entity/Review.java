@@ -34,6 +34,8 @@ public class Review {
     @Column(nullable = false,length = 2000)
     private String content;
 
+    private String imageReviewUrl;
+
     @Convert(converter = RatingConverter.class)
     private Rating rating;
 

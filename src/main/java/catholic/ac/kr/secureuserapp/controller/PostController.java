@@ -43,7 +43,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<ApiResponse<PostDTO>> createPost(
             @AuthenticationPrincipal MyUserDetails userDetails,
-            @RequestBody PostRequest request){
+            @ModelAttribute PostRequest request){
         return ResponseEntity.ok(postService.createPost(userDetails.getUser().getId(), request));
     }
 
