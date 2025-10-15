@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.model.dto.request.ChangePasswordRequest;
 import catholic.ac.kr.secureuserapp.model.dto.request.UpdateProfileRequest;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
+import catholic.ac.kr.secureuserapp.service.ImageService;
 import catholic.ac.kr.secureuserapp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final ImageService imageService;
 
     @GetMapping("userid")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(@RequestParam("id") Long id) {
@@ -64,6 +66,12 @@ public class UserController {
     @DeleteMapping("{id}")
     public ResponseEntity<ApiResponse<UserDTO>> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUser(id));
+    }
+
+
+    @GetMapping("avatar_url")
+    public ResponseEntity<ApiResponse<UserAvatarDTO>> getUserAvatar(@AuthenticationPrincipal MyUserDetails userDetails) {
+        return ResponseEntity.ok(imageService.getUserAvatar(userDetails.getUser().getId()));
     }
 
     @GetMapping("my-profile")

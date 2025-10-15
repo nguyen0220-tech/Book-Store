@@ -2,6 +2,7 @@ package catholic.ac.kr.secureuserapp.controller;
 
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CommentDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserIdAvatarDTO;
 import catholic.ac.kr.secureuserapp.model.dto.request.CommentRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.CommentService;
@@ -25,6 +26,11 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getAllComments(postId, page, size));
     }
 
+    @GetMapping("userID-avatar-map")
+    public ResponseEntity<ApiResponse<UserIdAvatarDTO>> getUserIdAvatar(@RequestParam Long postId) {
+        return ResponseEntity.ok(commentService.getUserIdAvatar(postId));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<CommentDTO>> createComment(
             @AuthenticationPrincipal MyUserDetails user,
@@ -35,7 +41,7 @@ public class CommentController {
     @DeleteMapping("{commentId}")
     public ResponseEntity<ApiResponse<String>> deleteComment(
             @AuthenticationPrincipal MyUserDetails user,
-            @PathVariable Long commentId){
+            @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.deleteComment(user.getUser().getId(), commentId));
     }
 }

@@ -7,6 +7,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.CommentMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CommentDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserIdAvatarDTO;
 import catholic.ac.kr.secureuserapp.model.dto.request.CommentRequest;
 import catholic.ac.kr.secureuserapp.model.entity.Comment;
 import catholic.ac.kr.secureuserapp.model.entity.Image;
@@ -24,6 +25,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -39,11 +43,30 @@ public class CommentService {
     @Cacheable(value = "commentCache", key = "#postId")
     public ApiResponse<Page<CommentDTO>> getAllComments(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
 
         Page<CommentDTO> commentDTOS = comments.map(CommentMapper::toCommentDTO);
 
         return ApiResponse.success("All comments", commentDTOS);
+    }
+
+    public ApiResponse<UserIdAvatarDTO> getUserIdAvatar(Long postId) {
+        Map<Long, String> userIdAvtar = new ConcurrentHashMap<>();
+
+        Set<Long> usersCommentedIds = commentRepository.findAllUserCommentedByPostId(postId); //ds user đã cmt
+
+        for (Long userId : usersCommentedIds) {
+            String avatarUrl = imageRepository.findByUserId(userId)
+                    .map(Image::getImageUrl)
+                    .orElse("/icon/default-avatar.png"); // ảnh mặc định
+            userIdAvtar.put(userId, avatarUrl);
+        }
+
+        UserIdAvatarDTO userIdAvatarDTO = new UserIdAvatarDTO();
+        userIdAvatarDTO.setUserIdAvatar(userIdAvtar);
+
+        return ApiResponse.success("User avatar", userIdAvatarDTO);
     }
 
     @CacheEvict(value = "commentCache", allEntries = true)
@@ -58,7 +81,7 @@ public class CommentService {
             return ApiResponse.error("Đây la bài viết riêng tư không thể bình luận");
         } else if (post.getPostShare() == PostShare.FRIEND) {
             if (isFriend || isPoster) {
-                Comment comment = initComment(userId,request);
+                Comment comment = initComment(userId, request);
 
                 if (!userId.equals(post.getUser().getId())) {
                     notificationService.createCommentPostNotification(userId, post.getUser().getId(), comment);

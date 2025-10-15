@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.repository;
 
 import catholic.ac.kr.secureuserapp.Status.ImageType;
+import catholic.ac.kr.secureuserapp.model.dto.UserAvatarDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import org.springframework.data.domain.Page;
@@ -20,8 +21,20 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
         """)
     Optional<Image> findByUserAndSelected(@Param("user") User user, @Param("selected") boolean selected);
 
+    @Query("""
+            SELECT i FROM Image i WHERE i.user.id = :userId AND i.isSelected = true
+            """)
+    Optional<Image> findByUserId(@Param("userId") Long userId);
+
     Page<Image> findByUserAndType(User user, ImageType type,
                                   Pageable pageable);
 
     Optional<Image> findByUserAndId(User user, Long id);
+
+    @Query("""
+            SELECT new catholic.ac.kr.secureuserapp.model.dto.UserAvatarDTO(i.imageUrl)
+            FROM Image i
+            WHERE i.user.id = :userId AND i.isSelected = true
+            """)
+    UserAvatarDTO findAvatarUrlByUserId(@Param("userId") Long userId);
 }

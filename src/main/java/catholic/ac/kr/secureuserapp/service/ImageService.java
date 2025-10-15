@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.ImageMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.ImageDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserAvatarDTO;
 import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.ImageRepository;
@@ -74,6 +75,13 @@ public ApiResponse<Page<ImageDTO>> getAvatars(Long userId, int page, int size) {
     Page<ImageDTO> imageDTOS = imagePage.map(ImageMapper::convertToDTO);
 
     return ApiResponse.success("get avatar success", imageDTOS);
+}
+
+public ApiResponse<UserAvatarDTO> getUserAvatar(Long userId) {
+
+        UserAvatarDTO avatarDTO = imageRepository.findAvatarUrlByUserId(userId);
+
+        return ApiResponse.success("get avatar url success", avatarDTO);
 }
 
 public ApiResponse<String> changeAvatar(Long userId, Long imageId) {

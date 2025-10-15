@@ -153,12 +153,11 @@
             <version>1.39.0</version>
         </dependency>
 
-<!--        Spring WebFlux, và cho phép bạn gọi API ngoài theo cách bất đồng bộ (non-blocking) hoặc đồng bộ (blocking).-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
+<!--        Spring WebFlux cho phép gọi API ngoài theo cách bất đồng bộ (non-blocking) hoặc đồng bộ (blocking).-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-webflux</artifactId>-->
+<!--        </dependency>-->
 
     </dependencies>
 

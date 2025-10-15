@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +62,12 @@ public class PostService {
         Page<Post> posts = postRepository.findPostsByDeleted(false, pageable);
 
         Page<PostDTO> postDTOS = posts.map(PostMapper::toPostDTO);
+
+//        Set<Long> ids = postDTOS.getContent().stream().map(PostDTO::getId).collect(Collectors.toSet());
+//
+//        for (Long id : ids) {
+//
+//        }
 
         return ApiResponse.success("All posts", postDTOS);
     }

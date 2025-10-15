@@ -66,64 +66,119 @@ async function fetchPosts(page = 0, size = pageSize) {
         const response = await fetch(`${API_BASE}/post?page=${page}&size=${size}`, {
             method: "GET",
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + accessToken
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + accessToken
             }
         });
 
         if (!response.ok) throw new Error("Không thể tải bài viết");
-
         const json = await response.json();
         const posts = json.data?.content || [];
-        const postListDiv = document.getElementById('postList');
+        const postListDiv = document.getElementById("postList");
         if (!postListDiv) return;
 
-        posts.forEach(post => {
+        // --- 1️⃣ Lấy avatar URL của người dùng hiện tại (nếu có) ---
+        let currentUserAvatarUrl = "";
+        try {
+            const avatarRes = await fetch(`${API_BASE}/user/avatar_url`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (avatarRes.ok) {
+                const avatarJson = await avatarRes.json();
+                currentUserAvatarUrl = avatarJson.data?.avatarUrl || "";
+            }
+        } catch (e) {
+            console.warn("Không thể lấy avatar người dùng:", e);
+        }
+
+        // --- 2️⃣ Render từng bài viết ---
+        for (const post of posts) {
+            // Nếu post có avatar riêng, ưu tiên hiển thị; nếu không, dùng avatar người hiện tại
+            const avatarUrl = post.avatarUrl
+                || currentUserAvatarUrl
+                || `${API_BASE}/icon/default-avatar.png`;
+
             const postHtml = `
-            <div class="post-item" data-postid="${post.id}" style="border:1px solid #ccc; padding:1rem; margin:1rem 0; position:relative;">
-                <div class="post-actions" style="position:absolute; top:1rem; right:1rem; display:flex; gap:5px;">
-                    <button class="edit-btn" style="background:#ffc107; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">Sửa</button>
-                    <button class="delete-btn" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">Xóa</button>
+            <div class="post-item" data-postid="${post.id}" 
+                style="border:1px solid #ccc; padding:1rem; margin:1rem 0; position:relative; border-radius:10px; background:#fafafa;">
+                
+                <div class="post-actions" 
+                    style="position:absolute; top:1rem; right:1rem; display:flex; gap:5px;">
+                    <button class="edit-btn" 
+                        style="background:#ffc107; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">Sửa</button>
+                    <button class="delete-btn" 
+                        style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">Xóa</button>
                 </div>
-                <p>
-                    <strong>${post.username || "Ẩn danh"}</strong> 
-                    | ${new Date(post.postDate).toLocaleString()} 
-                    | <span style="font-style:italic; color:gray;">
-                        ${post.postShare === 'PUBLIC' ? '🌍 Công khai' :
+
+                <!-- 👤 Thông tin người đăng -->
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${avatarUrl}" 
+                         alt="Avatar" 
+                         style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid #ccc; transition:transform 0.2s;"
+                         onmouseover="this.style.transform='scale(1.1)'"
+                         onmouseout="this.style.transform='scale(1)'">
+                    <div>
+                        <p style="margin:0;">
+                            <strong>${post.username || "Ẩn danh"}</strong>
+                            <span style="font-style:italic; color:gray;"> • 
+                                ${new Date(post.postDate).toLocaleString()}
+                            </span>
+                        </p>
+                        <small style="color:#555;">
+                            ${post.postShare === 'PUBLIC' ? '🌍 Công khai' :
                 post.postShare === 'FRIEND' ? '👥 Bạn bè' :
                     '🔒 Riêng tư'}
-                      </span>
-                </p>
-                <p class="post-content">${post.content}</p>
-                ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width:400px; height:auto; display:block; margin-top:0.5rem; border-radius:6px;">` : ''}
-                <div class="edit-form" style="display:none; margin-top:1rem;">
-                  <textarea rows="3" class="edit-content" style="width:100%; padding:0.5rem;">${post.content}</textarea>
-                  <input type="text" class="edit-imageUrl" placeholder="Link ảnh" style="width:100%; margin-top:0.5rem; padding:0.5rem;" value="${post.imageUrl || ''}">
-                  <select class="edit-postShare" style="margin-top:0.5rem; padding:0.5rem; width:100%;">
-                    <option value="PUBLIC" ${post.postShare === 'PUBLIC' ? 'selected' : ''}>Công khai</option>
-                    <option value="FRIEND" ${post.postShare === 'FRIEND' ? 'selected' : ''}>Bạn bè</option>
-                    <option value="PRIVATE" ${post.postShare === 'PRIVATE' ? 'selected' : ''}>Riêng tư</option>
-                  </select>
-                  <button class="save-edit-btn" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#007bff; color:#fff; border:none; border-radius:6px; cursor:pointer;">Lưu</button>
-                  <button class="cancel-edit-btn" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#6c757d; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-left:5px;">Hủy</button>
+                        </small>
+                    </div>
                 </div>
-                
-                    <div class="comments-container" id="comments-${post.id}" style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 0.5rem;">
-        <em>Đang tải bình luận...</em>
-    </div>
-            </div>`;
-            postListDiv.insertAdjacentHTML('beforeend', postHtml);
-            fetchCommentsForPost(post.id);
 
-        });
+                <!-- 📝 Nội dung bài viết -->
+                <div style="margin-top:10px;">
+                    <p class="post-content" style="white-space:pre-wrap;">${post.content}</p>
+                    ${post.imageUrl
+                ? `<img src="${post.imageUrl}" 
+                                 style="max-width:100%; height:auto; margin-top:8px; border-radius:6px; cursor:pointer; transition:transform 0.2s;"
+                                 onmouseover="this.style.transform='scale(1.03)'"
+                                 onmouseout="this.style.transform='scale(1)'">`
+                : ""}
+                </div>
+
+                <!-- ✏️ Form chỉnh sửa -->
+                <div class="edit-form" style="display:none; margin-top:1rem;">
+                    <textarea rows="3" class="edit-content" style="width:100%; padding:0.5rem;">${post.content}</textarea>
+                    <input type="text" class="edit-imageUrl" placeholder="Link ảnh" 
+                        style="width:100%; margin-top:0.5rem; padding:0.5rem;" 
+                        value="${post.imageUrl || ''}">
+                    <select class="edit-postShare" style="margin-top:0.5rem; padding:0.5rem; width:100%;">
+                        <option value="PUBLIC" ${post.postShare === 'PUBLIC' ? 'selected' : ''}>Công khai</option>
+                        <option value="FRIEND" ${post.postShare === 'FRIEND' ? 'selected' : ''}>Bạn bè</option>
+                        <option value="PRIVATE" ${post.postShare === 'PRIVATE' ? 'selected' : ''}>Riêng tư</option>
+                    </select>
+                    <button class="save-edit-btn" 
+                        style="margin-top:0.5rem; padding:0.5rem 1rem; background:#007bff; color:#fff; border:none; border-radius:6px; cursor:pointer;">Lưu</button>
+                    <button class="cancel-edit-btn" 
+                        style="margin-top:0.5rem; padding:0.5rem 1rem; background:#6c757d; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-left:5px;">Hủy</button>
+                </div>
+
+                <!-- 💬 Bình luận -->
+                <div class="comments-container" id="comments-${post.id}" 
+                     style="margin-top: 1rem; border-top: 1px solid #ccc; padding-top: 0.5rem;">
+                    <em>Đang tải bình luận...</em>
+                </div>
+            </div>`;
+
+            postListDiv.insertAdjacentHTML("beforeend", postHtml);
+            fetchCommentsForPost(post.id);
+        }
 
         attachEventListeners();
 
         if (!json.data.last) {
             currentPage++;
         } else {
-            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener("scroll", handleScroll);
         }
+
     } catch (error) {
         console.error("Lỗi khi tải bài viết:", error);
         alert("⚠️ Lỗi khi tải bài viết: " + error.message);
@@ -314,30 +369,57 @@ async function fetchCommentsForPost(postId) {
     if (!commentDiv) return;
 
     try {
-        const response = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
+        // 1️⃣ Lấy danh sách comment
+        const commentRes = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
         });
+        if (!commentRes.ok) throw new Error("Không thể tải bình luận");
 
-        if (!response.ok) throw new Error("Không thể tải bình luận");
+        const commentJson = await commentRes.json();
+        const comments = commentJson.data?.content || [];
 
-        const result = await response.json();
-        const comments = result.data?.content || [];
-
+        // 2️⃣ Không có bình luận
         if (comments.length === 0) {
             commentDiv.innerHTML = "<em>Chưa có bình luận nào.</em>";
             return;
         }
 
-        commentDiv.innerHTML = comments.map(c => `
-            <div style="border-bottom: 1px solid #eee; padding: 4px 0;">
-                <strong>${c.username}</strong>: ${c.commentContent || ""}
-                ${c.imageUrl ? `<br/><img src="${c.imageUrl}" style="max-width: 150px; max-height: 150px; margin-top: 4px; border-radius: 4px;">` : ""}
-                <br/>
-                <small style="color:gray;">${new Date(c.createdAt).toLocaleString()}</small>
-            </div>
-        `).join("");
+        // 3️⃣ Lấy map userId → avatarUrl
+        let avatarMap = {};
+        try {
+            const avatarRes = await fetch(`${API_BASE}/comment/userID-avatar-map?postId=${postId}`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (avatarRes.ok) {
+                const avatarJson = await avatarRes.json();
+                avatarMap = avatarJson.data?.userIdAvatar || {};
+            } else {
+                console.warn("Không thể tải avatar user.");
+            }
+        } catch (e) {
+            console.warn("Lỗi khi tải avatar:", e);
+        }
+
+        // 4️⃣ Render từng bình luận
+        commentDiv.innerHTML = comments.map(c => {
+            // ép kiểu userId sang string
+            const avatarUrl = avatarMap[String(c.userId)] || `${API_BASE}/icon/default-avatar.png`;
+            return `
+                <div style="display:flex; gap:8px; align-items:flex-start; border-bottom:1px solid #eee; padding:6px 0;">
+                    <img src="${avatarUrl}" 
+                         alt="Avatar" 
+                         style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:1px solid #ccc;">
+                    <div>
+                        <strong>${c.username}</strong>: ${c.commentContent || ""}
+                        ${c.imageUrl ? `<br/><img src="${c.imageUrl}" 
+                            style="max-width:150px; max-height:150px; margin-top:4px; border-radius:4px;">` : ""}
+                        <br/>
+                        <small style="color:gray;">${new Date(c.createdAt).toLocaleString()}</small>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
     } catch (err) {
         console.error("Lỗi khi tải bình luận:", err);
         commentDiv.innerHTML = `<p style="color:red;">Không thể tải bình luận.</p>`;
