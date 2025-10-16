@@ -80,7 +80,7 @@ async function fetchPosts(page = 0, size = pageSize) {
         // --- 1️⃣ Lấy avatar URL của người dùng hiện tại (nếu có) ---
         let currentUserAvatarUrl = "";
         try {
-            const avatarRes = await fetch(`${API_BASE}/user/avatar_url`, {
+            const avatarRes = await fetch(`${API_BASE}/user/avatar-url`, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (avatarRes.ok) {

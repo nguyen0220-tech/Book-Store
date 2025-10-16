@@ -5,6 +5,7 @@ import catholic.ac.kr.secureuserapp.Status.Rating;
 import java.sql.Timestamp;
 
 public record ReviewDetailDTO(
+        Long userId,
         String username,
         Rating rating,
         String content,

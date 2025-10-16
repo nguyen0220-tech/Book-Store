@@ -147,7 +147,6 @@
             priceHtml = `<p class="price">${book.price.toLocaleString()} ₩</p>`;
         }
 
-        // ⭐ Hiển thị điểm trung bình đánh giá (có thể là 0.0)
         const avg = book.averageRating?.toFixed(1) || "0.0";
         const stars = renderStars(avg);
 
@@ -158,9 +157,7 @@
             <p><b>Tác giả:</b> ${book.author || "Không rõ"}</p>
             ${priceHtml}
             <p><b>Thể loại:</b> ${book.categoryName}</p>
-
             <p><b>⭐ Đánh giá trung bình:</b> ${stars} (${avg}/5)</p>
-
             <p><b>Mô tả:</b> ${book.description || "Chưa có mô tả"}</p>
             <div style="margin-top:10px;">
                 <label for="qty-detail">Số lượng:</label>
@@ -178,7 +175,6 @@
         });
     }
 
-    // 🟡 Hàm tạo biểu tượng sao từ điểm trung bình
     function renderStars(avg) {
         const fullStar = "⭐";
         const emptyStar = "☆";
@@ -189,7 +185,25 @@
     let reviewPage = 0;
     const reviewSize = 5;
     let totalReviewPages = 1;
-    let currentFilter = "REVIEW_NEW"; // mặc định
+    let currentFilter = "REVIEW_NEW";
+    let userAvatarMap = {}; // 🟢 Map chứa avatar của userId
+
+    // 🟢 Lấy map avatar 1 lần duy nhất cho bookId
+    async function fetchUserAvatars(bookId) {
+        try {
+            const res = await fetch(`${API_BASE}/review/userID-avatar-map?bookId=${bookId}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                userAvatarMap = result.data.userIdAvatar || {};
+            } else {
+                console.warn("Không thể lấy avatar map");
+            }
+        } catch (err) {
+            console.error("Lỗi khi lấy avatar map:", err);
+        }
+    }
 
     async function fetchReviewsByBookId(bookId, page = 0, size = 5, filter = currentFilter) {
         try {
@@ -211,6 +225,7 @@
         }
     }
 
+    // 🟢 Hiển thị avatar trong danh sách review
     function renderReviewList(reviews, reset = false) {
         const container = document.getElementById("reviewList");
         if (reset) container.innerHTML = "";
@@ -224,29 +239,30 @@
         const html = reviews.map(r => {
             const ratingNum = ratingToNumber(r.rating);
             const stars = "⭐".repeat(ratingNum) + "☆".repeat(5 - ratingNum);
+            const avatar = userAvatarMap[r.userId] || "/icon/default-avatar.png";
 
-            // Nếu có ảnh, hiển thị ảnh review bên dưới nội dung
             const imageHtml = r.imageReviewUrl
                 ? `<div style="margin-top:8px;">
                    <img src="${r.imageReviewUrl}"
                         alt="Review Image"
                         style="max-width:200px; border-radius:8px; cursor:pointer; transition:transform 0.2s;"
                         onmouseover="this.style.transform='scale(1.15)'"
-                        onmouseout="this.style.transform='scale(1)'"
-                   />
+                        onmouseout="this.style.transform='scale(1)'"/>
                </div>`
                 : "";
 
             return `
-        <div style="border-bottom: 1px solid #eee; padding: 12px 0;">
-            <p><b>${r.username}</b> —
-               <small>${new Date(r.createdAt).toLocaleDateString("ko-KR")}</small>
-            </p>
-            <p>${stars} (${ratingNum}/5)</p>
-            <p style="white-space: pre-wrap;">${r.content || "(Không có nội dung)"}</p>
-            ${imageHtml}
-        </div>
-        `;
+        <div style="display:flex; align-items:flex-start; border-bottom:1px solid #eee; padding:12px 0;">
+            <img src="${avatar}"
+                 alt="avatar"
+                 style="width:45px; height:45px; border-radius:50%; object-fit:cover; margin-right:10px;">
+            <div>
+                <p><b>${r.username}</b> — <small>${new Date(r.createdAt).toLocaleDateString("ko-KR")}</small></p>
+                <p>${stars} (${ratingNum}/5)</p>
+                <p style="white-space: pre-wrap;">${r.content || "(Không có nội dung)"}</p>
+                ${imageHtml}
+            </div>
+        </div>`;
         }).join("");
 
         container.insertAdjacentHTML("beforeend", html);
@@ -273,7 +289,6 @@
         fetchReviewsByBookId(bookId, reviewPage, reviewSize, currentFilter);
     });
 
-
     document.getElementById("applyFilterBtn").addEventListener("click", () => {
         const bookId = getBookIdFromUrl();
         currentFilter = document.getElementById("filterReview").value;
@@ -281,8 +296,6 @@
         fetchReviewsByBookId(bookId, reviewPage, reviewSize, currentFilter);
     });
 
-
-    // Hàm gọi API thêm vào giỏ
     async function addToCart(bookId, quantity) {
         try {
             const response = await fetch(`${API_BASE}/cart/items`, {
@@ -306,16 +319,18 @@
         }
     }
 
-    window.onload = () => {
+    window.onload = async () => {
         const bookId = getBookIdFromUrl();
         if (!bookId) {
             alert("Không tìm thấy ID sách trong URL");
             return;
         }
-        fetchBookDetail(bookId);
-        fetchReviewsByBookId(bookId);
-    }
+        await fetchBookDetail(bookId);
+        await fetchUserAvatars(bookId); // 🟢 lấy avatar trước
+        await fetchReviewsByBookId(bookId);
+    };
 </script>
+
 
 </body>
 </html>

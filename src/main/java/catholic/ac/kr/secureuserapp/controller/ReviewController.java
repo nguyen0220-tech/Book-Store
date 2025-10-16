@@ -4,6 +4,7 @@ import catholic.ac.kr.secureuserapp.Status.FilterReview;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.ReviewDTO;
 import catholic.ac.kr.secureuserapp.model.dto.ReviewDetailDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserIdAvatarDTO;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,11 @@ public class ReviewController {
             @RequestParam int page,
             @RequestParam int size) {
         return ResponseEntity.ok(reviewService.getReviewDetailByBookId(bookId,filter,page,size));
+    }
+
+    @GetMapping("userID-avatar-map")
+    public ResponseEntity<ApiResponse<UserIdAvatarDTO>> getUserIdAvatar(@RequestParam Long bookId) {
+        return ResponseEntity.ok(reviewService.getUserIdAvatarByBookId(bookId));
     }
 
     @PostMapping("upload")

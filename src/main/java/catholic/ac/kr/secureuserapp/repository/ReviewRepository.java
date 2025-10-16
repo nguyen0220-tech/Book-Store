@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -32,10 +33,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("""
             SELECT new catholic.ac.kr.secureuserapp.model.dto.ReviewDetailDTO(
-            r.user.fullName,r.rating,r.content,r.imageReviewUrl,r.createdAt
+            r.user.id,r.user.fullName,r.rating,r.content,r.imageReviewUrl,r.createdAt
                         )
             FROM Review r
             WHERE r.book.id = :bookId
             """)
     Page<ReviewDetailDTO> getReviewDetailDTOByBookI(@Param("bookId") Long bookId, Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT r.user.id FROM Review r WHERE r.book.id = :bookId
+            """)
+    Set<Long> findUserIdReviewedByBookId(@Param("bookId") Long bookId);
 }

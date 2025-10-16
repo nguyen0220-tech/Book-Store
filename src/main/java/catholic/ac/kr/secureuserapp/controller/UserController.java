@@ -69,7 +69,7 @@ public class UserController {
     }
 
 
-    @GetMapping("avatar_url")
+    @GetMapping("avatar-url")
     public ResponseEntity<ApiResponse<UserAvatarDTO>> getUserAvatar(@AuthenticationPrincipal MyUserDetails userDetails) {
         return ResponseEntity.ok(imageService.getUserAvatar(userDetails.getUser().getId()));
     }

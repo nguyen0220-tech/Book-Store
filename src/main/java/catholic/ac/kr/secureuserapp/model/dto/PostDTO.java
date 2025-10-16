@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter @Setter
 public class PostDTO {
     private Long id;
+    private Long userId;
     private String username;
     private String content;
     private String postShare;

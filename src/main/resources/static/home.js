@@ -850,18 +850,45 @@ async function fetchUserPosts(page = 0, size = postPageSize) {
 
 window.fetchUserPosts = fetchUserPosts
 
-function renderUserPosts(posts) {
+async function renderUserPosts(posts) {
     const container = document.getElementById("userPostList");
     if (posts.length === 0) {
         container.innerHTML = "<p>Chưa có bài viết nào.</p>";
         return;
     }
 
+    // 1. Lấy avatar của tất cả userId của bài viết
+    const userIdSet = new Set(posts.map(p => p.userId));
+    const userIdAvatarMap = {};
+
+    await Promise.all(Array.from(userIdSet).map(async userId => {
+        try {
+            const res = await fetch(`${API_BASE}/user/avatar-url?userId=${userId}`, {
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            if (res.ok) {
+                const json = await res.json();
+                userIdAvatarMap[userId] = json.data.avatarUrl || "/icon/default-avatar.png";
+            } else {
+                userIdAvatarMap[userId] = "/icon/default-avatar.png";
+            }
+        } catch (err) {
+            console.warn(`Không lấy được avatar của userId ${userId}`, err);
+            userIdAvatarMap[userId] = "/icon/default-avatar.png";
+        }
+    }));
+
+    // 2. Render bài viết với avatar
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center;">
-            ${posts.map(post => `
+            ${posts.map(post => {
+        const avatar = userIdAvatarMap[post.userId] || "/icon/default-avatar.png";
+        return `
                 <div style="width: 100%; max-width: 600px; border:1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; background-color: #f9f9f9;">
-                    <p><strong>${post.username || "Ẩn danh"}</strong> | ${new Date(post.postDate).toLocaleString()}</p>
+                    <div style="display:flex; align-items:center; margin-bottom:6px;">
+                        <img src="${avatar}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:8px;">
+                        <strong>${post.username || "Ẩn danh"}</strong> | ${new Date(post.postDate).toLocaleString()}
+                    </div>
                     <p>${post.content}</p>
                     ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%; max-height: 300px; border-radius: 6px;" />` : ""}
                     <p><em>Chế độ: ${post.postShare === 'PUBLIC' ? 'Công khai' : post.postShare === 'FRIEND' ? 'Bạn bè' : 'Riêng tư'}</em></p>
@@ -881,7 +908,8 @@ function renderUserPosts(posts) {
                         <button onclick="submitComment(${post.id})" style="padding: 6px 10px; border-radius: 4px; background-color: #007bff; color: white; border: none;">Gửi</button>
                     </div>
                 </div>
-            `).join("")}
+                `;
+    }).join("")}
         </div>
     `;
 
@@ -909,18 +937,24 @@ function renderPostPagination(pageData) {
 
 async function fetchComments(postId) {
     try {
-        const response = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`
-            }
+        // 1. Lấy danh sách bình luận
+        const commentRes = await fetch(`${API_BASE}/comment?postId=${postId}&page=0&size=5`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
         });
+        if (!commentRes.ok) throw new Error("Không thể tải bình luận");
+        const commentJson = await commentRes.json();
+        const comments = commentJson.data.content || [];
 
-        if (!response.ok) throw new Error("Không thể tải bình luận");
+        // 2. Lấy map userId -> avatar
+        const avatarRes = await fetch(`${API_BASE}/comment/userID-avatar-map?postId=${postId}`, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+        if (!avatarRes.ok) throw new Error("Không thể tải avatar");
+        const avatarJson = await avatarRes.json();
+        const userIdAvatarMap = avatarJson.data.userIdAvatar || {};
 
-        const json = await response.json();
-        const comments = json.data.content || [];
-
-        renderComments(postId, comments);
+        // 3. Render bình luận
+        renderComments(postId, comments, userIdAvatarMap);
     } catch (error) {
         console.error(error);
         const commentContainer = document.getElementById(`comments-container-${postId}`);
@@ -928,7 +962,7 @@ async function fetchComments(postId) {
     }
 }
 
-function renderComments(postId, comments) {
+function renderComments(postId, comments, userIdAvatarMap) {
     const commentContainer = document.getElementById(`comments-container-${postId}`);
     if (!commentContainer) return;
 
@@ -943,12 +977,17 @@ function renderComments(postId, comments) {
 
     commentContainer.innerHTML = comments.map(comment => {
         const canDelete = comment.userId === currentUserId || comment.postUserId === currentUserId;
+        const avatar = userIdAvatarMap[comment.userId] || "/icon/default-avatar.png";
+
         return `
-            <div style="padding: 4px 8px; border-bottom: 1px solid #ddd;">
-                <strong>${comment.username}</strong>: ${comment.commentContent || ""}
-                ${comment.imageUrl ? `<br/><img src="${comment.imageUrl}" style="max-width:100px; max-height:100px; margin-top:2px; border-radius:4px;">` : ""}
-                <br/>
-                <small style="color:gray;">${new Date(comment.createdAt).toLocaleString()}</small>
+            <div style="display:flex; align-items:flex-start; padding: 4px 8px; border-bottom: 1px solid #ddd;">
+                <img src="${avatar}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; margin-right:8px;">
+                <div style="flex:1;">
+                    <strong>${comment.username}</strong>: ${comment.commentContent || ""}
+                    ${comment.imageUrl ? `<br/><img src="${comment.imageUrl}" style="max-width:100px; max-height:100px; margin-top:2px; border-radius:4px;">` : ""}
+                    <br/>
+                    <small style="color:gray;">${new Date(comment.createdAt).toLocaleString()}</small>
+                </div>
                 ${canDelete ? `<button onclick="deleteComment(${postId}, ${comment.id})" style="margin-left:10px; color:red; border:none; background:none; cursor:pointer;">🗑️</button>` : ""}
             </div>
         `;

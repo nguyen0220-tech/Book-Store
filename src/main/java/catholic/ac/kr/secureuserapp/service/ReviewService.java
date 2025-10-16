@@ -8,6 +8,7 @@ import catholic.ac.kr.secureuserapp.mapper.ReviewMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.ReviewDTO;
 import catholic.ac.kr.secureuserapp.model.dto.ReviewDetailDTO;
+import catholic.ac.kr.secureuserapp.model.dto.UserIdAvatarDTO;
 import catholic.ac.kr.secureuserapp.model.entity.*;
 import catholic.ac.kr.secureuserapp.repository.*;
 import catholic.ac.kr.secureuserapp.uploadhandler.UploadFileHandler;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +72,26 @@ public class ReviewService {
 
     }
 
+    public ApiResponse<UserIdAvatarDTO> getUserIdAvatarByBookId(Long bookId) {
+        Map<Long, String> userIdAvatarUrl = new ConcurrentHashMap<>();
+
+        Set<Long> userIds = reviewRepository.findUserIdReviewedByBookId(bookId);
+
+        for (Long userId : userIds) {
+            String avatarUrl = imageRepository.findByUserId(userId)
+                    .map(Image::getImageUrl)
+                    .orElse("/icon/default-avatar.png");
+
+            userIdAvatarUrl.put(userId, avatarUrl);
+        }
+
+        UserIdAvatarDTO userIdAvatarDTO = new UserIdAvatarDTO();
+        userIdAvatarDTO.setUserIdAvatar(userIdAvatarUrl);
+
+        return ApiResponse.success("User avatar", userIdAvatarDTO);
+
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public ApiResponse<ReviewDTO> createReview(Long userId, ReviewDTO reviewDTO) {
         User user = userRepository.findById(userId)
@@ -93,7 +117,7 @@ public class ReviewService {
         review.setContent(reviewDTO.getContent());
 
         String imageReviewUrl = reviewDTO.getFile() != null ?
-                uploadFileHandler.uploadFile(userId,reviewDTO.getFile())
+                uploadFileHandler.uploadFile(userId, reviewDTO.getFile())
                 : null;
         review.setImageReviewUrl(imageReviewUrl);
 
