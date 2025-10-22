@@ -104,11 +104,15 @@ public class SecurityConfig {
                                 "/book/top-book",
                                 "/book/top-new",
                                 "book/{bookId}",
+                                "book/detail/{bookId}",
                                 "/post/all",
                                 "/comment",
+                                "comment/userID-avatar-map",
                                 "/posts/{postId}/emotions",
                                 "posts/{postId}/emotions/filter",
                                 "review/book",
+                                "review/book/detail",
+                                "review/userID-avatar-map",
                                 "/user/find-username",
                                 "/*.html",            // tất cả file .html trong static/
                                 "/*.css",             // css
@@ -124,9 +128,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()  // các request còn lại cần token JWT hợp lệ
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jsonAuthEntryPoint()))
-                .oauth2Login(oAuth2Login -> {
-                    oAuth2Login.successHandler(loginSuccessHandler);
-                })
+                .oauth2Login(oAuth2Login ->
+                    oAuth2Login.successHandler(loginSuccessHandler))
                 .authenticationProvider(authenticationProvider())                            // cung cấp cách xác thực người dùng
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)  // Thêm filter kiểm tra JWT trước khi đến filter mặc định
                 .build();

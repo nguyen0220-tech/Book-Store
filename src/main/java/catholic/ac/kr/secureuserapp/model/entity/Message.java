@@ -33,6 +33,8 @@ public class Message {
     @Column(nullable = false)
     private String message;
 
+    private String imageUrl;
+
     @Column(nullable = false)
     private boolean fromAdmin;
 

@@ -4,6 +4,7 @@ import catholic.ac.kr.secureuserapp.Status.FriendStatus;
 import catholic.ac.kr.secureuserapp.Status.ImageType;
 import catholic.ac.kr.secureuserapp.Status.PostShare;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
+import catholic.ac.kr.secureuserapp.common.CommonService;
 import catholic.ac.kr.secureuserapp.mapper.CommentMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.CommentDTO;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +39,7 @@ public class CommentService {
     private final NotificationService notificationService;
     private final UploadFileHandler uploadFileHandler;
     private final ImageRepository imageRepository;
+    private final CommonService commonService;
 
     @Cacheable(value = "commentCache", key = "#postId")
     public ApiResponse<Page<CommentDTO>> getAllComments(Long postId, int page, int size) {
@@ -52,16 +53,11 @@ public class CommentService {
     }
 
     public ApiResponse<UserIdAvatarDTO> getUserIdAvatar(Long postId) {
-        Map<Long, String> userIdAvtar = new ConcurrentHashMap<>();
+        Map<Long, String> userIdAvtar;
 
         Set<Long> usersCommentedIds = commentRepository.findAllUserCommentedByPostId(postId); //ds user đã cmt
 
-        for (Long userId : usersCommentedIds) {
-            String avatarUrl = imageRepository.findByUserId(userId)
-                    .map(Image::getImageUrl)
-                    .orElse("/icon/default-avatar.png"); // ảnh mặc định
-            userIdAvtar.put(userId, avatarUrl);
-        }
+        userIdAvtar = commonService.getUserIdAvatarUrl(usersCommentedIds);
 
         UserIdAvatarDTO userIdAvatarDTO = new UserIdAvatarDTO();
         userIdAvatarDTO.setUserIdAvatar(userIdAvtar);

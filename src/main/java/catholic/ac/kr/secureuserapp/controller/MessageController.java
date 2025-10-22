@@ -4,6 +4,7 @@ import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.request.MessageForChatRoomRequest;
 import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
 import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageRequest;
 import catholic.ac.kr.secureuserapp.security.userdetails.MyUserDetails;
 import catholic.ac.kr.secureuserapp.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,9 @@ public class MessageController {
     @PostMapping("save")
     public ResponseEntity<ApiResponse<MessageDTO>> saveMessage(
             @AuthenticationPrincipal MyUserDetails sender,
-            @RequestBody MessageDTO messageDTO) {
-        messageDTO.setSender(sender.getUsername());
-        return ResponseEntity.ok(messageService.saveChatMessage(messageDTO));
+            @ModelAttribute MessageRequest request) {
+        request.setSender(sender.getUsername());
+        return ResponseEntity.ok(messageService.saveChatMessage(request));
     }
 
     @PostMapping("chat-room")

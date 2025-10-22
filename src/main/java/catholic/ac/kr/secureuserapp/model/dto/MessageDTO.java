@@ -13,6 +13,7 @@ public class MessageDTO {
     private String recipient;
     private String recipientFullName;
     private String message;
+    private String imageUrl;
     private Timestamp timestamp;
     private String status;
 }

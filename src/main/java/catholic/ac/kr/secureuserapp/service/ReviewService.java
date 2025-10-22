@@ -3,6 +3,7 @@ package catholic.ac.kr.secureuserapp.service;
 import catholic.ac.kr.secureuserapp.Status.FilterReview;
 import catholic.ac.kr.secureuserapp.Status.ImageType;
 import catholic.ac.kr.secureuserapp.Status.Rating;
+import catholic.ac.kr.secureuserapp.common.CommonService;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.ReviewMapper;
 import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
@@ -24,7 +25,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +36,7 @@ public class ReviewService {
     private final OrderItemRepository orderItemRepository;
     private final UploadFileHandler uploadFileHandler;
     private final ImageRepository imageRepository;
+    private final CommonService commonService;
 
 
     public ApiResponse<List<ReviewDTO>> getAllReviews() {
@@ -73,17 +74,11 @@ public class ReviewService {
     }
 
     public ApiResponse<UserIdAvatarDTO> getUserIdAvatarByBookId(Long bookId) {
-        Map<Long, String> userIdAvatarUrl = new ConcurrentHashMap<>();
+        Map<Long, String> userIdAvatarUrl;
 
         Set<Long> userIds = reviewRepository.findUserIdReviewedByBookId(bookId);
 
-        for (Long userId : userIds) {
-            String avatarUrl = imageRepository.findByUserId(userId)
-                    .map(Image::getImageUrl)
-                    .orElse("/icon/default-avatar.png");
-
-            userIdAvatarUrl.put(userId, avatarUrl);
-        }
+        userIdAvatarUrl = commonService.getUserIdAvatarUrl(userIds);
 
         UserIdAvatarDTO userIdAvatarDTO = new UserIdAvatarDTO();
         userIdAvatarDTO.setUserIdAvatar(userIdAvatarUrl);

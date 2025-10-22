@@ -22,6 +22,7 @@ public class MessageMapper {
             messageDTO.setRecipientFullName(null);
         }
         messageDTO.setMessage(message.getMessage());
+        messageDTO.setImageUrl(message.getImageUrl());
         messageDTO.setTimestamp(message.getTimestamp());
         messageDTO.setStatus(message.getStatus().name());
 

@@ -3,6 +3,7 @@ package catholic.ac.kr.secureuserapp.websocket;
 import catholic.ac.kr.secureuserapp.model.dto.*;
 import catholic.ac.kr.secureuserapp.model.dto.request.MessageForChatRoomRequest;
 import catholic.ac.kr.secureuserapp.model.dto.request.MessageReplyRequest;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageRequest;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
 import catholic.ac.kr.secureuserapp.service.MessageService;
@@ -24,7 +25,7 @@ public class WebSocketController {
     private final UserRepository userRepository;
 
     @MessageMapping("chat")
-    public void handleChatMessage(@Payload MessageDTO messageDTO, Principal principal) {
+    public void handleChatMessage(@Payload MessageRequest request, Principal principal) {
         if (principal == null) {
             System.out.println("❌ Principal is null");
             return;
@@ -32,12 +33,12 @@ public class WebSocketController {
 
         String username = principal.getName();
         System.out.println("Sender: " + username);
-        System.out.println("Recipient: " + messageDTO.getRecipient());
-        System.out.println("Message: " + messageDTO.getMessage());
+        System.out.println("Recipient: " + request.getRecipient());
+        System.out.println("Message: " + request.getMessage());
 
-        messageDTO.setSender(username);
+        request.setSender(username);
 
-        MessageDTO savedMessage = messageService.saveChatMessage(messageDTO).getData();
+        MessageDTO savedMessage = messageService.saveChatMessage(request).getData();
 
         messagingTemplate.convertAndSendToUser(
                 savedMessage.getRecipient(),

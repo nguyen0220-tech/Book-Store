@@ -1,5 +1,6 @@
 package catholic.ac.kr.secureuserapp.service;
 
+import catholic.ac.kr.secureuserapp.common.CommonService;
 import catholic.ac.kr.secureuserapp.exception.AlreadyExistsException;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.UserMapper;
@@ -40,6 +41,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final ImageRepository imageRepository;
+    private final CommonService commonService;
 
     @Cacheable(value = "userCache", key = "#userId")
     @PreAuthorize("hasRole('ADMIN')")
@@ -200,7 +202,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (user.getUsername().equals("admin")) {
-            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            if (commonService.checkInputPassword(request.getOldPassword(), user.getPassword())) {
                 return ApiResponse.error("Old password does not match");
             }
 
@@ -212,11 +214,11 @@ public class UserService {
             return ApiResponse.success("Password changed successfully");
         }
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        else if (commonService.checkInputPassword(request.getOldPassword(), user.getPassword())) {
             return ApiResponse.error("Old password does not match");
         }
 
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+        else if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             return ApiResponse.error("Password does not match");
         }
 

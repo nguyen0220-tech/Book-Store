@@ -1,6 +1,7 @@
 package catholic.ac.kr.secureuserapp.service;
 
 import catholic.ac.kr.secureuserapp.Status.ChatRoomType;
+import catholic.ac.kr.secureuserapp.Status.ImageType;
 import catholic.ac.kr.secureuserapp.Status.MessageStatus;
 import catholic.ac.kr.secureuserapp.exception.ResourceNotFoundException;
 import catholic.ac.kr.secureuserapp.mapper.MessageMapper;
@@ -8,12 +9,16 @@ import catholic.ac.kr.secureuserapp.model.dto.ApiResponse;
 import catholic.ac.kr.secureuserapp.model.dto.request.MessageForChatRoomRequest;
 import catholic.ac.kr.secureuserapp.model.dto.MessageDTO;
 import catholic.ac.kr.secureuserapp.model.dto.MessageForGroupChatDTO;
+import catholic.ac.kr.secureuserapp.model.dto.request.MessageRequest;
 import catholic.ac.kr.secureuserapp.model.entity.ChatRoom;
+import catholic.ac.kr.secureuserapp.model.entity.Image;
 import catholic.ac.kr.secureuserapp.model.entity.Message;
 import catholic.ac.kr.secureuserapp.model.entity.User;
 import catholic.ac.kr.secureuserapp.repository.ChatRoomRepository;
+import catholic.ac.kr.secureuserapp.repository.ImageRepository;
 import catholic.ac.kr.secureuserapp.repository.MessageRepository;
 import catholic.ac.kr.secureuserapp.repository.UserRepository;
+import catholic.ac.kr.secureuserapp.uploadhandler.UploadFileHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +36,8 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final UploadFileHandler uploadFileHandler;
+    private final ImageRepository imageRepository;
 
     public ApiResponse<Page<MessageDTO>> getOneWayMessage(String sender, String recipient, int pae, int size) {
         Pageable pageable = PageRequest.of(pae, size, Sort.by("timestamp").descending());
@@ -55,7 +62,7 @@ public class MessageService {
         return ApiResponse.success("List of chat messages two way", messageDTOS);
     }
 
-    public ApiResponse<Page<MessageForGroupChatDTO>> getMessagesFromChatRoom(Long userId,Long chatRoomId, int page, int size) {
+    public ApiResponse<Page<MessageForGroupChatDTO>> getMessagesFromChatRoom(Long userId, Long chatRoomId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("timestamp").ascending());
 
         Page<Message> messages = messageRepository.findMessageGroupChatByUserIdAndChatRoomId(userId, chatRoomId, pageable);
@@ -66,11 +73,11 @@ public class MessageService {
     }
 
     //chat 1:1
-    public ApiResponse<MessageDTO> saveChatMessage(MessageDTO messageDTO) {
-        User sender = userRepository.findByUsername(messageDTO.getSender())
+    public ApiResponse<MessageDTO> saveChatMessage(MessageRequest request) {
+        User sender = userRepository.findByUsername(request.getSender())
                 .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
 
-        User recipient = userRepository.findByUsername(messageDTO.getRecipient())
+        User recipient = userRepository.findByUsername(request.getRecipient())
                 .orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
 
         Message message = new Message();
@@ -78,7 +85,7 @@ public class MessageService {
         message.setRecipient(recipient);
 
         String roomName = sender.getUsername() + "_" + recipient.getUsername(); //room name: sender-name_recipient-name
-                                                                                // (người gửi tin trước (nguời tạo phòng))
+        // (người gửi tin trước (nguời tạo phòng))
         ChatRoom room = chatRoomRepository.findByRoomName(roomName)
                 .orElseGet(() -> {
                     ChatRoom chatRoom = ChatRoom.builder()
@@ -91,8 +98,13 @@ public class MessageService {
                     return chatRoomRepository.save(chatRoom);
                 });
 
+        String imageUrl = request.getFile() != null ?
+                uploadFileHandler.uploadFile(sender.getId(), request.getFile())
+                : null;
+        message.setImageUrl(imageUrl);
+
         message.setChatRoom(room);
-        message.setMessage(messageDTO.getMessage());
+        message.setMessage(request.getMessage());
 
         if (sender.getUsername().equals("admin")) {
             message.setFromAdmin(true);
@@ -103,16 +115,17 @@ public class MessageService {
 
         messageRepository.save(message);
 
-//        Map<String,Object> notifyMess = Map.of(
-//                "TYPE",message.getStatus(),
-//                "FROM",message.getSender().getUsername(),
-//                "preview",message.getMessage()
-//        );
-//
-//        simpMessagingTemplate.convertAndSendToUser(
-//                recipient.getUsername(),
-//                "/queue/message",
-//                notifyMess);
+        if (imageUrl != null) {
+            Image image = Image.builder()
+                    .user(sender)
+                    .imageUrl(imageUrl)
+                    .isSelected(false)
+                    .referenceId(message.getId())
+                    .type(ImageType.MESSAGE)
+                    .build();
+
+            imageRepository.save(image);
+        }
 
         MessageDTO messageDTOResponse = MessageMapper.toChatMessageDTO(message);
 
@@ -120,7 +133,7 @@ public class MessageService {
     }
 
     //group chat
-    public ApiResponse<MessageForGroupChatDTO> saveMessageForChatGroup( MessageForChatRoomRequest request){
+    public ApiResponse<MessageForGroupChatDTO> saveMessageForChatGroup(MessageForChatRoomRequest request) {
         User user = userRepository.findByUsername(request.getSender())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -137,7 +150,7 @@ public class MessageService {
 
         User admin = userRepository.findByUsername("admin")
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
-        if(user.getId().equals(admin.getId())){
+        if (user.getId().equals(admin.getId())) {
             message.setFromAdmin(true);
         }
 
